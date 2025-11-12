@@ -1,9 +1,17 @@
+import {createBrowserRouter, RouterProvider,} from "react-router-dom"
+import Navbar from "./Components/Navbar"
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Navbar />,
+  },
+]);
+
 function App() {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-white text-black">
-      <h1 className="text-2xl font-bold">Hello, Tailwind!</h1>
-    </div>
-  )
+    <RouterProvider router={router} />
+  );
 }
 
 export default App
