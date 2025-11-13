@@ -3,6 +3,8 @@ import Logo from './layout/Logo';
 import DesktopAuthButtons from './auth/DesktopAuthButtons';
 import MobileMenu from './layout/MobileMenu';
 import MobileToggleButton from './layout/MobileToggleButton';
+import Categories from './layout/Categories';
+import SearchMenu from './layout/SearchMenu';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,12 +22,17 @@ const Navbar = () => {
     alert('회원가입');
   };
 
+  const onCategoryClick= (category) => {
+    alert(category);
+  };
+
   return (
     <nav className="bg-emerald-500">
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 md:h-20">
           <div className="flex items-center flex-1">
             <Logo />
+            <SearchMenu />
           </div>
           <MobileToggleButton isOpen={isOpen} toggle={() => setIsOpen(!isOpen)}/>
 
@@ -48,6 +55,8 @@ const Navbar = () => {
           onSignupClick={onSignupClick}
         />
       </div>
+
+      <Categories onClick={onCategoryClick} />
     </nav>
   );
 };
