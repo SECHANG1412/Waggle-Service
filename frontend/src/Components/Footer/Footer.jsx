@@ -45,6 +45,7 @@ const Footer = () => {
               ))}
             </ul>
           </div>
+          
           {/* Follow Us */}
           <div>
             <h3 className="text-lg font-bold mb-4">Follow Us</h3>

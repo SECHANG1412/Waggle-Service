@@ -4,7 +4,8 @@ import Navbar from './Components/Navbar';
 import LoginModal from './Components/Modal/LoginModal';
 import { AuthProvider } from './hooks/useAuth';
 import SignupModal from './Components/Modal/SignupModal';
-import Footer from "./Components/Footer/Footer";
+import Footer from './Components/Footer/Footer';
+import Main from './Pages/Main';
 
 const LootLayout = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -44,6 +45,7 @@ const router = createBrowserRouter([
   {
     path: '/',
     element: <LootLayout />,
+    children: [{ index: true, element: <Main /> }],
   },
 ]);
 
