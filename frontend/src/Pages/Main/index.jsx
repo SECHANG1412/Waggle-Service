@@ -1,4 +1,5 @@
 import React, { useEffect, useCallback, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Categories from '../../Components/Navbar/layout/Categories';
 import { useTopic } from '../../hooks/useTopic';
 import Header from './layout/Header';
@@ -11,10 +12,12 @@ const Main = () => {
   const [topics, setTopics] = useState([]);
   const [totalTopics, setTotalTopics] = useState(0);
 
-  const category = '';
-  const sort = 'created_at';
-  const search = '';
-  const page = 1;
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const category = searchParams.get('category') || '';
+  const sort = searchParams.get('sort') || 'created_at';
+  const search = searchParams.get('search') || '';
+  const page = parseInt(searchParams.get('page') || '1', 10);
   const topicsPerPage = 12;
 
   const loadTopics = useCallback(async () => {
@@ -28,22 +31,24 @@ const Main = () => {
     if (data) setTopics(data);
   }, [fetchTopics, page, sort, category, search]);
 
-  useEffect(
-    () => {
-      countAllTopics(Categories, search).then((count) => {
-        setTotalTopics(count || 0);
-      });
-      loadTopics();
-    },
-    { category, sort, page, search }
-  );
+  useEffect(() => {
+    countAllTopics(category, search).then((count) => {
+      setTotalTopics(count || 0);
+    });
+    loadTopics();
+  }, [category, sort, page, search]);
 
   const onSortChange = (e) => {
-    console.log(e.target.value);
+    const updated = new URLSearchParams(searchParams);
+    updated.set('sort', e.target.value);
+    updated.set('page', 1);
+    setSearchParams(updated);
   };
 
   const onPageChange = (p) => {
-    console.log(p);
+    const updated = new URLSearchParams(searchParams);
+    updated.set('page', p);
+    setSearchParams(updated);
   };
 
   const titleText = useMemo(() => {
@@ -53,7 +58,9 @@ const Main = () => {
   }, [search, category]);
 
   const onSeachClear = () => {
-    console.log('Seach Clear');
+    const updated = new URLSearchParams(searchParams);
+    updated.delete('search');
+    setSearchParams(updated);
   };
 
   const onVote = (topic_id, index) => {
@@ -66,7 +73,7 @@ const Main = () => {
         <Header title={titleText} total={totalTopics} sort={sort} onSortChange={onSortChange} />
         <SearchTag search={search} onClear={onSeachClear} />
         <Grid topics={topics} loading={loading} onVote={onVote} />
-        <Pagination currentPage={page} total={totalTopics} perPage={topicsPerPage} onChange={onPageChange} />
+        <Pagination currentPage={page} total={totalTopics} perPage={topicsPerPage} onPageChange={onPageChange}  />
       </div>
     </div>
   );

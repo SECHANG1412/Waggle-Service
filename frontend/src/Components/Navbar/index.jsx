@@ -6,17 +6,32 @@ import MobileToggleButton from './layout/MobileToggleButton';
 import Categories from './layout/Categories';
 import SearchMenu from './layout/SearchMenu';
 import { useAuth } from '../../hooks/useAuth';
+import { useSearchParams } from 'react-router-dom';
 
 const Navbar = ({ onLoginClick, onSignupClick }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { logout, isAuthenticated } = useAuth();
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const search = searchParams.get('search') || '';
+  const category = searchParams.get('category') || '';
+
   const onLogoutClick = () => {
     logout();
   };
 
-  const onCategoryClick = (category) => {
-    alert(category);
+  const onCategoryClick = (newCategory) => {
+    const updated = new URLSearchParams(searchParams);
+    updated.set('category', newCategory === '전체' ? '' : newCategory);
+    updated.set('page', '1');
+    setSearchParams(updated);
+  };
+
+  const onSearchInputChange = (e) => {
+    const updated = new URLSearchParams(searchParams);
+    updated.set('search', e.target.value);
+    updated.set('page', '1');
+    setSearchParams(updated);
   };
 
   return (
@@ -25,7 +40,7 @@ const Navbar = ({ onLoginClick, onSignupClick }) => {
         <div className="flex items-center justify-between h-14 md:h-20">
           <div className="flex items-center flex-1">
             <Logo />
-            <SearchMenu />
+            <SearchMenu search={search} onSearchInputChange={onSearchInputChange} />
           </div>
           <MobileToggleButton isOpen={isOpen} toggle={() => setIsOpen(!isOpen)} />
 
@@ -46,10 +61,12 @@ const Navbar = ({ onLoginClick, onSignupClick }) => {
           onLoginClick={onLoginClick}
           onLogoutClick={onLogoutClick}
           onSignupClick={onSignupClick}
+          search={search}
+          onSearchInputChange={onSearchInputChange}
         />
       </div>
 
-      <Categories onClick={onCategoryClick} />
+      <Categories activeCategory={category} onClick={onCategoryClick} />
     </nav>
   );
 };

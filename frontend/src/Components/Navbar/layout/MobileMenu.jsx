@@ -3,7 +3,16 @@ import { BiSearch } from 'react-icons/bi';
 import SharedNavLinks from '../shared/SharedNavLinks';
 import MobileAuthButtons from '../auth/MobileAuthButtons';
 
-const MobileMenu = ({ isOpen, setIsOpen, isAuthenticated, onLoginClick, onLogoutClick, onSignupClick }) => {
+const MobileMenu = ({
+  isOpen,
+  setIsOpen,
+  isAuthenticated,
+  onLoginClick,
+  onLogoutClick,
+  onSignupClick,
+  search,
+  onSearchInputChange,
+}) => {
   return (
     <div
       className={`md:hidden transform transition-all duration-500 ease-in-out ${
@@ -19,6 +28,8 @@ const MobileMenu = ({ isOpen, setIsOpen, isAuthenticated, onLoginClick, onLogout
           </div>
           <input
             type="text"
+            value={search}
+            onChange={onSearchInputChange}
             className="block w-full pl-10 pr-3 py-2 border border-transparent rounded-md leading-5 bg-emerald-100 text-emerald-900 placeholder-emerald-500 hover:bg-white hover:text-emerald-900 hover:placeholder-emerald-400 sm:text-sm transition-all duration-500"
             placeholder="토픽 검색하기..."
           />
