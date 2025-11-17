@@ -30,7 +30,7 @@ const EditableContent = ({
           <button
             onClick={onEdit}
             disabled={!editContent.trim()}
-            className="px-3 py-1 text-sm bg-emerald-500 text-white rounded hover:bg-emerald-600 disabled:opacity-50"
+            className="px-3 py-1 text-sm bg-emerald-500 text-white rounded hover:bg-emerald-600 disabled:bg-emerald-600/40"
           >
             수정
           </button>

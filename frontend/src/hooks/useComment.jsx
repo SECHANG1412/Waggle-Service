@@ -62,9 +62,7 @@ export const useComment = () => {
   const [comments, setComments] = useState(initialDummyComments);
 
   const getComments = async (topicId) => {
-    // 나중에 topicId로 필터링해도 되고, 지금은 전체 반환
-    //return comments;
-    return Array.from({ length: 40 }, () => [...comments]).flat();
+    return comments;
   };
 
   const createComment = async (topicId, content) => {

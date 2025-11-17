@@ -5,7 +5,7 @@ services:
     environment:
       MYSQL_DATABASE: talkAndVote
       MYSQL_USER: admin_talkandvote
-      MYSQL_PASSWORD: a123123!!
+      MYSQL_PASSWORD: password
       MYSQL_ROOT_PASSWORD: root_password
     ports:
       - "3307:3306"
