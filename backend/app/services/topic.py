@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.db.crud import TopicCrud, VoteCrud
+from app.db.crud import TopicCrud, VoteCrud, LikeCrud
 from app.db.schemas.topics import TopicCreate, TopicRead
 from app.db.models import Topic
 
@@ -41,20 +41,28 @@ class TopicService:
         return await TopicCrud.count_all_with_filters(db, category, search)
     
     @staticmethod
-    async def _build_topic_read(db:AsyncSession, topic: Topic, user_id: int | None = None) -> TopicRead:
-
+    async def _build_topic_read(db: AsyncSession, topic: Topic, user_id: int | None = None) -> TopicRead:
+        
         votes = await VoteCrud.get_all_by_topic_id(db, topic.topic_id)
+        like_count = await LikeCrud.count_topic_likes(db, topic.topic_id)
 
         vote_results = [0] * len(topic.vote_options)
         for vote in votes:
             if 0 <= vote.vote_index < len(vote_results):
                 vote_results[vote.vote_index] += 1
 
-        result = TopicRead(**topic.__dict__,vote_results=vote_results, total_vote=len(votes))
+        result = TopicRead(
+            **topic.__dict__,
+            vote_results=vote_results,
+            total_vote=len(votes),
+            like_count=like_count)
 
         if user_id is not None:
             vote = await VoteCrud.get_by_topic_and_user(db, topic.topic_id, user_id)
             result.has_voted = vote is not None
             result.user_vote_index = vote.vote_index if vote else None
-        
+            result.has_liked = await LikeCrud.has_user_liked_topic(
+                db, topic.topic_id, user_id
+            )
+
         return result

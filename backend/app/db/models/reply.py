@@ -21,4 +21,7 @@ class Reply(Base):
 
     comment: Mapped["Comment"] = relationship("Comment", back_populates="replies")
     user: Mapped["User"] = relationship("User", back_populates="replies")
+    likes: Mapped[List["ReplyLike"]] = relationship(
+        "ReplyLike", back_populates="reply", cascade="all, delete-orphan"
+    )
 

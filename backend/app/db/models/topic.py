@@ -26,3 +26,6 @@ class Topic(Base):
     comments: Mapped[List["Comment"]] = relationship(
         "Comment", back_populates="topic", cascade="all, delete-orphan"
     )
+    likes: Mapped[List["TopicLike"]] = relationship(
+        "TopicLike", back_populates="topic", cascade="all, delete-orphan"
+    )

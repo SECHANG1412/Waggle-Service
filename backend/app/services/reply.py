@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
 from app.db.models import Reply
-from app.db.crud import UserCrud, ReplyCrud
+from app.db.crud import UserCrud, ReplyCrud, LikeCrud
 from app.db.schemas.replys import ReplyRead, ReplyCreate, ReplyUpdate
 
 
@@ -64,8 +64,13 @@ class ReplyService:
         db: AsyncSession, reply: Reply, user_id: int | None = None
     ) -> ReplyRead:
         user = await UserCrud.get_by_id(db=db, user_id=reply.user_id)
+        like_count = await LikeCrud.count_reply_likes(db, reply.reply_id)
+        has_liked = await LikeCrud.has_user_liked_reply(db, reply.reply_id, user_id) if user_id else False
+
 
         return ReplyRead(
             **reply.__dict__,
             username=user.username,
+            like_count=like_count,
+            has_liked=has_liked,
         )

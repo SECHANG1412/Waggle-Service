@@ -28,3 +28,5 @@ class CommentInDB(CommentBase):
 class CommentRead(CommentInDB):
     username: str
     replies: list[ReplyRead] = []
+    like_count: int = 0
+    has_liked: bool = False

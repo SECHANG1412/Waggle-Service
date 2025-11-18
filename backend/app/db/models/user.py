@@ -11,16 +11,33 @@ class User(Base):
 
     user_id: Mapped[int] = mapped_column(primary_key=True, index=True)
     username: Mapped[str] = mapped_column(String(50), nullable=False)
-    email: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
+    email: Mapped[str] = mapped_column(
+        String(100), unique=True, index=True, nullable=False
+    )
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     refresh_token: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    created_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMP, server_default=func.now(), nullable=True)
+    created_at: Mapped[Optional[datetime]] = mapped_column(
+        TIMESTAMP, server_default=func.now(), nullable=True
+    )
 
     topics: Mapped[List["Topic"]] = relationship(
         "Topic", back_populates="user", cascade="all, delete-orphan"
     )
-    votes: Mapped[list["Vote"]] = relationship("Vote", back_populates="user", cascade="all, delete-orphan")
-    comments: Mapped[list["Comment"]] = relationship("Comment", back_populates="user", cascade="all, delete-orphan")
+    votes: Mapped[list["Vote"]] = relationship(
+        "Vote", back_populates="user", cascade="all, delete-orphan"
+    )
+    comments: Mapped[list["Comment"]] = relationship(
+        "Comment", back_populates="user", cascade="all, delete-orphan"
+    )
     replies: Mapped[List["Reply"]] = relationship(
         "Reply", back_populates="user", cascade="all, delete-orphan"
+    )
+    topic_likes: Mapped[List["TopicLike"]] = relationship(
+        "TopicLike", back_populates="user", cascade="all, delete-orphan"
+    )
+    comment_likes: Mapped[List["CommentLike"]] = relationship(
+        "CommentLike", back_populates="user", cascade="all, delete-orphan"
+    )
+    reply_likes: Mapped[List["ReplyLike"]] = relationship(
+        "ReplyLike", back_populates="user", cascade="all, delete-orphan"
     )

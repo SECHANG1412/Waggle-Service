@@ -26,3 +26,5 @@ class ReplyInDB(ReplyBase):
 
 class ReplyRead(ReplyInDB):
     username: str
+    like_count: int = 0
+    has_liked: bool = False

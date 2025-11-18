@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
-from app.db.crud import CommentCrud, UserCrud
+from app.db.crud import CommentCrud, UserCrud, LikeCrud
 from app.db.models import Comment
 from app.db.schemas.comments import CommentRead, CommentCreate, CommentUpdate
 from app.services.reply import ReplyService
@@ -66,6 +66,8 @@ class CommentService:
         replies = await ReplyService.get_all_by_comment_id(
             db, comment.comment_id, user_id
         )
+        like_count = await LikeCrud.count_comment_likes(db, comment.comment_id)
+        has_liked = await LikeCrud.has_user_liked_comment(db, comment.comment_id, user_id) if user_id else False
 
         return CommentRead(
             comment_id=comment.comment_id,
@@ -74,5 +76,7 @@ class CommentService:
             content=comment.content,
             created_at=comment.created_at,
             username=user.username,
-            replies=replies
+            replies=replies,
+            like_count=like_count,
+            has_liked=has_liked,
         )

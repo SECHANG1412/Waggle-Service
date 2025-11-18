@@ -32,3 +32,5 @@ class TopicRead(TopicInDB):
     user_vote_index: int | None = None
     vote_results: list[int] = []
     total_vote: int = 0
+    like_count: int = 0
+    has_liked: bool = False
