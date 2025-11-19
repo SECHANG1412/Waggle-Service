@@ -20,7 +20,7 @@ const Comments = ({ topicId }) => {
   const fetchComment = useCallback(async () => {
     const result = await getComments(topicId);
     setComments(result || []);
-    //setCurrentPage(1);
+    setCurrentPage(1);
   }, [getComments, topicId]);
 
   useEffect(() => {

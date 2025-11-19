@@ -1,39 +1,87 @@
 import { useState } from 'react';
+import api from "../utils/api";
+import { handleAuthError, showErrorAlert, showSuccessAlert } from '../utils/alertUtils';
 
 export const useVote = () => {
-  const dummVote = {
-    '2024-01-01T00:00:00Z': {
-      formattedTime: '01/01 00:00',
-      0: { count: 5, percent: 25 },
-      1: { count: 10, percent: 50 },
-      2: { count: 5, percent: 25 },
-    },
-    '2024-01-01T01:00:00Z': {
-      formattedTime: '01/01 01:00',
-      0: { count: 8, percent: 26 },
-      1: { count: 15, percent: 50 },
-      2: { count: 7, percent: 24 },
-    },
-    '2024-01-01T02:00:00Z': {
-      formattedTime: '01/01 02:00',
-      0: { count: 11, percent: 28 },
-      1: { count: 20, percent: 50 },
-      2: { count: 9, percent: 22 },
-    },
-    '2024-01-01T03:00:00Z': {
-      formattedTime: '01/01 03:00',
-      0: { count: 15, percent: 30 },
-      1: { count: 26, percent: 52 },
-      2: { count: 11, percent: 18 },
-    },
-  };
-
   const submitVote = async ({ topicId, voteIndex }) => {
-    return false;
+    try {
+      const response = await api.post('/votes', {
+        topic_id: topicId,
+        vote_index: voteIndex,
+      });
+
+      if (response.status === 200) {
+        showSuccessAlert('투표가 성공적으로 처리되었습니다.');
+        return response.data;
+      }
+      return null;
+    } catch (error) {
+      if (error.response?.status === 403) {
+        showErrorAlert(error, '이미 투표한 토픽입니다.');
+        return false;
+      }
+      if (await handleAuthError(error)) return false;
+      showErrorAlert(error, '투표를 진행할 수 없습니다.');
+      return false;
+    }
   };
 
   const getTopicVotes = async (topicId, timeRange = 'ALL') => {
-    return dummVote;
+    try {
+      const convertedTimeRange = timeRange === '1M' ? '30d' : timeRange;
+      const isAllTime = convertedTimeRange === 'ALL';
+
+      const interval = (() => {
+        switch (timeRange) {
+          case '1H':
+          case '6H':
+            return '1m';
+          case '1D':
+            return '5m';
+          case '1W':
+            return '30m';
+          case '1M':
+            return '3h';
+          case 'ALL':
+            return '12h';
+          default:
+            return '1m';
+        }
+      })();
+
+      const params = {
+        interval,
+        ...(!isAllTime && { time_range: convertedTimeRange.toLowerCase() }),
+      };
+      const response = await api.get(`/votes/topic/${topicId}`, { params });
+
+      if (response.status === 200) {
+        const formattedData = Object.fromEntries(
+          Object.entries(response.data).map(([timeStamp, voteData]) => {
+            const date = new Date(timeStamp);
+            const MM = String(date.getMonth() + 1).padStart(2, '0');
+            const DD = String(date.getDate()).padStart(2, '0');
+            const HH = String(date.getHours()).padStart(2, '0');
+            const mm = String(date.getMinutes()).padStart(2, '0');
+            const formattedTime = `${MM}/${DD} ${HH}:${mm}`;
+
+            return [
+              timeStamp,
+              {
+                ...voteData,
+                formattedTime,
+              },
+            ];
+          })
+        );
+
+        return formattedData;
+      }
+      return null;
+    } catch (error) {
+      showErrorAlert(error, '투표 데이터를 불러올 수 없습니다.');
+      return null;
+    }
   };
 
   return {

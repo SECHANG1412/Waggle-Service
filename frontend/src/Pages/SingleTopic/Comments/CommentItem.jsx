@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import EditableContent from './EditableContent';
 import CommentActions from './CommentActions';
+import ReplyForm from './ReplyForm';
 
 const CommentItem = ({ item, isReply = false, actions, refresh }) => {
   const id = isReply ? item.reply_id : item.comment_id;

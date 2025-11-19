@@ -1,105 +1,79 @@
-import { useState } from "react";
-
-const initialDummyComments = [
-  {
-    comment_id: 1,
-    user_id: 1,
-    topic_id: 1,
-    content: "더미 댓글 내용1",
-    created_at: "2025-01-01T12:00:00Z",
-    username: "더미 유저 이름1",
-    like_count: 4,
-    has_liked: false,
-    replies: [
-      {
-        reply_id: 1,
-        comment_id: 1,
-        user_id: 3,
-        content: "첫 번째 댓글에 대한 첫 번째 답글",
-        created_at: "2025-01-01T13:00:00Z",
-        username: "답글 유저1",
-        like_count: 2,
-        has_liked: false,
-      },
-      {
-        reply_id: 102,
-        comment_id: 1,
-        user_id: 4,
-        content: "첫 번째 댓글에 대한 두 번째 답글",
-        created_at: "2025-01-01T14:00:00Z",
-        username: "답글 유저2",
-        like_count: 1,
-        has_liked: true,
-      },
-    ],
-  },
-  {
-    comment_id: 2,
-    user_id: 2,
-    topic_id: 1,
-    content: "더미 댓글 내용2",
-    created_at: "2025-02-01T12:00:00Z",
-    username: "더미 유저 이름2",
-    like_count: 6,
-    has_liked: true,
-    replies: [
-      {
-        reply_id: 2,
-        comment_id: 2,
-        user_id: 5,
-        content: "두 번째 댓글에 대한 답글",
-        created_at: "2025-02-01T13:00:00Z",
-        username: "답글 유저3",
-        like_count: 0,
-        has_liked: false,
-      },
-    ],
-  },
-];
+import { useState } from 'react';
+import api from '../utils/api';
+import { handleAuthError, showErrorAlert, showSuccessAlert } from '../utils/alertUtils';
 
 export const useComment = () => {
-  const [loading, setLoading] = useState(false);
-  const [comments, setComments] = useState(initialDummyComments);
+  const createComment = async (topicId, content) => {
+    try {
+      const response = await api.post(`/comments`, {
+        topic_id: topicId,
+        content,
+      });
 
-  const getComments = async (topicId) => {
-    return comments;
+      if (response.status === 200) {
+        showSuccessAlert('댓글이 성공적으로 작성되었습니다.');
+        return response.data;
+      }
+      return null;
+    } catch (error) {
+      if (await handleAuthError(error)) return null;
+      showErrorAlert(error, '댓글을 작성할 수 없습니다.');
+      return null;
+    }
   };
 
-  const createComment = async (topicId, content) => {
-    if (!content.trim()) return false;
+  const getComments = async (topicId) => {
+    try {
+      const response = await api.get(`/comments/by-topic/${topicId}`);
 
-    const newComment = {
-      comment_id: Date.now(), // 임시 ID
-      user_id: 999,
-      topic_id,
-      content,
-      created_at: new Date().toISOString(),
-      username: "나",
-      like_count: 0,
-      has_liked: false,
-      replies: [],
-    };
-
-    setComments((prev) => [...prev, newComment]);
-    return true;
+      if (response.status === 200) {
+        return response.data;
+      } else {
+        showErrorAlert(new Error('예기치 않은 응답'), '댓글을 불러올 수 없습니다.');
+        return null;
+      }
+    } catch (error) {
+      if (await handleAuthError(error)) return;
+      showErrorAlert(error, '댓글을 불러올 수 없습니다.');
+      return null;
+    }
   };
 
   const deleteComment = async (commentId) => {
-    setComments((prev) => prev.filter((c) => c.comment_id !== commentId));
-    return true;
+    try {
+      const response = await api.delete(`/comments/${commentId}`);
+
+      if (response.status === 200) {
+        showSuccessAlert('댓글이 성공적으로 삭제되었습니다.');
+        return true;
+      } else {
+        showErrorAlert(new Error('예기치 않은 응답'), '댓글을 삭제할 수 없습니다.');
+        return false;
+      }
+    } catch (error) {
+      if (await handleAuthError(error)) return;
+      showErrorAlert(error, '댓글을 삭제할 수 없습니다.');
+      return false;
+    }
   };
 
   const updateComment = async (commentId, content) => {
-    setComments((prev) =>
-      prev.map((c) =>
-        c.comment_id === commentId ? { ...c, content } : c
-      )
-    );
-    return true;
+    try {
+      const response = await api.put(`/comments/${commentId}`, { content });
+
+      if (response.status === 200) {
+        showSuccessAlert('댓글이 성공적으로 수정되었습니다.');
+        return response.data;
+      }
+      return null;
+    } catch (error) {
+      if (await handleAuthError(error)) return null;
+      showErrorAlert(error, '댓글을 수정할 수 없습니다.');
+      return null;
+    }
   };
 
   return {
-    loading,
     createComment,
     getComments,
     deleteComment,

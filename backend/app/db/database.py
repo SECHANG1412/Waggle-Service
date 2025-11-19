@@ -12,6 +12,13 @@ AsyncSessionLocal = sessionmaker(
 sync_engine = create_engine(settings.sync_database_url, pool_pre_ping=True)
 Base = declarative_base()
 
+# async def get_db():
+#     async with AsyncSessionLocal() as session:
+#         yield session
+
 async def get_db():
-    async with AsyncSessionLocal() as session:
-        yield session
+    db = AsyncSessionLocal()
+    try:
+        yield db
+    finally:
+        await db.close()
