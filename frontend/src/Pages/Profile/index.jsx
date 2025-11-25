@@ -10,6 +10,7 @@ const Profile = () => {
   const [form, setForm] = useState({ name: '', email: '' });
   const [stats, setStats] = useState({ topics: '…', votes: '…', likes: '…' });
   const [activities, setActivities] = useState([]);
+  const [avatarUrl, setAvatarUrl] = useState(localStorage.getItem('avatar_url') || '');
   const [loading, setLoading] = useState(true);
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingActivity, setLoadingActivity] = useState(true);
@@ -155,7 +156,15 @@ const Profile = () => {
       {/* Header */}
       <div className="flex items-center gap-4 pb-6 border-b border-gray-100">
         <div className="h-16 w-16 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl font-bold">
-          {user?.name?.[0]?.toUpperCase() || 'U'}
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt="avatar"
+              className="h-full w-full rounded-full object-cover border border-emerald-200"
+            />
+          ) : (
+            user?.name?.[0]?.toUpperCase() || 'U'
+          )}
         </div>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900">{user?.name}</h1>
@@ -217,6 +226,49 @@ const Profile = () => {
           </Field>
           <Field label="가입일">
             <span className="text-sm font-medium text-gray-800">{user?.joinedAt || '-'}</span>
+          </Field>
+          <Field label="프로필 이미지" alignTop>
+            <div className="flex items-center gap-4">
+              <div className="h-14 w-14 rounded-full bg-emerald-50 flex items-center justify-center overflow-hidden border border-emerald-100">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-emerald-600 font-semibold">
+                    {user?.name?.[0]?.toUpperCase() || 'U'}
+                  </span>
+                )}
+              </div>
+              <label className="px-3 py-2 text-sm bg-gray-100 rounded-lg hover:bg-gray-200 cursor-pointer">
+                이미지 선택
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      const url = reader.result?.toString() || '';
+                      setAvatarUrl(url);
+                      localStorage.setItem('avatar_url', url);
+                    };
+                    reader.readAsDataURL(file);
+                  }}
+                />
+              </label>
+              {avatarUrl && (
+                <button
+                  onClick={() => {
+                    setAvatarUrl('');
+                    localStorage.removeItem('avatar_url');
+                  }}
+                  className="text-sm text-red-500 hover:underline"
+                >
+                  제거
+                </button>
+              )}
+            </div>
           </Field>
         </Card>
 
@@ -282,10 +334,10 @@ const Card = ({ title, children, action }) => (
   </div>
 );
 
-const Field = ({ label, children, alignTop = false }) => (
-  <div className="grid grid-cols-3 items-start gap-3 py-2">
-    <span className="text-sm text-gray-600 col-span-1 pt-2">{label}</span>
-    <div className={`col-span-2 ${alignTop ? '' : 'pt-1'}`}>{children}</div>
+const Field = ({ label, children }) => (
+  <div className="grid grid-cols-3 gap-3 py-2 items-center">
+    <span className="text-sm text-gray-600 col-span-1">{label}</span>
+    <div className="col-span-2">{children}</div>
   </div>
 );
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 const AvatarPlaceholder = ({ name }) => {
@@ -15,25 +15,57 @@ const AvatarPlaceholder = ({ name }) => {
   );
 };
 
-const DesktopAuthButtons = ({ userName, isAuthenticated, isOpen, setIsOpen, onLoginClick, onLogoutClick, onSignupClick }) => {
+const DesktopAuthButtons = ({
+  userName,
+  isAuthenticated,
+  isOpen,
+  setIsOpen,
+  onLoginClick,
+  onLogoutClick,
+  onSignupClick,
+}) => {
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen, setIsOpen]);
+
   return (
     <div className="hidden md:flex items-center ml-8">
       {isAuthenticated ? (
-        <div className="relative ml-4">
+        <div className="relative ml-4" ref={containerRef}>
           <button onClick={() => setIsOpen(!isOpen)} className="flex items-center focus:outline-none">
             <AvatarPlaceholder name={userName} />
           </button>
 
           {isOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
-              <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+              <Link
+                to="/profile"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                onClick={() => setIsOpen(false)}
+              >
                 프로필
               </Link>
-              <Link to="/contact" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+              <Link
+                to="/contact"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                onClick={() => setIsOpen(false)}
+              >
                 문의하기
               </Link>
               <button
-                onClick={onLogoutClick}
+                onClick={() => {
+                  setIsOpen(false);
+                  onLogoutClick();
+                }}
                 className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
                 로그아웃
