@@ -2,7 +2,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from jwt import ExpiredSignatureError, InvalidTokenError
-from app.db.database import get_db
+from app.db.database import AsyncSessionLocal
 from app.core.jwt_handler import verify_token, create_access_token, create_refresh_token
 from app.db.crud import UserCrud
 from app.core.auth import set_auth_cookies
@@ -37,13 +37,13 @@ class TokenRefreshMiddleware(BaseHTTPMiddleware):
             new_access_token = create_access_token(user_id)
             new_refresh_token = create_refresh_token(user_id)
 
-            try:
-                db = await anext(get_db())
-                await UserCrud.update_refresh_token_by_id(db, user_id, new_refresh_token)
-                await db.commit()
-            except Exception:
-                await db.rollback()
-                raise
+            async with AsyncSessionLocal() as db:
+                try:
+                    await UserCrud.update_refresh_token_by_id(db, user_id, new_refresh_token)
+                    await db.commit()
+                except Exception:
+                    await db.rollback()
+                    raise
 
             set_auth_cookies(response, new_access_token, new_refresh_token)
 
