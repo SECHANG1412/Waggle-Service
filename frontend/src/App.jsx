@@ -12,14 +12,18 @@ import SingleTopic from './Pages/SingleTopic';
 import Profile from './Pages/Profile';
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAuthLoading } = useAuth();
+
+  if (isAuthLoading) {
+    return null;
+  }
 
   if (!isAuthenticated) {
     Swal.fire({
       icon: 'warning',
       title: '로그인 필요',
-      text: '로그인이 필요한 서비스입니다. 로그인 후 이용해주세요.',
-      confirmButtonColor: '#10B981',
+      text: '로그인이 필요합니다. 로그인 후 이용해 주세요.',
+      confirmButtonColor: '#2563EB',
     });
     return <Navigate to="/" replace />;
   }

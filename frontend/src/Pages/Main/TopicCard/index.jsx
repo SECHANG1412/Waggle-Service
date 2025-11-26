@@ -33,15 +33,15 @@ const TopicCard = ({ topic, onVote }) => {
 
         <div className="flex-1 flex flex-col">
           <div className="mb-2 flex justify-between items-start">
-            <h3 className="text-xl font-semibold text-emerald-600 line-clamp-2">{topic.title}</h3>
+            <h3 className="text-xl font-semibold text-gray-900 line-clamp-2">{topic.title}</h3>
             {topic.category && (
               <span className="px-2 py-1 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full">
                 {topic.category}
               </span>
             )}
           </div>
-
-          <p className="mb-4 text-sm text-gray-500 line-clamp-2">{topic.description}</p>
+          {/* description hidden */}
+          <div className="mb-4" />
           <ProgressBar voteResults={topic.vote_results} totalVote={topic.total_vote} />
 
           <div className="space-y-2 mb-4">

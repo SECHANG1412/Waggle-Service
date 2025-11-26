@@ -15,29 +15,29 @@ const MobileMenu = ({
 }) => {
   return (
     <div
-      className={`md:hidden transform transition-all duration-500 ease-in-out ${
+      className={`md:hidden transform transition-all duration-300 ease-in-out ${
         isOpen
-          ? 'opacity-100 translate-y-0 bg-emerald-500'
+          ? 'opacity-100 translate-y-0 bg-white border-t border-gray-200 shadow-sm'
           : 'opacity-0 -translate-y-2 pointer-events-none h-0 overflow-hidden'
       }`}
     >
-      <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-        <form className="relative max-w-6xl mx-auto mb-4">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+      <div className="px-4 pt-3 pb-4 space-y-3">
+        <form className="relative">
+          <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
             <BiSearch className="h-5 w-5 text-gray-400" />
           </div>
           <input
             type="text"
             value={search}
             onChange={onSearchInputChange}
-            className="block w-full pl-10 pr-3 py-2 border border-transparent rounded-md leading-5 bg-emerald-100 text-emerald-900 placeholder-emerald-500 hover:bg-white hover:text-emerald-900 hover:placeholder-emerald-400 sm:text-sm transition-all duration-500"
-            placeholder="토픽 검색하기..."
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-full leading-5 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition"
+            placeholder="검색"
           />
         </form>
 
-        <div className="pb-2 mb-2">
+        <div className="pb-2 border-b border-gray-200">
           <SharedNavLinks
-            linkClassName="text-white hover:bg-emerald-600 block px-3 py-2 rounded-md text-base font-medium transition-all duration-500"
+            linkClassName="block px-3 py-2 rounded-md text-base font-medium text-gray-800 hover:bg-gray-100 transition-colors"
             onClick={() => setIsOpen(false)}
           />
         </div>

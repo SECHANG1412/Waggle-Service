@@ -6,6 +6,7 @@ import MobileToggleButton from './layout/MobileToggleButton';
 import Categories from './layout/Categories';
 import SearchMenu from './layout/SearchMenu';
 import { useAuth } from '../../hooks/useAuth';
+import SharedNavLinks from './shared/SharedNavLinks';
 import { useSearchParams } from 'react-router-dom';
 
 const Navbar = ({ onLoginClick, onSignupClick }) => {
@@ -35,39 +36,48 @@ const Navbar = ({ onLoginClick, onSignupClick }) => {
   };
 
   return (
-    <nav className="bg-emerald-500">
-      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14 md:h-20">
-          <div className="flex items-center flex-1">
-            <Logo />
+    <nav className="bg-white border-b border-gray-200">
+      <div className="container mx-auto px-7 py-3">
+        <div className="flex items-center gap-4 h-16">
+          <Logo />
+          <div className="hidden lg:flex items-center gap-4 text-sm text-gray-700 ml-6">
+            <SharedNavLinks linkClassName="hover:text-black transition-colors" />
+          </div>
+          <div className="hidden lg:block flex-1 max-w-2xl ml-6">
             <SearchMenu search={search} onSearchInputChange={onSearchInputChange} />
           </div>
-          <MobileToggleButton isOpen={isOpen} toggle={() => setIsOpen(!isOpen)} />
-
-          <DesktopAuthButtons
-            userName={user?.username || 'User'}
-            isAuthenticated={isAuthenticated}
-            isOpen={isOpen}
-            setIsOpen={setIsOpen}
-            onLoginClick={onLoginClick}
-            onLogoutClick={onLogoutClick}
-            onSignupClick={onSignupClick}
-          />
+          <div className="flex items-center gap-3 ml-auto">
+            <DesktopAuthButtons
+              userName={user?.username || 'User'}
+              isAuthenticated={isAuthenticated}
+              isOpen={isOpen}
+              setIsOpen={setIsOpen}
+              onLoginClick={onLoginClick}
+              onLogoutClick={onLogoutClick}
+              onSignupClick={onSignupClick}
+            />
+            <MobileToggleButton isOpen={isOpen} toggle={() => setIsOpen(!isOpen)} />
+          </div>
         </div>
 
-        <MobileMenu
-          isOpen={isOpen}
-          setIsOpen={setIsOpen}
-          isAuthenticated={isAuthenticated}
-          onLoginClick={onLoginClick}
-          onLogoutClick={onLogoutClick}
-          onSignupClick={onSignupClick}
-          search={search}
-          onSearchInputChange={onSearchInputChange}
-        />
+        <div className="flex items-center justify-between py-2">
+          <Categories activeCategory={category} onClick={onCategoryClick} />
+          <div className="lg:hidden w-full max-w-md ml-4">
+            <SearchMenu search={search} onSearchInputChange={onSearchInputChange} />
+          </div>
+        </div>
       </div>
 
-      <Categories activeCategory={category} onClick={onCategoryClick} />
+      <MobileMenu
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        isAuthenticated={isAuthenticated}
+        onLoginClick={onLoginClick}
+        onLogoutClick={onLogoutClick}
+        onSignupClick={onSignupClick}
+        search={search}
+        onSearchInputChange={onSearchInputChange}
+      />
     </nav>
   );
 };

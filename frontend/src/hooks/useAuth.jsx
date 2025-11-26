@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const navigate = useNavigate();
 
   const login = async (email, password) => {
@@ -90,6 +91,7 @@ export const AuthProvider = ({ children }) => {
       const response = await api.get('/users/me');
       setIsAuthenticated(true);
       setUser(response.data);
+      setIsAuthLoading(false);
       return true;
     } catch (error) {
       if (error.response?.status === 401) {
@@ -102,12 +104,14 @@ export const AuthProvider = ({ children }) => {
       }
       setIsAuthenticated(false);
       setUser(null);
+      setIsAuthLoading(false);
       return false;
     }
   };
 
   useEffect(() => {
     (async () => {
+      setIsAuthLoading(true);
       await verifyJWT();
     })();
   }, []);
@@ -117,6 +121,7 @@ export const AuthProvider = ({ children }) => {
       value={{
         error,
         isAuthenticated,
+        isAuthLoading,
         login,
         signup,
         logout,

@@ -55,8 +55,8 @@ const Main = () => {
 
   const titleText = useMemo(() => {
     if (search) return `"${search}" 검색 결과`;
-    if (category) return `${category} 토픽`;
-    return '전체 토픽';
+    if (category) return `${category}`;
+    return '전체';
   }, [search, category]);
 
   const onSeachClear = () => {
@@ -70,8 +70,8 @@ const Main = () => {
   };
 
   return (
-    <div className="w-full px-4 py-4 bg-white">
-      <div className="max-w-8xl mx-auto">
+    <div className="w-full px-4 pt-6 pb-10 bg-white">
+      <div className="container mx-auto px-0">
         <Header title={titleText} total={totalTopics} sort={sort} onSortChange={onSortChange} />
         <SearchTag search={search} onClear={onSeachClear} />
         <Grid topics={topics} loading={loading} onVote={onVote} />

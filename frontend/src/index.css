@@ -10,3 +10,43 @@
 * {
     font-family: 'NoonnuBasicGothicRegular';
 }
+
+:root {
+    --primary: #2563EB;
+    --primary-strong: #1D4ED8;
+    --primary-soft: #E5EDFF;
+    --border: #E5E7EB;
+    --bg-soft: #F8FAFC;
+    --text-strong: #0F172A;
+    --text-muted: #475569;
+}
+
+body {
+    background-color: var(--bg-soft);
+    color: var(--text-strong);
+}
+
+/* Remap existing emerald-tailwind utilities to blue tone for consistency */
+.bg-emerald-50 { background-color: #F8FBFF !important; }
+.bg-emerald-100 { background-color: var(--primary-soft) !important; }
+.bg-emerald-200 { background-color: #D7E4FF !important; }
+.bg-emerald-300 { background-color: #B8CFFF !important; }
+.bg-emerald-500 { background-color: var(--primary) !important; }
+.bg-emerald-600 { background-color: var(--primary-strong) !important; }
+.text-emerald-500 { color: var(--primary) !important; }
+.text-emerald-600 { color: var(--primary-strong) !important; }
+.text-emerald-700 { color: #1E3A8A !important; }
+.text-emerald-800 { color: #172554 !important; }
+.text-emerald-900 { color: #0B1739 !important; }
+.border-emerald-100 { border-color: var(--border) !important; }
+.border-emerald-200 { border-color: var(--border) !important; }
+.border-emerald-300 { border-color: #C7D6FF !important; }
+.border-emerald-500 { border-color: var(--primary) !important; }
+.border-emerald-600 { border-color: var(--primary-strong) !important; }
+.hover\:bg-emerald-600:hover { background-color: var(--primary-strong) !important; }
+.hover\:bg-emerald-500:hover { background-color: var(--primary) !important; }
+.hover\:text-emerald-500:hover { color: var(--primary) !important; }
+.hover\:text-emerald-600:hover { color: var(--primary-strong) !important; }
+.focus\:ring-emerald-500:focus { --tw-ring-color: var(--primary) !important; }
+.focus\:border-emerald-500:focus { border-color: var(--primary) !important; }
+.fill-emerald-500 { fill: var(--primary) !important; }
