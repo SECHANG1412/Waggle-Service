@@ -22,7 +22,7 @@ const Footer = () => {
           </div>
 
           {/* Quick Links */}
-          <div>
+          <div className="md:pl-6">
             <h3 className="text-base font-semibold mb-3">Quick Links</h3>
             <ul className="flex gap-4 text-sm text-gray-600">
               {quickLinks.map(({ label, url }) => (
