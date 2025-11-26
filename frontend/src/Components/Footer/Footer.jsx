@@ -17,7 +17,7 @@ const Footer = () => {
           <div>
             <h3 className="text-base font-semibold mb-3">About Us</h3>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Decide together. Create, vote, share.
+              Decide together. Create, Vote, Share.
             </p>
           </div>
 

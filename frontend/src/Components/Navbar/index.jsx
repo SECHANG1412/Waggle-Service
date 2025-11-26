@@ -5,9 +5,9 @@ import MobileMenu from './layout/MobileMenu';
 import MobileToggleButton from './layout/MobileToggleButton';
 import Categories from './layout/Categories';
 import SearchMenu from './layout/SearchMenu';
-import { useAuth } from '../../hooks/useAuth';
-import SharedNavLinks from './shared/SharedNavLinks';
 import { useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
+import { Link } from 'react-router-dom';
 
 const Navbar = ({ onLoginClick, onSignupClick }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,16 +37,19 @@ const Navbar = ({ onLoginClick, onSignupClick }) => {
 
   return (
     <nav className="bg-white border-b border-gray-200">
-      <div className="container mx-auto px-7 py-3">
+      <div className="container mx-auto px-4 py-3">
         <div className="flex items-center gap-4 h-16">
           <Logo />
-          <div className="hidden lg:flex items-center gap-4 text-sm text-gray-700 ml-6">
-            <SharedNavLinks linkClassName="hover:text-black transition-colors" />
-          </div>
-          <div className="hidden lg:block flex-1 max-w-2xl ml-6">
+          <div className="hidden lg:block flex-1 max-w-2xl ml-4">
             <SearchMenu search={search} onSearchInputChange={onSearchInputChange} />
           </div>
           <div className="flex items-center gap-3 ml-auto">
+            <Link
+              to="/create-topic"
+              className="hidden lg:inline-flex items-center px-3 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              토픽 생성
+            </Link>
             <DesktopAuthButtons
               userName={user?.username || 'User'}
               isAuthenticated={isAuthenticated}
