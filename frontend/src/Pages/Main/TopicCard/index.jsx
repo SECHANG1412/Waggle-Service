@@ -30,11 +30,6 @@ const TopicCard = ({ topic, onVote, onPinToggle, isAuthenticated }) => {
               <h3 className="text-xl font-semibold text-gray-900 line-clamp-2">{topic.title}</h3>
             </div>
             <div className="flex items-center gap-2">
-              {topic.category && (
-                <span className="px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700 rounded-full border border-blue-100">
-                  {topic.category}
-                </span>
-              )}
               {isAuthenticated && (
                 <button
                   onClick={(e) => {
