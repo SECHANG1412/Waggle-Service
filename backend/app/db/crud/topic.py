@@ -56,10 +56,12 @@ class TopicCrud:
 
 
         if search:
-            base_query = base_query.where(or_(
-                Topic.title.ilike(f"%{search}%"),
-                Topic.desciption.ilike(f"%{search}%")
-            ))
+            base_query = base_query.where(
+                or_(
+                    Topic.title.ilike(f"%{search}%"),
+                    Topic.description.ilike(f"%{search}%"),
+                )
+            )
 
         if category:
             base_query = base_query.where(Topic.category == category)
@@ -83,7 +85,7 @@ class TopicCrud:
         if search:
             base_query = base_query.where(
                 (Topic.title.ilike(f"%{search}%"))
-                | (Topic.desciption.ilike(f"%{search}%"))
+                | (Topic.description.ilike(f"%{search}%"))
             )
 
         result = await db.execute(base_query)

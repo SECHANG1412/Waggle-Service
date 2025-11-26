@@ -22,15 +22,17 @@ app = FastAPI(lifespan=lifespan)
 
 setup_admin(app, async_engine)
 
-app.add_middleware(TokenRefreshMiddleware)
-
+# CORS should run before custom middleware so that preflight/headers are applied
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],  # 개발 환경: 모든 오리진 허용
+    allow_origin_regex="https?://localhost(:[0-9]+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(TokenRefreshMiddleware)
 
 app.include_router(user.router)
 app.include_router(topic.router)
