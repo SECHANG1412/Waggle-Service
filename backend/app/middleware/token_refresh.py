@@ -33,11 +33,14 @@ class TokenRefreshMiddleware(BaseHTTPMiddleware):
                     content={"detail" : "refresh_token_expired"}
                 )
 
-
-            new_access_token = create_access_token(user_id)
-            new_refresh_token = create_refresh_token(user_id)
-
             async with AsyncSessionLocal() as db:
+                user = await UserCrud.get_by_id(db, user_id)
+                if not user or user.refresh_token != refresh_token:
+                    return JSONResponse(status_code=401, content={"detail": "invalid_refresh_token"})
+
+                new_access_token = create_access_token(user_id)
+                new_refresh_token = create_refresh_token(user_id)
+
                 try:
                     await UserCrud.update_refresh_token_by_id(db, user_id, new_refresh_token)
                     await db.commit()
@@ -45,6 +48,6 @@ class TokenRefreshMiddleware(BaseHTTPMiddleware):
                     await db.rollback()
                     raise
 
-            set_auth_cookies(response, new_access_token, new_refresh_token)
+                set_auth_cookies(response, new_access_token, new_refresh_token)
 
         return response

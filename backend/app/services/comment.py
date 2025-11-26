@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
-from app.db.crud import CommentCrud, UserCrud, LikeCrud
+from app.db.crud import CommentCrud, UserCrud, LikeCrud, TopicCrud
 from app.db.models import Comment
 from app.db.schemas.comments import CommentRead, CommentCreate, CommentUpdate
 from app.services.reply import ReplyService
@@ -9,6 +9,9 @@ class CommentService:
 
     @staticmethod
     async def create(db: AsyncSession, user_id: int, comment_data: CommentCreate) -> CommentRead:
+        topic = await TopicCrud.get_by_id(db, comment_data.topic_id)
+        if not topic:
+            raise HTTPException(status_code=404, detail="Topic not found")
         try:
             comment = await CommentCrud.create(db, comment_data, user_id)
             await db.commit()

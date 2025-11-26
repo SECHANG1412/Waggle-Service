@@ -11,6 +11,10 @@ from app.db.schemas.users import (
     UserActivity,
 )
 from app.core.auth import get_user_id, set_auth_cookies
+from app.core.jwt_handler import verify_token, create_access_token, create_refresh_token
+from jwt import ExpiredSignatureError, InvalidTokenError
+from fastapi import HTTPException, Request
+from app.db.crud import UserCrud
 
 router = APIRouter(prefix="/users", tags=["User"])
 
@@ -57,3 +61,40 @@ async def logout(response: Response):
     response.delete_cookie(key="access_token")
     response.delete_cookie(key="refresh_token")
     return True
+
+
+@router.post("/refresh", response_model=UserRead)
+async def refresh_token(
+    request: Request,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+):
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="Refresh token missing")
+
+    try:
+        user_id = verify_token(refresh_token)
+    except ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="refresh_token_expired")
+    except InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+    user = await UserCrud.get_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.refresh_token != refresh_token:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+    new_access = create_access_token(user_id)
+    new_refresh = create_refresh_token(user_id)
+
+    try:
+        await UserCrud.update_refresh_token_by_id(db, user_id, new_refresh)
+        await db.commit()
+    except Exception:
+        await db.rollback()
+        raise
+
+    set_auth_cookies(response, new_access, new_refresh)
+    return user

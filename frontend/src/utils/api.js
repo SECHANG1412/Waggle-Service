@@ -1,5 +1,5 @@
 import axios from "axios";
-import { showLoginRequiredAlert, showErrorAlert } from "./alertUtils";
+import { showLoginRequiredAlert } from "./alertUtils";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -40,7 +40,7 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        await api.post("/users/refresh"); // assumes backend refresh endpoint sets cookies
+        await api.post("/users/refresh"); // backend endpoint sets refreshed cookies
         processQueue(null, true);
         return api(originalRequest);
       } catch (refreshError) {
