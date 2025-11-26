@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.db.database import Base, async_engine
+from app.db import models  # ensure all models (including new ones) are registered
 from fastapi.concurrency import asynccontextmanager
 from app.routers import user, topic, vote, comment, reply, like
 from app.middleware.token_refresh import TokenRefreshMiddleware

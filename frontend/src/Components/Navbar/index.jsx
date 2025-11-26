@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Logo from './layout/Logo';
 import DesktopAuthButtons from './auth/DesktopAuthButtons';
 import MobileMenu from './layout/MobileMenu';
@@ -15,6 +15,7 @@ const Navbar = ({ onLoginClick, onSignupClick }) => {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const search = searchParams.get('search') || '';
+  const [searchInput, setSearchInput] = useState(search);
   const category = searchParams.get('category') || '';
 
   const onLogoutClick = () => {
@@ -28,9 +29,17 @@ const Navbar = ({ onLoginClick, onSignupClick }) => {
     setSearchParams(updated);
   };
 
-  const onSearchInputChange = (e) => {
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
+
+  const onSearchSubmit = () => {
     const updated = new URLSearchParams(searchParams);
-    updated.set('search', e.target.value);
+    if (searchInput) {
+      updated.set('search', searchInput);
+    } else {
+      updated.delete('search');
+    }
     updated.set('page', '1');
     setSearchParams(updated);
   };
@@ -41,7 +50,11 @@ const Navbar = ({ onLoginClick, onSignupClick }) => {
         <div className="flex items-center gap-4 h-16">
           <Logo />
           <div className="hidden lg:block flex-1 max-w-2xl ml-4">
-            <SearchMenu search={search} onSearchInputChange={onSearchInputChange} />
+            <SearchMenu
+              searchValue={searchInput}
+              onSearchInputChange={(e) => setSearchInput(e.target.value)}
+              onSearchSubmit={onSearchSubmit}
+            />
           </div>
           <div className="flex items-center gap-3 ml-auto">
             {isAuthenticated && (
@@ -68,7 +81,11 @@ const Navbar = ({ onLoginClick, onSignupClick }) => {
         <div className="flex items-center justify-between py-2">
           <Categories activeCategory={category} onClick={onCategoryClick} />
           <div className="lg:hidden w-full max-w-md ml-4">
-            <SearchMenu search={search} onSearchInputChange={onSearchInputChange} />
+            <SearchMenu
+              searchValue={searchInput}
+              onSearchInputChange={(e) => setSearchInput(e.target.value)}
+              onSearchSubmit={onSearchSubmit}
+            />
           </div>
         </div>
       </div>
@@ -80,8 +97,9 @@ const Navbar = ({ onLoginClick, onSignupClick }) => {
         onLoginClick={onLoginClick}
         onLogoutClick={onLogoutClick}
         onSignupClick={onSignupClick}
-        search={search}
-        onSearchInputChange={onSearchInputChange}
+        searchValue={searchInput}
+        onSearchInputChange={(e) => setSearchInput(e.target.value)}
+        onSearchSubmit={onSearchSubmit}
       />
     </nav>
   );

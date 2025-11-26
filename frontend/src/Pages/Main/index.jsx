@@ -68,7 +68,7 @@ const Main = () => {
   };
 
   const onVote = (topic_id, index) => {
-    submitVote(topic_id, index);
+    submitVote({ topicId: topic_id, voteIndex: index });
   };
 
   const onPinToggle = async (topic_id, is_pinned) => {

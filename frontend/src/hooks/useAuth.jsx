@@ -1,7 +1,7 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
-import { showErrorAlert, showSuccessAlert } from '../utils/alertUtils';
+import { showErrorAlert } from '../utils/alertUtils';
 
 const AuthContext = createContext(null);
 
@@ -20,7 +20,6 @@ export const AuthProvider = ({ children }) => {
         setUser(response.data);
         setIsAuthenticated(true);
         await verifyJWT();
-        showSuccessAlert('환영합니다.');
         return true;
       }
     } catch (error) {
@@ -56,7 +55,6 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (response.status === 200) {
-        showSuccessAlert('회원가입이 완료되었습니다.');
         return true;
       }
       return false;
@@ -74,7 +72,6 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
 
       if (response.status === 200) {
-        showSuccessAlert('로그아웃 되었습니다.');
         navigate('/');
       }
     } catch (error) {
