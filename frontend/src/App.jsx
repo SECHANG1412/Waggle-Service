@@ -53,7 +53,7 @@ const RootLayout = () => {
     <AuthProvider>
       <div className="flex flex-col min-h-screen bg-[#F9FAFB]">
         <Navbar onLoginClick={onLoginClick} onSignupClick={onSignupClick} />
-        <main className="flex-grow container mx-auto px-4 lg:px-6 py-8">
+        <main className="flex-grow container mx-auto px-4 lg:px-6 py-1">
           <Outlet />
         </main>
         <Footer />

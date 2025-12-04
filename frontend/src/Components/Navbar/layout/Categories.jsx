@@ -4,17 +4,17 @@ import { CATEGORIES } from '../../../constants/categories';
 const Categories = ({ activeCategory, onClick }) => {
   return (
     <div className="flex overflow-x-auto scrollbar-hide max-w-full">
-      <div className="flex space-x-2 py-1 whitespace-nowrap">
+      <div className="flex items-center space-x-4 py-1 whitespace-nowrap">
         {CATEGORIES.map((category) => {
           const isActive = activeCategory === category || (activeCategory === '' && category === '전체');
           return (
             <button
               key={category}
               onClick={() => onClick(category)}
-              className={`px-3 py-2 rounded-xl text-sm font-semibold border transition-all ${
+              className={`relative px-1 pb-1 text-sm transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-200 ${
                 isActive
-                  ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-sm'
-                  : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:text-blue-700'
+                  ? 'text-slate-900 font-semibold after:absolute after:left-0 after:-bottom-[6px] after:h-[2px] after:w-full after:bg-blue-600'
+                  : 'text-slate-700 font-medium hover:text-slate-900'
               }`}
             >
               {category}

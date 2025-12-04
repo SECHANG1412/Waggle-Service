@@ -60,7 +60,7 @@ const Navbar = ({ onLoginClick, onSignupClick }) => {
             {isAuthenticated && (
               <Link
                 to="/create-topic"
-                className="hidden lg:inline-flex items-center px-3 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+                className="hidden lg:inline-flex items-center px-3 py-2 text-sm font-semibold text-slate-800 border border-slate-300 bg-white/90 rounded-lg shadow-sm hover:border-slate-400 hover:text-slate-900 hover:bg-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-200"
               >
                 토픽 만들기
               </Link>

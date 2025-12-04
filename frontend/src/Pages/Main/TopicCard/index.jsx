@@ -21,19 +21,19 @@ const TopicCard = ({ topic, onVote, onPinToggle, isAuthenticated }) => {
 
   return (
     <Link to={`/topic/${topic.topic_id}`} className="block">
-      <div className="relative card flex flex-col p-4 h-full border border-gray-200 rounded-2xl bg-white transition hover:-translate-y-0.5 hover:shadow-md hover:border-blue-200">
+      <div className="relative flex flex-col h-full rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-md">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-600">
             {topic.is_pinned && (
-              <span className="px-2 py-1 text-[11px] font-bold uppercase tracking-wide bg-blue-50 text-blue-700 border border-blue-100 rounded-full">
+              <span className="rounded-full border border-slate-200 px-2 py-0.5 text-[10px] font-semibold text-slate-700 bg-white">
                 Pinned
               </span>
             )}
-            <span className="px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-700 rounded-full border border-gray-200">
+            <span className="rounded-full border border-slate-200 px-2 py-0.5 text-[10px] font-semibold text-slate-800 bg-white">
               {topic.category || '카테고리'}
             </span>
             {topic.has_voted && (
-              <span className="px-2 py-1 text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-100 rounded-full">
+              <span className="rounded-full border border-slate-200 px-2 py-0.5 text-[10px] font-semibold text-slate-600 bg-slate-50">
                 참여 완료
               </span>
             )}
@@ -44,7 +44,7 @@ const TopicCard = ({ topic, onVote, onPinToggle, isAuthenticated }) => {
                 e.preventDefault();
                 onPinToggle(topic.topic_id, topic.is_pinned);
               }}
-              className="p-2 rounded-full border border-gray-200 hover:border-blue-400 hover:text-blue-600 transition text-gray-500"
+              className="p-2 rounded-full border border-slate-200 text-slate-500 transition hover:border-slate-400 hover:text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-300"
               aria-label="토픽 고정"
               title="토픽고정하기"
             >
@@ -53,7 +53,7 @@ const TopicCard = ({ topic, onVote, onPinToggle, isAuthenticated }) => {
           </div>
         </div>
 
-        <h3 className="mt-2 text-xl font-bold text-gray-900 leading-snug line-clamp-2">{topic.title}</h3>
+        <h3 className="mt-2 text-xl font-semibold text-slate-800 leading-tight tracking-tight line-clamp-2">{topic.title}</h3>
 
         <div className="mt-3">
           <ProgressBar voteResults={topic.vote_results} totalVote={topic.total_vote} />
