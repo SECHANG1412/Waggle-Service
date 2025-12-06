@@ -29,7 +29,11 @@ class CommentCrud:
 
     @staticmethod
     async def get_all_by_topic_id(db: AsyncSession, topic_id: int):
-        result = await db.execute(select(Comment).filter(Comment.topic_id == topic_id))
+        result = await db.execute(
+            select(Comment)
+            .filter(Comment.topic_id == topic_id)
+            .order_by(Comment.created_at.asc(), Comment.comment_id.asc())
+        )
         return result.scalars().all()
 
     @staticmethod

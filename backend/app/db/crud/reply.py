@@ -28,7 +28,11 @@ class ReplyCrud:
 
     @staticmethod
     async def get_all_by_comment_id(db: AsyncSession, comment_id: int):
-        result = await db.execute(select(Reply).filter(Reply.comment_id == comment_id))
+        result = await db.execute(
+            select(Reply)
+                .filter(Reply.comment_id == comment_id)
+                .order_by(Reply.created_at.asc(), Reply.reply_id.asc())
+        )
         return result.scalars().all()
 
     @staticmethod
