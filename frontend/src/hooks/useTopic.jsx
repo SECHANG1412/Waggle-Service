@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import api from '../utils/api';
 import { showErrorAlert, showSuccessAlert, handleAuthError } from '../utils/alertUtils';
 
 export const useTopic = () => {
   const [loading, setLoading] = useState(false);
 
-  const fetchTopics = async ({ sort, limit, offset, category, search }) => {
+  const fetchTopics = useCallback(async ({ sort, limit, offset, category, search }) => {
     setLoading(true);
     try {
       const params = {
@@ -29,9 +29,9 @@ export const useTopic = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const pinTopic = async (topicId) => {
+  const pinTopic = useCallback(async (topicId) => {
     try {
       const response = await api.post(`/topics/${topicId}/pin`);
       return response.status === 200;
@@ -40,9 +40,9 @@ export const useTopic = () => {
       showErrorAlert(error, '핀 고정에 실패했습니다.');
       return false;
     }
-  };
+  }, []);
 
-  const unpinTopic = async (topicId) => {
+  const unpinTopic = useCallback(async (topicId) => {
     try {
       const response = await api.delete(`/topics/${topicId}/pin`);
       return response.status === 200;
@@ -51,9 +51,9 @@ export const useTopic = () => {
       showErrorAlert(error, '핀 해제에 실패했습니다.');
       return false;
     }
-  };
+  }, []);
 
-  const countAllTopics = async (category, search) => {
+  const countAllTopics = useCallback(async (category, search) => {
     setLoading(true);
     try {
       const params = {
@@ -74,9 +74,9 @@ export const useTopic = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const addTopic = async (topicData) => {
+  const addTopic = useCallback(async (topicData) => {
     setLoading(true);
     try {
       const response = await api.post('/topics', topicData);
@@ -93,9 +93,9 @@ export const useTopic = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const getTopicById = async (topicId) => {
+  const getTopicById = useCallback(async (topicId) => {
     setLoading(true);
     try {
       const response = await api.get(`/topics/${topicId}`);
@@ -110,9 +110,9 @@ export const useTopic = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const deleteTopic = async (topicId) => {
+  const deleteTopic = useCallback(async (topicId) => {
     setLoading(true);
     try {
       const response = await api.delete(`/topics/${topicId}`);
@@ -128,7 +128,7 @@ export const useTopic = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return {
     loading,

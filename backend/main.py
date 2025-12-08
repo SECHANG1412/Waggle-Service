@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.concurrency import asynccontextmanager
 from app.db.database import Base, async_engine
 from app.db import models  # ensure all models (including new ones) are registered
-from app.routers import user, topic, vote, comment, reply, like
+from app.routers import user, topic, vote, comment, reply, like, oauth
 from app.middleware.token_refresh import TokenRefreshMiddleware
 from app.admin.setup import setup_admin
 
@@ -44,6 +44,7 @@ app.add_middleware(
 app.add_middleware(TokenRefreshMiddleware)
 
 app.include_router(user.router)
+app.include_router(oauth.router)
 app.include_router(topic.router)
 app.include_router(vote.router)
 app.include_router(comment.router)

@@ -32,7 +32,7 @@ const SingleTopic = () => {
 
   useEffect(() => {
     fetchTopic();
-  }, []);
+  }, [fetchTopic]);
 
   const onLikeClick = async () => {
     const result = await toggleTopicLike(id);

@@ -14,6 +14,11 @@ class Settings(BaseSettings):
     access_token_expire_seconds: int = Field(900, alias="ACCESS_TOKEN_EXPIRE")
     refresh_token_expire_seconds: int = Field(604800, alias="REFRESH_TOKEN_EXPIRE")
 
+    google_client_id: str | None = Field(None, alias="GOOGLE_CLIENT_ID")
+    google_client_secret: str | None = Field(None, alias="GOOGLE_CLIENT_SECRET")
+    google_redirect_uri: str | None = Field(None, alias="GOOGLE_REDIRECT_URI")
+    frontend_url: str = Field("http://localhost:3000", alias="FRONTEND_URL")
+
     class Config:
             env_file = ".env"
             case_sensitive = True
