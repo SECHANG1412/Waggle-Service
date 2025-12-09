@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
+from email_validator import validate_email, EmailNotValidError
 from app.db.crud import UserCrud, TopicCrud, VoteCrud, LikeCrud
 from app.db.models import User
 from app.db.schemas.users import (
@@ -19,6 +20,32 @@ from app.core.jwt_handler import (
 
 
 class UserService:
+    _DISPOSABLE_DOMAINS = {
+        "mailinator.com",
+        "tempmail.com",
+        "10minutemail.com",
+        "guerrillamail.com",
+        "throwawaymail.com",
+        "trashmail.com",
+        "yopmail.com",
+    }
+
+    @staticmethod
+    def _validate_email(email: str) -> str:
+        """
+        Validate email format and deliverability (MX) and block disposable domains.
+        Returns the normalized email or raises HTTPException.
+        """
+        try:
+            v = validate_email(email, check_deliverability=True)
+            normalized = v.email
+        except EmailNotValidError:
+            raise HTTPException(status_code=400, detail="유효하지 않은 이메일입니다")
+
+        domain = normalized.split("@")[-1].lower()
+        if domain in UserService._DISPOSABLE_DOMAINS:
+            raise HTTPException(status_code=400, detail="일회용 이메일은 사용할 수 없습니다")
+        return normalized
 
     @staticmethod
     async def get_user(db: AsyncSession, user_id: int) -> UserRead:
@@ -29,6 +56,8 @@ class UserService:
 
     @staticmethod
     async def signup(db: AsyncSession, user: UserCreate) -> UserRead:
+        # 이메일 검증 (형식 + MX + 일회용 차단)
+        user.email = UserService._validate_email(user.email)
 
         # username 중복 확인
         if await UserCrud.get_by_username(db, user.username):
@@ -69,6 +98,7 @@ class UserService:
     @staticmethod
     async def update_user(db: AsyncSession, user_id: int, update: UserUpdate) -> UserRead:
         if update.email:
+            update.email = UserService._validate_email(update.email)
             existing_email = await UserCrud.get_by_email(db, update.email)
             if existing_email and existing_email.user_id != user_id:
                 raise HTTPException(status_code=400, detail="이미 사용 중인 이메일입니다")

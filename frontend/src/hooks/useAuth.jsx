@@ -13,12 +13,14 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   const login = async (email, password) => {
+    setError('');
     try {
       const response = await api.post('/users/login', { email, password });
 
       if (response.status === 200) {
         setUser(response.data);
         setIsAuthenticated(true);
+        setError('');
         await verifyJWT();
         return true;
       }
@@ -31,6 +33,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signup = async ({ email, username, password, confirmPassword }) => {
+    setError('');
     if (!email.includes('@')) {
       setError('유효한 이메일을 입력하세요.');
       return false;
@@ -55,6 +58,7 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (response.status === 200) {
+        setError('');
         return true;
       }
       return false;
