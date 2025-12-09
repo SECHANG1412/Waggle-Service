@@ -9,7 +9,7 @@ import Categories from './layout/Categories';
 import SearchMenu from './layout/SearchMenu';
 import { useAuth } from '../../hooks/useAuth';
 
-const Navbar = ({ onLoginClick, onSignupClick }) => {
+const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { logout, isAuthenticated, user } = useAuth();
 
@@ -70,9 +70,7 @@ const Navbar = ({ onLoginClick, onSignupClick }) => {
               isAuthenticated={isAuthenticated}
               isOpen={isOpen}
               setIsOpen={setIsOpen}
-              onLoginClick={onLoginClick}
               onLogoutClick={onLogoutClick}
-              onSignupClick={onSignupClick}
             />
             <MobileToggleButton isOpen={isOpen} toggle={() => setIsOpen(!isOpen)} />
           </div>
@@ -87,9 +85,7 @@ const Navbar = ({ onLoginClick, onSignupClick }) => {
         isOpen={isOpen}
         setIsOpen={setIsOpen}
         isAuthenticated={isAuthenticated}
-        onLoginClick={onLoginClick}
         onLogoutClick={onLogoutClick}
-        onSignupClick={onSignupClick}
         searchValue={searchInput}
         onSearchInputChange={(e) => setSearchInput(e.target.value)}
         onSearchSubmit={onSearchSubmit}

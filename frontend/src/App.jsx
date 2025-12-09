@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router-dom';
 import Navbar from './Components/Navbar';
-import LoginModal from './Components/Modal/LoginModal';
-import SignupModal from './Components/Modal/SignupModal';
 import Footer from './Components/Footer/Footer';
 import Main from './Pages/Main';
 import CreateTopic from './Pages/CreateTopic';
 import SingleTopic from './Pages/SingleTopic';
 import Profile from './Pages/Profile';
+import Login from './Pages/Login';
+import Signup from './Pages/Signup';
 import Swal from 'sweetalert2';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 
@@ -30,59 +30,61 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-const RootLayout = () => {
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [isSignupOpen, setIsSignupOpen] = useState(false);
+const RootLayout = () => (
+  <div className="flex flex-col min-h-screen bg-[#F9FAFB]">
+    <Navbar />
+    <main className="flex-grow container mx-auto px-4 lg:px-6 py-1">
+      <Outlet />
+    </main>
+    <Footer />
+  </div>
+);
 
-  const onLoginClick = () => {
-    setIsSignupOpen(false);
-    setIsLoginOpen(true);
-  };
+const AuthLayout = () => (
+  <div className="min-h-screen bg-[#f2f4f7] flex items-center justify-center px-4 py-10">
+    <div className="w-full max-w-5xl">
+      <Outlet />
+    </div>
+  </div>
+);
 
-  const onSignupClick = () => {
-    setIsLoginOpen(false);
-    setIsSignupOpen(true);
-  };
-
-  const handleCloseModals = () => {
-    setIsLoginOpen(false);
-    setIsSignupOpen(false);
-  };
-
-  return (
-    <AuthProvider>
-      <div className="flex flex-col min-h-screen bg-[#F9FAFB]">
-        <Navbar onLoginClick={onLoginClick} onSignupClick={onSignupClick} />
-        <main className="flex-grow container mx-auto px-4 lg:px-6 py-1">
-          <Outlet />
-        </main>
-        <Footer />
-      </div>
-      <LoginModal isOpen={isLoginOpen} onClose={handleCloseModals} onSignupClick={onSignupClick} />
-      <SignupModal isOpen={isSignupOpen} onClose={handleCloseModals} onLoginClick={onLoginClick} />
-    </AuthProvider>
-  );
-};
+// Ensures AuthProvider is inside Router context
+const AppRoot = () => (
+  <AuthProvider>
+    <Outlet />
+  </AuthProvider>
+);
 
 const router = createBrowserRouter([
   {
-    path: '/',
-    element: <RootLayout />,
+    element: <AppRoot />,
     children: [
-      { index: true, element: <Main /> },
       {
-        element: (
-          <ProtectedRoute>
-            <Outlet />
-          </ProtectedRoute>
-        ),
+        path: '/',
+        element: <RootLayout />,
         children: [
-          { path: 'create-topic', element: <CreateTopic /> },
-          { path: 'profile', element: <Profile /> },
+          { index: true, element: <Main /> },
+          {
+            element: (
+              <ProtectedRoute>
+                <Outlet />
+              </ProtectedRoute>
+            ),
+            children: [
+              { path: 'create-topic', element: <CreateTopic /> },
+              { path: 'profile', element: <Profile /> },
+            ],
+          },
+          { path: 'topic/:id', element: <SingleTopic /> },
         ],
       },
-
-      { path: 'topic/:id', element: <SingleTopic /> },
+      {
+        element: <AuthLayout />,
+        children: [
+          { path: '/login', element: <Login /> },
+          { path: '/signup', element: <Signup /> },
+        ],
+      },
     ],
   },
 ]);

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const MobileAuthButtons = ({ isAuthenticated, setIsOpen, onLoginClick, onLogoutClick, onSignupClick }) => {
+const MobileAuthButtons = ({ isAuthenticated, setIsOpen, onLogoutClick }) => {
   return (
     <div className="pt-2 flex flex-col space-y-2 w-full">
       {isAuthenticated ? (
@@ -25,24 +25,20 @@ const MobileAuthButtons = ({ isAuthenticated, setIsOpen, onLoginClick, onLogoutC
         </>
       ) : (
         <>
-          <button
-            onClick={() => {
-              setIsOpen(false);
-              onLoginClick();
-            }}
+          <Link
+            to="/login"
+            onClick={() => setIsOpen(false)}
             className="text-gray-800 hover:bg-gray-100 block px-3 py-2 rounded-md text-base font-semibold transition-all duration-200 text-left"
           >
             로그인
-          </button>
-          <button
-            onClick={() => {
-              setIsOpen(false);
-              onSignupClick();
-            }}
+          </Link>
+          <Link
+            to="/signup"
+            onClick={() => setIsOpen(false)}
             className="text-white bg-blue-600 hover:bg-blue-700 block px-3 py-2 rounded-md text-base font-semibold transition-all duration-200 text-left cursor-pointer"
           >
             가입하기
-          </button>
+          </Link>
         </>
       )}
     </div>

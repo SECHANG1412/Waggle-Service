@@ -8,9 +8,7 @@ const MobileMenu = ({
   isOpen,
   setIsOpen,
   isAuthenticated,
-  onLoginClick,
   onLogoutClick,
-  onSignupClick,
   searchValue,
   onSearchInputChange,
   onSearchSubmit,
@@ -56,9 +54,7 @@ const MobileMenu = ({
         <MobileAuthButtons
           isAuthenticated={isAuthenticated}
           setIsOpen={setIsOpen}
-          onLoginClick={onLoginClick}
           onLogoutClick={onLogoutClick}
-          onSignupClick={onSignupClick}
         />
       </div>
     </div>

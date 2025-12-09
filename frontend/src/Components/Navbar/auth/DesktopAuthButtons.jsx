@@ -15,15 +15,7 @@ const AvatarPlaceholder = ({ name }) => {
   );
 };
 
-const DesktopAuthButtons = ({
-  userName,
-  isAuthenticated,
-  isOpen,
-  setIsOpen,
-  onLoginClick,
-  onLogoutClick,
-  onSignupClick,
-}) => {
+const DesktopAuthButtons = ({ userName, isAuthenticated, isOpen, setIsOpen, onLogoutClick }) => {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -84,18 +76,18 @@ const DesktopAuthButtons = ({
         </div>
       ) : (
         <div className="flex space-x-3">
-          <button
-            onClick={onLoginClick}
+          <Link
+            to="/login"
             className="px-3 py-2 text-sm font-semibold text-gray-800 bg-white border border-gray-300 rounded-lg hover:border-blue-500 hover:text-blue-600 transition-colors cursor-pointer"
           >
             로그인
-          </button>
-          <button
-            onClick={onSignupClick}
+          </Link>
+          <Link
+            to="/signup"
             className="px-3 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             가입하기
-          </button>
+          </Link>
         </div>
       )}
     </div>
