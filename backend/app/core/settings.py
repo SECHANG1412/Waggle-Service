@@ -17,6 +17,15 @@ class Settings(BaseSettings):
     google_client_id: str | None = Field(None, alias="GOOGLE_CLIENT_ID")
     google_client_secret: str | None = Field(None, alias="GOOGLE_CLIENT_SECRET")
     google_redirect_uri: str | None = Field(None, alias="GOOGLE_REDIRECT_URI")
+
+    naver_client_id: str | None = Field(None, alias="NAVER_CLIENT_ID")
+    naver_client_secret: str | None = Field(None, alias="NAVER_CLIENT_SECRET")
+    naver_redirect_uri: str | None = Field(None, alias="NAVER_CALLBACK_URL")
+
+    kakao_client_id: str | None = Field(None, alias="KAKAO_CLIENT_ID")
+    kakao_client_secret: str | None = Field(None, alias="KAKAO_CLIENT_SECRET")
+    kakao_redirect_uri: str | None = Field(None, alias="KAKAO_CALLBACK_URL")
+
     frontend_url: str = Field("http://localhost:3000", alias="FRONTEND_URL")
 
     class Config:
