@@ -8,7 +8,9 @@ from app.db.database import Base, async_engine
 from app.db import models  # ensure all models (including new ones) are registered
 from app.routers import user, topic, vote, comment, reply, like, oauth
 from app.middleware.token_refresh import TokenRefreshMiddleware
+from app.middleware.admin_auth import AdminBasicAuthMiddleware
 from app.admin.setup import setup_admin
+from app.core.settings import settings
 
 load_dotenv(dotenv_path=".env")
 
@@ -22,6 +24,13 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+# /admin protection: enforce BasicAuth only in PROD
+app.add_middleware(
+    AdminBasicAuthMiddleware,
+    username=settings.admin_username,
+    password=settings.admin_password,
+)
 
 setup_admin(app, async_engine)
 

@@ -8,11 +8,15 @@ class Settings(BaseSettings):
     db_host: str = Field("localhost", alias="DB_HOST")
     db_port: str = Field("3306", alias="DB_PORT")
     db_name: str = Field(..., alias="DB_NAME")
+    prod: bool = Field(False, alias="PROD")
 
     secret_key: str = Field(..., alias="SECRET_KEY")
     jwt_algorithm: str = Field("HS256", alias="JWT_ALGORITHM")
     access_token_expire_seconds: int = Field(900, alias="ACCESS_TOKEN_EXPIRE")
     refresh_token_expire_seconds: int = Field(604800, alias="REFRESH_TOKEN_EXPIRE")
+
+    admin_username: str | None = Field(None, alias="ADMIN_USERNAME")
+    admin_password: str | None = Field(None, alias="ADMIN_PASSWORD")
 
     google_client_id: str | None = Field(None, alias="GOOGLE_CLIENT_ID")
     google_client_secret: str | None = Field(None, alias="GOOGLE_CLIENT_SECRET")
