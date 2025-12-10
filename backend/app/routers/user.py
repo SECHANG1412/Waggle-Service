@@ -57,9 +57,16 @@ async def login(user: UserLogin,response: Response, db: AsyncSession = Depends(g
     return db_user
 
 @router.post("/logout", response_model=bool)
-async def logout(response: Response):
+async def logout(
+    response: Response,
+    user_id: int = Depends(get_user_id),
+    db: AsyncSession = Depends(get_db),
+):
     response.delete_cookie(key="access_token")
     response.delete_cookie(key="refresh_token")
+
+    await UserCrud.update_refresh_token_by_id(db, user_id, None)
+    await db.commit()
     return True
 
 
