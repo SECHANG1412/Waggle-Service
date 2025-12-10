@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     db_port: str = Field("3306", alias="DB_PORT")
     db_name: str = Field(..., alias="DB_NAME")
     prod: bool = Field(False, alias="PROD")
+    cookie_domain: str | None = Field(None, alias="COOKIE_DOMAIN")
 
     secret_key: str = Field(..., alias="SECRET_KEY")
     jwt_algorithm: str = Field("HS256", alias="JWT_ALGORITHM")

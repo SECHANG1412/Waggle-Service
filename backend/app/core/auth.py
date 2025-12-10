@@ -4,22 +4,46 @@ from app.core.settings import settings
 from app.core.jwt_handler import verify_token
 from typing import Optional
 
+def _cookie_policy() -> dict:
+    """
+    Returns cookie kwargs according to environment.
+    PROD requires COOKIE_DOMAIN and sets secure/None.
+    DEV keeps relaxed settings for local testing.
+    """
+    if settings.prod:
+        if not settings.cookie_domain:
+            raise HTTPException(
+                status_code=500,
+                detail="COOKIE_DOMAIN must be set in PROD mode.",
+            )
+        return {
+            "secure": True,
+            "samesite": "None",
+            "domain": settings.cookie_domain,
+        }
+
+    return {
+        "secure": False,
+        "samesite": "Lax",
+        "domain": None,
+    }
+
+
 def set_auth_cookies(response: Response, access_token: str, refresh_token: str) -> None:
+    policy = _cookie_policy()
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=False,
-        samesite="Lax",
         max_age=int(settings.access_token_expire.total_seconds()),
+        **policy,
     )
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=False,
-        samesite="Lax",
         max_age=int(settings.refresh_token_expire.total_seconds()),
+        **policy,
     )
 
 async def get_user_id(request: Request) -> int:

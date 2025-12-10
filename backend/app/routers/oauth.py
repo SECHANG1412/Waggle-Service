@@ -36,13 +36,15 @@ STATE_COOKIE = "oauth_state"
 
 
 def _set_state_cookie(response: RedirectResponse, state: str) -> None:
+    from app.core.auth import _cookie_policy
+
+    policy = _cookie_policy()
     response.set_cookie(
         key=STATE_COOKIE,
         value=state,
         httponly=True,
-        secure=False,
-        samesite="Lax",
         max_age=600,
+        **policy,
     )
 
 
