@@ -2,3 +2,9 @@ venv/
 __pycache__/
 backend/.env
 frontend/.env
+backend/.env.local
+backend/.env.prod
+frontend/.env.local
+frontend/.env.prod
+.env.local
+.env.prod

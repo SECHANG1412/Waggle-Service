@@ -1,0 +1,16 @@
+services:
+  backend:
+    env_file:
+      - ./backend/.env.local
+    ports:
+      - "8000:8000"
+
+  frontend:
+    env_file:
+      - ./frontend/.env.local
+    ports:
+      - "3000:3000"
+
+  db:
+    ports:
+      - "3307:3306"
