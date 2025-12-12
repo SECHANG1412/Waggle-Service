@@ -1,6 +1,5 @@
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import Request
-from fastapi.responses import JSONResponse
 from jwt import ExpiredSignatureError, InvalidTokenError
 from app.db.database import AsyncSessionLocal
 from app.core.jwt_handler import verify_token, create_access_token, create_refresh_token
@@ -10,23 +9,24 @@ from app.core.auth import set_auth_cookies
 
 class TokenRefreshMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        response = await call_next(request)
-
         access_token = request.cookies.get("access_token")
         refresh_token = request.cookies.get("refresh_token")
+        new_tokens: tuple[str, str] | None = None
 
-        try:
-            if access_token:
-                verify_token(access_token)
-                return response
-        except (ExpiredSignatureError, InvalidTokenError):
-            pass
+        # 1) Access 토큰이 유효하면 그대로 진행
+        user_id = None
+        if access_token:
+            try:
+                user_id = verify_token(access_token)
+            except (ExpiredSignatureError, InvalidTokenError):
+                user_id = None
 
-        if refresh_token:
+        # 2) Access 토큰이 없거나 만료/무효일 때만 refresh 시도
+        if user_id is None and refresh_token:
             try:
                 user_id = verify_token(refresh_token)
             except (ExpiredSignatureError, InvalidTokenError):
-                # refresh 토큰이 만료/무효면 쿠키를 정리하고 기존 응답을 그대로 돌려준다.
+                response = await call_next(request)
                 response.delete_cookie(key="access_token")
                 response.delete_cookie(key="refresh_token")
                 return response
@@ -34,6 +34,7 @@ class TokenRefreshMiddleware(BaseHTTPMiddleware):
             async with AsyncSessionLocal() as db:
                 user = await UserCrud.get_by_id(db, user_id)
                 if not user or user.refresh_token != refresh_token:
+                    response = await call_next(request)
                     response.delete_cookie(key="access_token")
                     response.delete_cookie(key="refresh_token")
                     return response
@@ -48,6 +49,14 @@ class TokenRefreshMiddleware(BaseHTTPMiddleware):
                     await db.rollback()
                     raise
 
-                set_auth_cookies(response, new_access_token, new_refresh_token)
+                # Downstream dependency에서 새 access 토큰을 쓰도록 요청 쿠키를 갱신
+                request._cookies = dict(request.cookies)
+                request._cookies["access_token"] = new_access_token
+                new_tokens = (new_access_token, new_refresh_token)
+
+        response = await call_next(request)
+
+        if new_tokens:
+            set_auth_cookies(response, new_tokens[0], new_tokens[1])
 
         return response

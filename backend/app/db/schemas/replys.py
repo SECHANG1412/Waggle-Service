@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 
 
@@ -29,7 +29,7 @@ class ReplyRead(ReplyInDB):
     username: str
     like_count: int = 0
     has_liked: bool = False
-    replies: list["ReplyRead"] = []
+    replies: list["ReplyRead"] = Field(default_factory=list)
 
     class Config:
         from_attributes = True

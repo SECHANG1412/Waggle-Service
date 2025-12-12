@@ -154,11 +154,11 @@ const Profile = () => {
   }
 
   return (
-    <div className="bg-slate-50 min-h-screen py-12 px-4">
+    <div className="bg-slate-100 min-h-screen py-12 px-4">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4 rounded-xl bg-white border border-slate-200 p-5 shadow-sm">
-          <div className="h-16 w-16 rounded-full bg-gradient-to-br from-slate-200 to-slate-100 text-slate-700 flex items-center justify-center text-2xl font-bold border border-slate-200">
+        <div className="flex items-center gap-4 rounded-xl bg-white border border-slate-200 p-6 shadow-md">
+          <div className="h-16 w-16 rounded-full bg-gradient-to-br from-slate-300 to-slate-100 text-slate-800 flex items-center justify-center text-2xl font-bold border border-slate-300 shadow-sm">
             {avatarUrl ? (
               <img
                 src={avatarUrl}
@@ -175,15 +175,15 @@ const Profile = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <StatCard label="작성 토픽" value={loadingStats ? '...' : stats.topics} subtle />
-          <StatCard label="투표 참여" value={loadingStats ? '...' : stats.votes} subtle />
-          <StatCard label="받은 좋아요" value={loadingStats ? '...' : stats.likes} subtle />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <StatCard label="작성 토픽" value={loadingStats ? '...' : stats.topics} />
+          <StatCard label="투표 참여" value={loadingStats ? '...' : stats.votes} />
+          <StatCard label="받은 좋아요" value={loadingStats ? '...' : stats.likes} />
         </div>
 
         {/* Sections */}
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="p-5 rounded-xl border border-slate-100 bg-white shadow-sm space-y-4">
+          <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-md space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-slate-900">기본 정보</h3>
               {editMode ? (
@@ -205,7 +205,7 @@ const Profile = () => {
                 </div>
               ) : (
                 <button
-                  className="h-10 px-4 inline-flex items-center justify-center bg-white text-slate-700 rounded-lg border border-slate-200 hover:border-slate-300 hover:text-slate-900 transition text-sm"
+                  className="h-10 px-4 inline-flex items-center justify-center bg-white text-slate-700 rounded-lg border border-slate-300 hover:border-slate-400 hover:text-slate-900 transition text-sm shadow-sm"
                   onClick={() => setEditMode(true)}
                 >
                   프로필 수정
@@ -219,13 +219,13 @@ const Profile = () => {
                     name="name"
                     value={form.name}
                     onChange={onChange}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-300 focus:outline-none"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-400 focus:outline-none shadow-inner"
                   />
                 ) : (
                   <input
                     value={user?.name || ''}
                     disabled
-                    className="w-full px-3 py-2 border border-slate-100 rounded-lg bg-slate-50 text-slate-800"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-800"
                   />
                 )}
               </Field>
@@ -233,19 +233,19 @@ const Profile = () => {
                 <input
                   value={user?.email || ''}
                   disabled
-                  className="w-full px-3 py-2 border border-slate-100 rounded-lg bg-slate-50 text-slate-800"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-800"
                 />
               </Field>
               <Field label="가입일">
                 <input
                   value={user?.joinedAt || ''}
                   disabled
-                  className="w-full px-3 py-2 border border-slate-100 rounded-lg bg-slate-50 text-slate-800"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-800"
                 />
               </Field>
               <Field label="프로필 이미지" alignTop>
                 <div className="flex items-center gap-4">
-                  <div className="h-14 w-14 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
+                  <div className="h-14 w-14 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden border border-slate-300 shadow-inner">
                     {avatarUrl ? (
                       <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
                     ) : (
@@ -289,7 +289,7 @@ const Profile = () => {
             </div>
           </div>
 
-          <div className="p-5 rounded-xl border border-slate-100 bg-white shadow-sm space-y-3">
+          <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-md space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-slate-900">최근 활동</h3>
             </div>
@@ -319,9 +319,9 @@ const Profile = () => {
   );
 };
 
-const StatCard = ({ label, value, subtle }) => (
-  <div className={`p-4 rounded-xl border ${subtle ? 'border-slate-100 bg-slate-100/80' : 'border-slate-100 bg-white'} shadow-sm`}>
-    <p className="text-sm text-slate-500">{label}</p>
+const StatCard = ({ label, value }) => (
+  <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-md">
+    <p className="text-sm text-slate-600 font-semibold">{label}</p>
     <p className="text-2xl font-bold text-slate-900 mt-1">{value}</p>
   </div>
 );
@@ -338,7 +338,7 @@ const Card = ({ title, children, action }) => (
 
 const Field = ({ label, children }) => (
   <div className="flex flex-col gap-1 py-2">
-    <span className="text-sm text-slate-600">{label}</span>
+    <span className="text-sm text-slate-700 font-medium">{label}</span>
     <div className="text-sm text-slate-800">{children}</div>
   </div>
 );

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 from app.db.schemas.replys import ReplyRead
 
@@ -28,6 +28,6 @@ class CommentInDB(CommentBase):
 
 class CommentRead(CommentInDB):
     username: str
-    replies: list[ReplyRead] = []
+    replies: list[ReplyRead] = Field(default_factory=list)
     like_count: int = 0
     has_liked: bool = False

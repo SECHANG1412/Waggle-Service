@@ -17,6 +17,23 @@ depends_on = None
 
 
 def upgrade():
+  bind = op.get_bind()
+  # 이미 초기 스키마에 포함되어 있으면 건너뛴다 (idempotent)
+  exists = bind.execute(
+      sa.text(
+          """
+          SELECT COUNT(1)
+          FROM information_schema.columns
+          WHERE table_schema = DATABASE()
+            AND table_name = 'replies'
+            AND column_name = 'parent_reply_id'
+          """
+      )
+  ).scalar()
+
+  if exists:
+      return
+
   op.add_column(
       "replies",
       sa.Column("parent_reply_id", sa.Integer(), nullable=True),

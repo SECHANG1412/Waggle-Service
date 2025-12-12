@@ -42,6 +42,8 @@ app.add_middleware(
         "http://localhost:5173",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:5173",
+        "https://waggle.kr",
+        "https://www.waggle.kr",
     ],
     allow_origin_regex=None,
     allow_credentials=True,
@@ -50,7 +52,7 @@ app.add_middleware(
 )
 
 # CSRF should run before token refresh to ensure requests are validated early
-app.add_middleware(CSRFMiddleware)
+# app.add_middleware(CSRFMiddleware)
 app.add_middleware(TokenRefreshMiddleware)
 
 app.include_router(user.router)

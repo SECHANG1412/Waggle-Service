@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field, field_validator
 
 class TopicBase(BaseModel):
     title: str
-    category: str = "기타"
+    category: str = "자유"
     vote_options: list[str] = Field(..., min_length=2, max_length=4)
     description: str | None = None
 
@@ -30,7 +30,7 @@ class TopicInDB(TopicBase):
 class TopicRead(TopicInDB):
     has_voted: bool = False
     user_vote_index: int | None = None
-    vote_results: list[int] = []
+    vote_results: list[int] = Field(default_factory=list)
     total_vote: int = 0
     like_count: int = 0
     has_liked: bool = False

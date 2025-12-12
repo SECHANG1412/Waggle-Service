@@ -53,6 +53,15 @@ class ReplyCrud:
     async def delete_by_id(db: AsyncSession, reply_id: int):
         reply = await db.get(Reply, reply_id)
         if reply:
+            # 자식 답글을 먼저 제거해 순환 삭제 오류를 방지
+            children = (
+                await db.execute(
+                    select(Reply).where(Reply.parent_reply_id == reply_id)
+                )
+            ).scalars().all()
+            for child in children:
+                await ReplyCrud.delete_by_id(db, child.reply_id)
+
             await db.delete(reply)
             await db.flush()
         return reply

@@ -1,11 +1,14 @@
 from __future__ import annotations
 from datetime import datetime
-from sqlalchemy import ForeignKey, TIMESTAMP, func
+from sqlalchemy import ForeignKey, TIMESTAMP, func, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 
 class Vote(Base):
     __tablename__ = "votes"
+    __table_args__ = (
+        UniqueConstraint("user_id", "topic_id", name="unique_vote_user_topic"),
+    )
 
     vote_id: Mapped[int] = mapped_column(primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)

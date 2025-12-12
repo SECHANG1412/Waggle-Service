@@ -7,7 +7,7 @@ const Footer = () => {
     { label: 'Contact', url: '/contact' },
   ];
 
-  const contactInfo = ['Email: info@example.com'];
+  const contactInfo = ['Email: waggle1212@gmail.com'];
 
   return (
     <footer className="bg-white border-t border-gray-200 text-gray-700">

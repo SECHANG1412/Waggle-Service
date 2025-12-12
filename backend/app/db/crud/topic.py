@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import func, or_, desc
-from app.db.models import Topic
+from sqlalchemy import func, or_, desc, select
+from app.db.models import Topic, TopicLike, Vote
 from app.db.schemas.topics import TopicCreate
 
 class TopicCrud:
@@ -52,6 +52,17 @@ class TopicCrud:
         limit: int = 10,
         offset: int = 0
     ):
+        like_count_subq = (
+            select(func.count(TopicLike.like_id))
+            .where(TopicLike.topic_id == Topic.topic_id)
+            .scalar_subquery()
+        )
+        vote_count_subq = (
+            select(func.count(Vote.vote_id))
+            .where(Vote.topic_id == Topic.topic_id)
+            .scalar_subquery()
+        )
+
         base_query = select(Topic)
 
 
@@ -66,9 +77,13 @@ class TopicCrud:
         if category:
             base_query = base_query.where(Topic.category == category)
 
-        if sort == "created_at":
+        if sort == "like_count":
+            base_query = base_query.order_by(desc(like_count_subq), desc(Topic.created_at))
+        elif sort == "vote_count":
+            base_query = base_query.order_by(desc(vote_count_subq), desc(Topic.created_at))
+        else:
             base_query = base_query.order_by(desc(Topic.created_at))
-        
+
         base_query = base_query.limit(limit).offset(offset)
         result = await db.execute(base_query)
         return result.scalars().all()
