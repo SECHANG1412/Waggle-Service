@@ -18,12 +18,14 @@ def _cookie_policy() -> dict:
             "secure": True,
             "samesite": "None",
             "domain": settings.cookie_domain,
+            "path": "/", 
         }
 
     return {
         "secure": False,
         "samesite": "Lax",
         "domain": None,
+        "path": "/", 
     }
 
 
