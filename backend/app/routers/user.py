@@ -1,3 +1,5 @@
+# backend/routers/user.py
+
 from fastapi import APIRouter, Depends, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
@@ -10,7 +12,7 @@ from app.db.schemas.users import (
     UserStats,
     UserActivity,
 )
-from app.core.auth import get_user_id, set_auth_cookies
+from app.core.auth import get_user_id, set_auth_cookies, clear_auth_cookies
 from app.core.jwt_handler import verify_token, create_access_token, create_refresh_token
 from jwt import ExpiredSignatureError, InvalidTokenError
 from fastapi import HTTPException, Request
@@ -62,8 +64,7 @@ async def logout(
     user_id: int = Depends(get_user_id),
     db: AsyncSession = Depends(get_db),
 ):
-    response.delete_cookie(key="access_token")
-    response.delete_cookie(key="refresh_token")
+    clear_auth_cookies(response)
 
     await UserCrud.update_refresh_token_by_id(db, user_id, None)
     await db.commit()

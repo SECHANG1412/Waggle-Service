@@ -1,3 +1,5 @@
+# backend/app/core/auth.py
+
 import secrets
 from fastapi import Request, Response, HTTPException
 from jwt import ExpiredSignatureError, InvalidTokenError
@@ -6,11 +8,6 @@ from app.core.jwt_handler import verify_token
 from typing import Optional
 
 def _cookie_policy() -> dict:
-    """
-    Returns cookie kwargs according to environment.
-    PROD requires COOKIE_DOMAIN and sets secure/None.
-    DEV keeps relaxed settings for local testing.
-    """
     if settings.prod:
         if not settings.cookie_domain:
             raise HTTPException(
@@ -81,3 +78,11 @@ async def get_user_id_optional(request: Request) -> Optional[int]:
         return verify_token(access_token)
     except (ExpiredSignatureError, InvalidTokenError):
         return None
+
+
+def clear_auth_cookies(response: Response) -> None:
+    policy = _cookie_policy()
+
+    response.delete_cookie(key="access_token", **policy)
+    response.delete_cookie(key="refresh_token", **policy)
+    response.delete_cookie(key="csrf_token", **policy)
