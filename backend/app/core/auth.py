@@ -85,23 +85,29 @@ async def get_user_id_optional(request: Request) -> Optional[int]:
 def clear_auth_cookies(response: Response) -> None:
     policy = _cookie_policy()
 
-    response.delete_cookie(
+    # Use set_cookie to ensure the delete response matches cookie scope.
+    response.set_cookie(
         key="access_token",
-        path="/",
+        value="",
+        httponly=True,
         max_age=0,
+        expires=0,
         **policy,
     )
-    response.delete_cookie(
+    response.set_cookie(
         key="refresh_token",
-        path="/",
+        value="",
+        httponly=True,
         max_age=0,
+        expires=0,
         **policy,
     )
-    response.delete_cookie(
+    response.set_cookie(
         key="csrf_token",
-        path="/",
+        value="",
+        httponly=False,
         max_age=0,
+        expires=0,
         **policy,
     )
-
 

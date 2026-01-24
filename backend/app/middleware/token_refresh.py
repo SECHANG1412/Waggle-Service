@@ -4,7 +4,7 @@ from jwt import ExpiredSignatureError, InvalidTokenError
 from app.db.database import AsyncSessionLocal
 from app.core.jwt_handler import verify_token, create_access_token, create_refresh_token
 from app.db.crud import UserCrud
-from app.core.auth import set_auth_cookies
+from app.core.auth import set_auth_cookies, clear_auth_cookies
 
 
 class TokenRefreshMiddleware(BaseHTTPMiddleware):
@@ -27,16 +27,14 @@ class TokenRefreshMiddleware(BaseHTTPMiddleware):
                 user_id = verify_token(refresh_token)
             except (ExpiredSignatureError, InvalidTokenError):
                 response = await call_next(request)
-                response.delete_cookie(key="access_token")
-                response.delete_cookie(key="refresh_token")
+                clear_auth_cookies(response)
                 return response
 
             async with AsyncSessionLocal() as db:
                 user = await UserCrud.get_by_id(db, user_id)
                 if not user or user.refresh_token != refresh_token:
                     response = await call_next(request)
-                    response.delete_cookie(key="access_token")
-                    response.delete_cookie(key="refresh_token")
+                    clear_auth_cookies(response)
                     return response
 
                 new_access_token = create_access_token(user_id)
