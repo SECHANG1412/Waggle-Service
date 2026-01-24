@@ -7,12 +7,13 @@ const Footer = () => {
     { label: 'Contact', url: '/contact' },
   ];
 
-  const contactInfo = ['Email: waggle1212@gmail.com'];
+  const contactInfo = ['waggle1212@gmail.com'];
 
   return (
     <footer className="bg-white border-t border-gray-200 text-gray-700">
       <div className="max-w-3xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* 모바일에서는 최소 정보만 보여주고, 데스크톱 이상에서만 상세 푸터 노출 */}
+        <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* About Us */}
           <div>
             <h3 className="text-base font-semibold mb-3">About Us</h3>
