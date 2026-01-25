@@ -15,7 +15,7 @@ const VoteInfo = ({ createdAt, likeCount, totalVote, commentCount }) => {
           {commentCount}
         </span>
         <span className="px-2 py-0.5 bg-slate-50 text-slate-700 rounded-full border border-slate-200 font-semibold">
-          총표 {totalVote}
+          총 {totalVote}표
         </span>
       </div>
     </div>
