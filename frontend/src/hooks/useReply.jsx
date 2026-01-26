@@ -20,7 +20,7 @@ export const useReply = () => {
       return null;
     } catch (error) {
       if (await handleAuthError(error)) return null;
-      showErrorAlert(error, "대댓글 생성에 실패했습니다.");
+      showErrorAlert(error, "댓글 생성에 실패했습니다.");
       return null;
     }
   };
@@ -28,7 +28,7 @@ export const useReply = () => {
   const deleteReply = async (replyId) => {
     try {
       const confirm = await showConfirmDialog(
-        "대댓글을 삭제할까요?",
+        "댓글을 삭제할까요?",
         "삭제하면 되돌릴 수 없습니다.",
         "삭제",
         "취소",
@@ -45,7 +45,7 @@ export const useReply = () => {
       return null;
     } catch (error) {
       if (await handleAuthError(error)) return null;
-      showErrorAlert(error, "대댓글 삭제에 실패했습니다.");
+      showErrorAlert(error, "댓글 삭제에 실패했습니다.");
       return null;
     }
   };
@@ -59,7 +59,7 @@ export const useReply = () => {
       return null;
     } catch (error) {
       if (await handleAuthError(error)) return null;
-      showErrorAlert(error, "대댓글 수정에 실패했습니다.");
+      showErrorAlert(error, "댓글 수정에 실패했습니다.");
       return null;
     }
   };
