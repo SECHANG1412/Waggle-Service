@@ -27,7 +27,7 @@ const ReplyForm = ({ onSubmit, onCancel, lockedPrefix = '' }) => {
           type="text"
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          placeholder="대댓글을 입력하세요.."
+          placeholder="댓글을 입력하세요.."
           className="flex-1 h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
         />
         <div className="flex items-center gap-2">
