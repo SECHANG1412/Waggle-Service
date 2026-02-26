@@ -40,7 +40,7 @@ const Main = () => {
 
   const loadTopics = useCallback(async () => {
     const data = await fetchTopics({
-      offset: page,
+      offset: (page - 1) * topicsPerPage,
       limit: topicsPerPage,
       sort: apiSort,
       category,
