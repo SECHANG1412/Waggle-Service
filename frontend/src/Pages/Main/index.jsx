@@ -9,7 +9,6 @@ import { useAuth } from "../../hooks/useAuth";
 const SORT_MAP = {
   recent: 'created_at',
   likes: 'like_count',
-  views: 'view_count',
 };
 
 const Main = () => {
@@ -28,9 +27,7 @@ const Main = () => {
       ? 'recent'
       : rawSort === 'like_count'
         ? 'likes'
-        : rawSort === 'view_count'
-          ? 'views'
-          : rawSort || 'recent';
+        : rawSort || 'recent';
   const sort = SORT_MAP[sortParam] ? sortParam : 'recent';
   const search = searchParams.get('search') || '';
   const page = parseInt(searchParams.get('page') || '1', 10);
