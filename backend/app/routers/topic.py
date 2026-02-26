@@ -23,7 +23,7 @@ async def list_topics(
     user_id: int | None = Depends(get_user_id_optional),
     search: str | None = Query(None, min_length=1),
     category: str | None = Query(None),
-    sort: str = Query("created_at", enum=["created_at", "like_count", "vote_count"]),
+    sort: str = Query("created_at", enum=["created_at", "like_count"]),
     limit: int = Query(10, ge=1, le=50),
     offset: int = Query(0, ge=0)
 ):
