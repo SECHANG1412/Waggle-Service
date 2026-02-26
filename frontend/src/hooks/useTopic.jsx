@@ -11,7 +11,7 @@ export const useTopic = () => {
       const params = {
         sort,
         limit,
-        offset: offset - 1,
+        offset,
         category,
         ...(search && { search }),
       };
