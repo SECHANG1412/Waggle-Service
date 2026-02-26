@@ -34,7 +34,7 @@ const Main = () => {
   const sort = SORT_MAP[sortParam] ? sortParam : 'recent';
   const search = searchParams.get('search') || '';
   const page = parseInt(searchParams.get('page') || '1', 10);
-  const topicsPerPage = 10;
+  const topicsPerPage = 12;
 
   const apiSort = SORT_MAP[sort];
 
