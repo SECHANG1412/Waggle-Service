@@ -42,7 +42,8 @@ class VoteService:
         if not topic:
             raise HTTPException(status_code=404, detail="해당 투표를 찾을 수 없습니다.")
 
-        delta = VoteService._parse_interval(time_range)
+        is_all_time = time_range.lower() == "all"
+        delta = None if is_all_time else VoteService._parse_interval(time_range)
 
         if interval:
             interval_delta = VoteService._parse_interval(interval)
@@ -54,11 +55,13 @@ class VoteService:
     async def _get_time_series_stats(
         db: AsyncSession,
         topic: Topic,
-        delta: timedelta,
+        delta: timedelta | None,
         interval_delta: timedelta
     ):
         now = datetime.now(timezone.utc)
-        start_time = now - delta
+        start_time = (
+            datetime(1970, 1, 1, tzinfo=timezone.utc) if delta is None else now - delta
+        )
         option_len = len(topic.vote_options)
 
         votes = await VoteCrud.get_all_by_topic_id_and_range(
@@ -89,7 +92,7 @@ class VoteService:
     async def _get_aggregated_stats(
         db: AsyncSession,
         topic: Topic,
-        delta: timedelta
+        delta: timedelta | None
     ):
         votes = await VoteCrud.get_all_by_topic_id_and_range(db, topic.topic_id, delta)
         counts = {i: 0 for i in range(len(topic.vote_options))}
