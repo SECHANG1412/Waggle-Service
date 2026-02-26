@@ -63,7 +63,7 @@ export const useVote = () => {
 
       const params = {
         interval,
-        ...(!isAllTime && { time_range: convertedTimeRange.toLowerCase() }),
+        time_range: isAllTime ? "all" : convertedTimeRange.toLowerCase(),
       };
       const response = await api.get(`/votes/topic/${topicId}`, { params });
 

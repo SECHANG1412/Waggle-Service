@@ -40,16 +40,14 @@ class VoteCrud:
     async def get_all_by_topic_id_and_range(
         db: AsyncSession,
         topic_id: int,
-        delta: timedelta,
+        delta: timedelta | None,
         order_by_created: bool = True
     ) -> list[Vote]:
-        now = datetime.now(timezone.utc)
-        start_time = now - delta
-
-        base_query = select(Vote).where(
-            Vote.created_at.between(start_time, now),
-            Vote.topic_id == topic_id
-        )
+        base_query = select(Vote).where(Vote.topic_id == topic_id)
+        if delta is not None:
+            now = datetime.now(timezone.utc)
+            start_time = now - delta
+            base_query = base_query.where(Vote.created_at.between(start_time, now))
 
         if order_by_created:
             base_query = base_query.order_by(Vote.created_at)
