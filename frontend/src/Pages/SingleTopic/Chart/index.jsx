@@ -56,9 +56,18 @@ const Chart = ({ topicId, voteOptions }) => {
   };
 
   return (
-    <div className="bg-gray-100 rounded-lg p-5 shadow-inner mb-6 relative">
+    <div className="bg-gray-100 rounded-lg p-3 sm:p-5 shadow-inner mb-6 relative">
       <ChartHeader chartMetric={chartMetric} setChartMetric={setChartMetric} loading={loading} />
-      <ChartCanvas data={voteData} metric={chartMetric} options={voteOptions} colors={voteColors[voteOptions.length]} />
+      <div className="overflow-x-auto">
+        <div className="min-w-[560px] sm:min-w-0">
+          <ChartCanvas
+            data={voteData}
+            metric={chartMetric}
+            options={voteOptions}
+            colors={voteColors[voteOptions.length]}
+          />
+        </div>
+      </div>
       <TimeFrameButtons
         selected={selectedTimeFrame}
         onChange={onTimeFrameChage}
