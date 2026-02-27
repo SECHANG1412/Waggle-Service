@@ -11,39 +11,45 @@ const CommentActions = ({
   hideOwnerActions = false,
 }) => {
   return (
-    <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
+    <div className="mt-2 flex flex-wrap items-center gap-1 sm:gap-2 text-sm text-gray-500">
       <button
         onClick={onLikeClick}
-        className={`flex items-center gap-1 p-1 transition-colors ${
+        className={`inline-flex h-9 items-center gap-1 rounded-md px-2 transition-colors ${
           hasLiked ? 'text-blue-600 hover:text-blue-700' : 'text-gray-400 hover:text-blue-500'
         }`}
-        title="좋아요"
+        aria-label="Like"
+        title="Like"
       >
-        <FaHeart className={`w-5 h-5 ${hasLiked ? 'fill-blue-600' : 'fill-none stroke-[20] stroke-black'}`} />
+        <FaHeart className={`h-5 w-5 ${hasLiked ? 'fill-blue-600' : 'fill-none stroke-[20] stroke-black'}`} />
         <span className="text-sm">{likeCount}</span>
       </button>
+
       <button
         onClick={onReplyClick}
-        className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
-        title="답글 작성"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-400 transition-colors hover:text-blue-500"
+        aria-label="Reply"
+        title="Reply"
       >
-        <FaRegComment className="w-4 h-4" />
+        <FaRegComment className="h-4 w-4" />
       </button>
+
       {!hideOwnerActions && (
         <>
           <button
             onClick={onEditClick}
-            className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
-            title="댓글 수정"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-400 transition-colors hover:text-blue-500"
+            aria-label="Edit"
+            title="Edit"
           >
-            <FaEdit className="w-4 h-4" />
+            <FaEdit className="h-4 w-4" />
           </button>
           <button
             onClick={onDeleteClick}
-            className="p-1 text-gray-400 hover:text-red-500 transition-colors"
-            title="댓글 삭제"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-400 transition-colors hover:text-red-500"
+            aria-label="Delete"
+            title="Delete"
           >
-            <FaTrash className="w-4 h-4" />
+            <FaTrash className="h-4 w-4" />
           </button>
         </>
       )}
