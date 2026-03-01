@@ -1,23 +1,80 @@
-# Integration Tests
+# Backend Integration Tests
 
-## Setup
+## Purpose
 
-1. Install test dependencies:
+This suite protects core API contracts and prevents regressions around:
+
+- pagination offset behavior
+- topics sort contract
+- vote statistics aggregation for `time_range=all`
+- auth-required endpoint behavior
+
+## Prerequisites
+
+1. Move to the backend directory.
+   - `cd backend`
+2. Install test dependencies.
    - `pip install -r requirements-dev.txt`
-2. (Optional) Use a different DB URL:
-   - `set TEST_DATABASE_URL=mysql+asyncmy://user:pass@127.0.0.1:3306/dbname`
-   - default: `sqlite+aiosqlite:///backend/tests/test_integration.db`
+3. Optional: use a custom test DB.
+   - Windows PowerShell: `$env:TEST_DATABASE_URL="mysql+asyncmy://user:pass@127.0.0.1:3306/dbname"`
+   - Default DB: `sqlite+aiosqlite:///backend/tests/test_integration.db`
 
 ## Run
 
-- `pytest -q tests/integration`
+- Run all integration tests:
+  - `pytest -q tests/integration`
+- Run one file:
+  - `pytest -q tests/integration/test_regressions.py`
 
-## Scope
+## Contract And Regression Coverage
 
-- Topic list/detail APIs
-- Vote create/statistics APIs (`time_range=all` regression included)
-- Auth-required endpoints and status code matrix (`400/401/403/422`)
-- Regression guards:
-  - `offset = (page - 1) * limit`
-  - sort contract (`created_at`, `like_count` only)
-  - full-period vote aggregation for `time_range=all`
+- `test_topics_api.py`
+  - topics list filters, sorting, validation, detail success/not-found
+- `test_votes_api.py`
+  - vote create success/business errors, stats errors, payload validation
+- `test_auth_required_api.py`
+  - no-auth `401`, forbidden delete `403`
+- `test_regressions.py`
+  - fixed regression contract: `offset = (page - 1) * limit`
+  - fixed sort contract: only `created_at`, `like_count` allowed
+  - fixed full-period aggregation when `time_range=all`
+
+## Failure Triage
+
+- `422` on `/topics?sort=...`
+  - Check that router validation still restricts sort to `created_at|like_count`.
+- Pagination order mismatch in regression test
+  - Check offset/page calculation and deterministic ordering by `created_at`.
+- vote stats count mismatch for `time_range=all`
+  - Check that no recent-time filter is applied for `all`.
+- unexpected `401/403`
+  - Check auth cookie fixture and endpoint authorization flow.
+
+## CI Merge Gate
+
+GitHub Actions workflow: `.github/workflows/ci.yml`
+
+- Trigger: pull request targeting `main`
+- Required checks on branch protection:
+  - `Backend Integration Tests`
+  - `Frontend Build`
+- Merge policy:
+  - Do not merge when either required check fails.
+
+## PR Closeout Checklist
+
+- [ ] `pytest -q tests/integration` passes locally
+- [ ] no contract drift from guarded regressions (`offset`, `sort`, `time_range=all`)
+- [ ] CI required checks are green on the PR
+- [ ] docs updated if API contract or test scope changed
+
+## Track Summary (Steps 1-4)
+
+- test infra added:
+  - `pytest.ini`, `requirements-dev.txt`, `tests/conftest.py`, `tests/factories.py`
+- contract alignment completed:
+  - sort contract unified to `created_at|like_count`
+- integration/regression suite added:
+  - topics, votes, auth-required, regressions
+- CI gate enabled:
+  - PR-to-main workflow with required backend/frontend checks
