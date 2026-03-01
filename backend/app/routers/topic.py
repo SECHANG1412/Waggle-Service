@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Literal
 from app.db.database import get_db
 from app.core.auth import get_user_id, get_user_id_optional
 from app.db.schemas.topics import TopicCreate, TopicRead
@@ -23,7 +24,7 @@ async def list_topics(
     user_id: int | None = Depends(get_user_id_optional),
     search: str | None = Query(None, min_length=1),
     category: str | None = Query(None),
-    sort: str = Query("created_at", enum=["created_at", "like_count"]),
+    sort: Literal["created_at", "like_count"] = Query("created_at"),
     limit: int = Query(10, ge=1, le=50),
     offset: int = Query(0, ge=0)
 ):
