@@ -95,6 +95,7 @@ def set_auth_cookies():
         client.cookies.set("access_token", create_access_token(user_id))
         client.cookies.set("refresh_token", create_refresh_token(user_id))
         client.cookies.set("csrf_token", "test-csrf-token")
+        client.headers["X-CSRF-Token"] = "test-csrf-token"
 
     return _set
 

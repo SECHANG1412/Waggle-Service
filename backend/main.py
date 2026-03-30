@@ -52,7 +52,7 @@ app.add_middleware(
 )
 
 # CSRF should run before token refresh to ensure requests are validated early
-# app.add_middleware(CSRFMiddleware)
+app.add_middleware(CSRFMiddleware)
 app.add_middleware(TokenRefreshMiddleware)
 
 app.include_router(user.router)

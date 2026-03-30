@@ -4,7 +4,11 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.auth import set_auth_cookies
+from app.core.auth import (
+    clear_cookie_with_policy,
+    set_auth_cookies,
+    set_cookie_with_policy,
+)
 from app.core.jwt_handler import create_access_token, create_refresh_token
 from app.core.settings import settings
 from app.db.crud import UserCrud
@@ -36,15 +40,12 @@ STATE_COOKIE = "oauth_state"
 
 
 def _set_state_cookie(response: RedirectResponse, state: str) -> None:
-    from app.core.auth import _cookie_policy
-
-    policy = _cookie_policy()
-    response.set_cookie(
+    set_cookie_with_policy(
+        response,
         key=STATE_COOKIE,
         value=state,
         httponly=True,
         max_age=600,
-        **policy,
     )
 
 
@@ -59,10 +60,12 @@ def _redirect_with_error(error: str) -> RedirectResponse:
 
 def _validate_state(request: Request, state: str | None) -> RedirectResponse | None:
     saved_state = request.cookies.get(STATE_COOKIE)
-    if saved_state and state != saved_state:
-        return _redirect_with_error("invalid_state")
+    if not saved_state:
+        return _redirect_with_error("missing_state_cookie")
     if not state:
         return _redirect_with_error("missing_state")
+    if state != saved_state:
+        return _redirect_with_error("invalid_state")
     return None
 
 
@@ -79,7 +82,7 @@ async def _finalize_login(db: AsyncSession, user_id: int) -> RedirectResponse:
         raise
 
     response = RedirectResponse(url=frontend_redirect, status_code=302)
-    response.delete_cookie(key=STATE_COOKIE)
+    clear_cookie_with_policy(response, key=STATE_COOKIE, httponly=True)
     set_auth_cookies(response, access, refresh_token)
     return response
 

@@ -6,6 +6,16 @@ const api = axios.create({
   withCredentials: true,
 });
 
+const getCookie = (name) => {
+  if (typeof document === "undefined") return null;
+
+  const cookie = document.cookie
+    .split("; ")
+    .find((entry) => entry.startsWith(`${name}=`));
+
+  return cookie ? decodeURIComponent(cookie.split("=")[1]) : null;
+};
+
 let isRefreshing = false;
 let refreshQueue = [];
 
@@ -20,13 +30,27 @@ const processQueue = (error, tokenRefreshed) => {
   refreshQueue = [];
 };
 
+api.interceptors.request.use((config) => {
+  const method = config.method?.toUpperCase();
+  if (method && ["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+    const csrfToken = getCookie("csrf_token");
+    if (csrfToken) {
+      config.headers = config.headers ?? {};
+      config.headers["X-CSRF-Token"] = csrfToken;
+    }
+  }
+
+  return config;
+});
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const isRefreshRequest = originalRequest?.url?.includes("/users/refresh");
 
     // If unauthorized, attempt refresh token once.
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !isRefreshRequest && !originalRequest._retry) {
       if (isRefreshing) {
         // queue the request until refresh completes
         return new Promise((resolve, reject) => {

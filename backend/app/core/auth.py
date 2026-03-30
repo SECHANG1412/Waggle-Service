@@ -55,6 +55,34 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str) 
         **policy,
     )
 
+
+def set_cookie_with_policy(
+    response: Response,
+    *,
+    key: str,
+    value: str,
+    httponly: bool,
+    max_age: int,
+) -> None:
+    response.set_cookie(
+        key=key,
+        value=value,
+        httponly=httponly,
+        max_age=max_age,
+        **_cookie_policy(),
+    )
+
+
+def clear_cookie_with_policy(response: Response, *, key: str, httponly: bool) -> None:
+    response.set_cookie(
+        key=key,
+        value="",
+        httponly=httponly,
+        max_age=0,
+        expires=0,
+        **_cookie_policy(),
+    )
+
 async def get_user_id(request: Request) -> int:
     access_token = request.cookies.get("access_token")
     if not access_token:
@@ -110,4 +138,3 @@ def clear_auth_cookies(response: Response) -> None:
         expires=0,
         **policy,
     )
-

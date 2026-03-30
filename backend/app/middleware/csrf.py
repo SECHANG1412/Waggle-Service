@@ -25,6 +25,10 @@ class CSRFMiddleware(BaseHTTPMiddleware):
             if request.url.path in self._exempt_paths:
                 return await call_next(request)
 
+            # Let auth dependencies return the canonical 401 when no auth cookie exists.
+            if not request.cookies.get("access_token") and not request.cookies.get("refresh_token"):
+                return await call_next(request)
+
             header_token = request.headers.get("X-CSRF-Token")
             cookie_token = request.cookies.get("csrf_token")
             if not header_token or not cookie_token or header_token != cookie_token:
