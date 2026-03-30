@@ -8,8 +8,6 @@ This suite protects core API contracts and prevents regressions around:
 - topics sort contract
 - vote statistics aggregation for `time_range=all`
 - auth-required endpoint behavior
-- CSRF protection for authenticated unsafe requests
-- OAuth `state` validation across social login callbacks
 
 ## Prerequisites
 
@@ -36,9 +34,6 @@ This suite protects core API contracts and prevents regressions around:
   - vote create success/business errors, stats errors, payload validation
 - `test_auth_required_api.py`
   - no-auth `401`, forbidden delete `403`
-- `test_security_auth_api.py`
-  - CSRF missing/mismatch/success cases
-  - Google/Naver/Kakao callback state validation and one-time cookie cleanup
 - `test_regressions.py`
   - fixed regression contract: `offset = (page - 1) * limit`
   - fixed sort contract: only `created_at`, `like_count` allowed
@@ -54,10 +49,6 @@ This suite protects core API contracts and prevents regressions around:
   - Check that no recent-time filter is applied for `all`.
 - unexpected `401/403`
   - Check auth cookie fixture and endpoint authorization flow.
-- unexpected CSRF `403`
-  - Check `csrf_token` cookie, `X-CSRF-Token` header, and exempt-path configuration.
-- OAuth callback redirect mismatch
-  - Check saved `oauth_state` cookie, callback `state`, and cookie cleanup on success.
 
 ## CI Merge Gate
 
@@ -74,7 +65,6 @@ GitHub Actions workflow: `.github/workflows/ci.yml`
 
 - [ ] `pytest -q tests/integration` passes locally
 - [ ] no contract drift from guarded regressions (`offset`, `sort`, `time_range=all`)
-- [ ] CSRF and OAuth state protections still pass after auth-flow changes
 - [ ] CI required checks are green on the PR
 - [ ] docs updated if API contract or test scope changed
 
@@ -85,6 +75,6 @@ GitHub Actions workflow: `.github/workflows/ci.yml`
 - contract alignment completed:
   - sort contract unified to `created_at|like_count`
 - integration/regression suite added:
-  - topics, votes, auth-required, regressions
+  - topics, votes, auth-required, comments/replies, likes, regressions
 - CI gate enabled:
   - PR-to-main workflow with required backend/frontend checks
