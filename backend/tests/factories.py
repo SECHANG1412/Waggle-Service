@@ -6,7 +6,7 @@ from typing import Iterable
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Topic, TopicLike, User, Vote
+from app.db.models import Comment, Reply, Topic, TopicLike, User, Vote
 
 _seq = count(1)
 
@@ -84,3 +84,41 @@ async def create_topic_like(
     db.add(like)
     await db.flush()
     return like
+
+
+async def create_comment(
+    db: AsyncSession,
+    *,
+    user_id: int,
+    topic_id: int,
+    content: str = "comment",
+    is_deleted: bool = False,
+) -> Comment:
+    comment = Comment(
+        user_id=user_id,
+        topic_id=topic_id,
+        content=content,
+        is_deleted=is_deleted,
+    )
+    db.add(comment)
+    await db.flush()
+    return comment
+
+
+async def create_reply(
+    db: AsyncSession,
+    *,
+    user_id: int,
+    comment_id: int,
+    content: str = "reply",
+    parent_reply_id: int | None = None,
+) -> Reply:
+    reply = Reply(
+        user_id=user_id,
+        comment_id=comment_id,
+        content=content,
+        parent_reply_id=parent_reply_id,
+    )
+    db.add(reply)
+    await db.flush()
+    return reply
