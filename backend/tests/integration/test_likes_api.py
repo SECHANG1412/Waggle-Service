@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import pytest
+from sqlalchemy.exc import IntegrityError
 
+from app.db.crud import LikeCrud
 from tests.factories import create_comment, create_reply, create_topic
 
 
@@ -68,3 +70,33 @@ async def test_like_endpoints_auth_required_and_not_found(
     assert missing_topic.status_code == 404
     assert missing_comment.status_code == 404
     assert missing_reply.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_topic_like_integrity_error_returns_stable_true(
+    authenticated_client,
+    db_session,
+    auth_user,
+    monkeypatch,
+):
+    topic = await create_topic(db_session, user_id=auth_user.user_id, title="race-like")
+    await db_session.commit()
+
+    state = {"calls": 0}
+
+    async def fake_get_topic_like_by_user_and_topic(db, user_id, topic_id):
+        state["calls"] += 1
+        if state["calls"] == 1:
+            return None
+        return object()
+
+    async def fake_create_with_race(db, user_id, topic_id):
+        raise IntegrityError("duplicate like", params=None, orig=None)
+
+    monkeypatch.setattr(LikeCrud, "get_topic_like_by_user_and_topic", fake_get_topic_like_by_user_and_topic)
+    monkeypatch.setattr(LikeCrud, "create_topic_like", fake_create_with_race)
+
+    response = await authenticated_client.put(f"/likes/topic/{topic.topic_id}")
+
+    assert response.status_code == 200
+    assert response.json() is True

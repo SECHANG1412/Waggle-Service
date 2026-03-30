@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import pytest
+from sqlalchemy.exc import IntegrityError
 
+from app.db.crud import VoteCrud
 from tests.factories import create_topic
 
 
@@ -69,3 +71,37 @@ async def test_vote_payload_validation_error_422(authenticated_client, db_sessio
         json={"topic_id": topic.topic_id},
     )
     assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_vote_duplicate_integrity_error_returns_400(
+    authenticated_client,
+    db_session,
+    auth_user,
+    monkeypatch,
+):
+    topic = await create_topic(db_session, user_id=auth_user.user_id, vote_options=["A", "B"])
+    await db_session.commit()
+
+    original_get = VoteCrud.get_by_topic_and_user
+    state = {"calls": 0}
+
+    async def fake_get_by_topic_and_user(db, topic_id, user_id):
+        state["calls"] += 1
+        if state["calls"] == 1:
+            return None
+        return await original_get(db, topic_id, user_id)
+
+    async def fake_create(*args, **kwargs):
+        raise IntegrityError("duplicate vote", params=None, orig=None)
+
+    monkeypatch.setattr(VoteCrud, "get_by_topic_and_user", fake_get_by_topic_and_user)
+    monkeypatch.setattr(VoteCrud, "create", fake_create)
+
+    response = await authenticated_client.post(
+        "/votes",
+        json={"topic_id": topic.topic_id, "vote_index": 0},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "이미 투표한 토픽입니다."

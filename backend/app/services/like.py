@@ -1,9 +1,40 @@
 from fastapi import HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.crud import LikeCrud, TopicCrud, CommentCrud, ReplyCrud
 
 
 class LikeService:
+    @staticmethod
+    async def _resolve_duplicate_topic_like(
+        db: AsyncSession, user_id: int, topic_id: int
+    ) -> bool:
+        await db.rollback()
+        like = await LikeCrud.get_topic_like_by_user_and_topic(db, user_id, topic_id)
+        if like:
+            return True
+        raise HTTPException(status_code=409, detail="좋아요 처리 중 충돌이 발생했습니다. 다시 시도해주세요.")
+
+    @staticmethod
+    async def _resolve_duplicate_comment_like(
+        db: AsyncSession, user_id: int, comment_id: int
+    ) -> bool:
+        await db.rollback()
+        like = await LikeCrud.get_comment_like_by_user_and_comment(db, user_id, comment_id)
+        if like:
+            return True
+        raise HTTPException(status_code=409, detail="좋아요 처리 중 충돌이 발생했습니다. 다시 시도해주세요.")
+
+    @staticmethod
+    async def _resolve_duplicate_reply_like(
+        db: AsyncSession, user_id: int, reply_id: int
+    ) -> bool:
+        await db.rollback()
+        like = await LikeCrud.get_reply_like_by_user_and_reply(db, user_id, reply_id)
+        if like:
+            return True
+        raise HTTPException(status_code=409, detail="좋아요 처리 중 충돌이 발생했습니다. 다시 시도해주세요.")
+
     @staticmethod
     async def toggle_topic_like(db: AsyncSession, user_id: int, topic_id: int) -> bool:
         try:
@@ -22,6 +53,8 @@ class LikeService:
                 result = True
             await db.commit()
             return result
+        except IntegrityError:
+            return await LikeService._resolve_duplicate_topic_like(db, user_id, topic_id)
         except Exception:
             await db.rollback()
             raise
@@ -46,6 +79,8 @@ class LikeService:
                 result = True
             await db.commit()
             return result
+        except IntegrityError:
+            return await LikeService._resolve_duplicate_comment_like(db, user_id, comment_id)
         except Exception:
             await db.rollback()
             raise
@@ -68,6 +103,8 @@ class LikeService:
                 result = True
             await db.commit()
             return result
+        except IntegrityError:
+            return await LikeService._resolve_duplicate_reply_like(db, user_id, reply_id)
         except Exception:
             await db.rollback()
             raise
