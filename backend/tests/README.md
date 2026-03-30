@@ -8,6 +8,8 @@ This suite protects core API contracts and prevents regressions around:
 - topics sort contract
 - vote statistics aggregation for `time_range=all`
 - auth-required endpoint behavior
+- comment/reply lifecycle behavior
+- like toggle behavior
 
 ## Prerequisites
 
@@ -34,6 +36,10 @@ This suite protects core API contracts and prevents regressions around:
   - vote create success/business errors, stats errors, payload validation
 - `test_auth_required_api.py`
   - no-auth `401`, forbidden delete `403`
+- `test_comments_replies_api.py`
+  - comment create/list/update, soft delete vs hard delete, reply nesting, deleted-parent guard, reply cleanup
+- `test_likes_api.py`
+  - topic/comment/reply like toggle, auth-required behavior, not-found handling
 - `test_regressions.py`
   - fixed regression contract: `offset = (page - 1) * limit`
   - fixed sort contract: only `created_at`, `like_count` allowed
@@ -49,6 +55,10 @@ This suite protects core API contracts and prevents regressions around:
   - Check that no recent-time filter is applied for `all`.
 - unexpected `401/403`
   - Check auth cookie fixture and endpoint authorization flow.
+- comment/reply lifecycle mismatch
+  - Check soft-delete branch, nested reply linkage, and cleanup when the last child reply is removed.
+- like toggle mismatch
+  - Check toggle semantics (`True` on create, `False` on remove) and related entity existence checks.
 
 ## CI Merge Gate
 
@@ -65,6 +75,7 @@ GitHub Actions workflow: `.github/workflows/ci.yml`
 
 - [ ] `pytest -q tests/integration` passes locally
 - [ ] no contract drift from guarded regressions (`offset`, `sort`, `time_range=all`)
+- [ ] comments/replies/likes scenarios still pass after API changes
 - [ ] CI required checks are green on the PR
 - [ ] docs updated if API contract or test scope changed
 
@@ -75,6 +86,6 @@ GitHub Actions workflow: `.github/workflows/ci.yml`
 - contract alignment completed:
   - sort contract unified to `created_at|like_count`
 - integration/regression suite added:
-  - topics, votes, auth-required, regressions
+  - topics, votes, auth-required, comments/replies, likes, regressions
 - CI gate enabled:
   - PR-to-main workflow with required backend/frontend checks
