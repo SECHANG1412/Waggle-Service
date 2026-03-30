@@ -19,7 +19,7 @@ export const useComment = () => {
       return null;
     } catch (error) {
       if (await handleAuthError(error)) return null;
-      showErrorAlert(error, '댓글 생성에 실패했습니다.');
+      showErrorAlert(error, '댓글을 등록하지 못했습니다.');
       return null;
     }
   }, []);
@@ -48,11 +48,11 @@ export const useComment = () => {
         showSuccessAlert('댓글이 삭제되었습니다.');
         return true;
       }
-      showErrorAlert(new Error('API 오류'), '댓글 삭제에 실패했습니다.');
+      showErrorAlert(new Error('API 오류'), '댓글을 삭제하지 못했습니다.');
       return false;
     } catch (error) {
       if (await handleAuthError(error)) return;
-      showErrorAlert(error, '댓글 삭제에 실패했습니다.');
+      showErrorAlert(error, '댓글을 삭제하지 못했습니다.');
       return false;
     }
   }, []);
@@ -68,7 +68,7 @@ export const useComment = () => {
       return null;
     } catch (error) {
       if (await handleAuthError(error)) return null;
-      showErrorAlert(error, '댓글 수정에 실패했습니다.');
+      showErrorAlert(error, '댓글을 수정하지 못했습니다.');
       return null;
     }
   }, []);

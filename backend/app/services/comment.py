@@ -5,8 +5,8 @@ from app.db.models import Comment
 from app.db.schemas.comments import CommentRead, CommentCreate, CommentUpdate
 from app.services.reply import ReplyService
 
-class CommentService:
 
+class CommentService:
     @staticmethod
     async def create(db: AsyncSession, user_id: int, comment_data: CommentCreate) -> CommentRead:
         topic = await TopicCrud.get_by_id(db, comment_data.topic_id)
@@ -21,7 +21,6 @@ class CommentService:
             await db.rollback()
             raise
 
-    
     @staticmethod
     async def update_by_id(db: AsyncSession, comment_id: int, comment_data: CommentUpdate, user_id: int) -> CommentRead:
         comment = await CommentCrud.get_by_id(db, comment_id)
@@ -33,12 +32,11 @@ class CommentService:
             updated_comment = await CommentCrud.update_by_id(db, comment_id, comment_data)
             await db.commit()
             await db.refresh(updated_comment)
-            return await CommentService._build_comment_read(db,updated_comment, user_id)
+            return await CommentService._build_comment_read(db, updated_comment, user_id)
         except Exception:
             await db.rollback()
             raise
 
-    
     @staticmethod
     async def delete_by_id(db: AsyncSession, comment_id: int, user_id: int) -> CommentRead:
         comment = await CommentCrud.get_by_id(db, comment_id)
@@ -68,12 +66,10 @@ class CommentService:
             await db.rollback()
             raise
 
-    
     @staticmethod
     async def get_all_by_topic_id(db: AsyncSession, topic_id: int, user_id: int | None = None) -> list[CommentRead]:
         comments = await CommentCrud.get_all_by_topic_id(db, topic_id)
         return [await CommentService._build_comment_read(db, comment, user_id) for comment in comments]
-
 
     @staticmethod
     async def _build_comment_read(
