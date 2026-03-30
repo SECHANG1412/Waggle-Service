@@ -20,7 +20,7 @@ export const useReply = () => {
       return null;
     } catch (error) {
       if (await handleAuthError(error)) return null;
-      showErrorAlert(error, "댓글 생성에 실패했습니다.");
+      showErrorAlert(error, "답글을 등록하지 못했습니다.");
       return null;
     }
   };
@@ -28,8 +28,8 @@ export const useReply = () => {
   const deleteReply = async (replyId) => {
     try {
       const confirm = await showConfirmDialog(
-        "댓글을 삭제할까요?",
-        "삭제하면 되돌릴 수 없습니다.",
+        "답글을 삭제하시겠습니까?",
+        "삭제한 답글은 복구할 수 없습니다.",
         "삭제",
         "취소",
         "#EF4444",
@@ -45,11 +45,10 @@ export const useReply = () => {
       return null;
     } catch (error) {
       if (await handleAuthError(error)) return null;
-      showErrorAlert(error, "댓글 삭제에 실패했습니다.");
+      showErrorAlert(error, "답글을 삭제하지 못했습니다.");
       return null;
     }
   };
-
 
   const updateReply = async (replyId, content) => {
     try {
@@ -59,7 +58,7 @@ export const useReply = () => {
       return null;
     } catch (error) {
       if (await handleAuthError(error)) return null;
-      showErrorAlert(error, "댓글 수정에 실패했습니다.");
+      showErrorAlert(error, "답글을 수정하지 못했습니다.");
       return null;
     }
   };

@@ -35,15 +35,15 @@ export const AuthProvider = ({ children }) => {
   const signup = async ({ email, username, password, confirmPassword }) => {
     setError('');
     if (!email.includes('@')) {
-      setError('유효한 이메일을 입력하세요.');
+      setError('올바른 이메일 형식을 입력해주세요.');
       return false;
     }
     if (username.length < 2) {
-      setError('닉네임은 최소 2글자 이상이어야 합니다.');
+      setError('닉네임은 2자 이상이어야 합니다.');
       return false;
     }
     if (password.length < 6) {
-      setError('비밀번호는 최소 6자리 이상이어야 합니다.');
+      setError('비밀번호는 6자 이상이어야 합니다.');
       return false;
     }
     if (password !== confirmPassword) {
@@ -99,7 +99,7 @@ export const AuthProvider = ({ children }) => {
         const detail = error.response.data?.detail;
 
         if (detail === 'token_expired') {
-          showErrorAlert('세션이 만료되었습니다. 다시 로그인 해주세요.');
+          showErrorAlert(error, '세션이 만료되었습니다. 다시 로그인해 주세요.');
           navigate('/login');
         }
       }
@@ -137,7 +137,7 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth 사용하기 위해 AuthProvider로 감싸야한다.');
+    throw new Error('useAuth must be used within AuthProvider');
   }
   return context;
 };
