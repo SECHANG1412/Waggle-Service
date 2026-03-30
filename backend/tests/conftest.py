@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import os
 from pathlib import Path
 from typing import AsyncIterator
@@ -27,14 +28,35 @@ from app.db.database import Base, get_db
 from main import app
 from tests.factories import create_user
 
-TEST_DB_PATH = Path(__file__).parent / "test_integration.db"
-TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", f"sqlite+aiosqlite:///{TEST_DB_PATH}")
+TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL")
+
+
+def _sqlite_path_from_url(database_url: str) -> Path | None:
+    sqlite_prefix = "sqlite+aiosqlite:///"
+    if not database_url.startswith(sqlite_prefix) or database_url.endswith(":memory:"):
+        return None
+    return Path(database_url.removeprefix(sqlite_prefix))
 
 
 @pytest.fixture(scope="session")
-def test_engine():
-    connect_args = {"check_same_thread": False} if TEST_DATABASE_URL.startswith("sqlite") else {}
-    return create_async_engine(TEST_DATABASE_URL, future=True, connect_args=connect_args)
+def test_database_url(tmp_path_factory: pytest.TempPathFactory) -> str:
+    if TEST_DATABASE_URL:
+        return TEST_DATABASE_URL
+
+    db_dir = tmp_path_factory.mktemp("integration-db")
+    db_path = db_dir / "test_integration.db"
+    return f"sqlite+aiosqlite:///{db_path.as_posix()}"
+
+
+@pytest.fixture(scope="session")
+def test_db_path(test_database_url: str) -> Path | None:
+    return _sqlite_path_from_url(test_database_url)
+
+
+@pytest.fixture(scope="session")
+def test_engine(test_database_url: str):
+    connect_args = {"check_same_thread": False} if test_database_url.startswith("sqlite") else {}
+    return create_async_engine(test_database_url, future=True, connect_args=connect_args)
 
 
 @pytest.fixture(scope="session")
@@ -43,7 +65,7 @@ def async_session_maker(test_engine):
 
 
 @pytest.fixture(scope="session", autouse=True)
-async def setup_test_schema(test_engine):
+async def setup_test_schema(test_engine, test_db_path: Path | None):
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
@@ -51,8 +73,13 @@ async def setup_test_schema(test_engine):
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     await test_engine.dispose()
-    if TEST_DATABASE_URL.startswith("sqlite") and TEST_DB_PATH.exists():
-        TEST_DB_PATH.unlink()
+    if test_db_path and test_db_path.exists():
+        for _ in range(5):
+            try:
+                test_db_path.unlink()
+                break
+            except PermissionError:
+                await asyncio.sleep(0.1)
 
 
 @pytest.fixture(scope="session", autouse=True)
