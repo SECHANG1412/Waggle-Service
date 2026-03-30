@@ -1,6 +1,7 @@
 import re
 from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.crud import VoteCrud, TopicCrud
 from app.db.models import Vote, Topic
@@ -25,6 +26,9 @@ class VoteService:
             await db.commit()
             await db.refresh(vote)
             return VoteRead.model_validate(vote)
+        except IntegrityError:
+            await db.rollback()
+            raise HTTPException(status_code=400, detail="이미 투표한 토픽입니다.")
         except Exception:
             await db.rollback()
             raise
