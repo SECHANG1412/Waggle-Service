@@ -13,14 +13,14 @@ class VoteService:
     async def create(db: AsyncSession, vote_data: VoteCreate, user_id: int) -> VoteRead:
         topic = await TopicCrud.get_by_id(db, vote_data.topic_id)
         if not topic:
-            raise HTTPException(status_code=404, detail="해당 투표를 찾을 수 없습니다.")
+            raise HTTPException(status_code=404, detail="토픽을 찾을 수 없습니다.")
 
         if vote_data.vote_index < 0 or vote_data.vote_index >= len(topic.vote_options):
-            raise HTTPException(status_code=400, detail="잘못된 선택지입니다.")
+            raise HTTPException(status_code=400, detail="유효하지 않은 투표 항목입니다.")
 
         existing = await VoteCrud.get_by_topic_and_user(db, vote_data.topic_id, user_id)
         if existing:
-            raise HTTPException(status_code=400, detail="이미 투표했습니다.")
+            raise HTTPException(status_code=400, detail="이미 투표한 토픽입니다.")
         try:
             vote = await VoteCrud.create(db, vote_data, user_id)
             await db.commit()
@@ -44,7 +44,7 @@ class VoteService:
     ):
         topic = await TopicCrud.get_by_id(db, topic_id)
         if not topic:
-            raise HTTPException(status_code=404, detail="해당 투표를 찾을 수 없습니다.")
+            raise HTTPException(status_code=404, detail="토픽을 찾을 수 없습니다.")
 
         is_all_time = time_range.lower() == "all"
         delta = None if is_all_time else VoteService._parse_interval(time_range)

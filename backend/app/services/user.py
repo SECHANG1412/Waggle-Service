@@ -40,11 +40,11 @@ class UserService:
             v = validate_email(email, check_deliverability=True)
             normalized = v.email
         except EmailNotValidError:
-            raise HTTPException(status_code=400, detail="유효하지 않은 이메일입니다")
+            raise HTTPException(status_code=400, detail="올바른 이메일 형식이 아닙니다.")
 
         domain = normalized.split("@")[-1].lower()
         if domain in UserService._DISPOSABLE_DOMAINS:
-            raise HTTPException(status_code=400, detail="일회용 이메일은 사용할 수 없습니다")
+            raise HTTPException(status_code=400, detail="일회용 이메일 주소는 사용할 수 없습니다.")
         return normalized
 
     @staticmethod
@@ -56,17 +56,13 @@ class UserService:
 
     @staticmethod
     async def signup(db: AsyncSession, user: UserCreate) -> UserRead:
-        # 이메일 검증 (형식 + MX + 일회용 차단)
         user.email = UserService._validate_email(user.email)
 
-        # username 중복 확인
         if await UserCrud.get_by_username(db, user.username):
-            raise HTTPException(status_code=400, detail="이미 사용 중인 사용자 이름입니다")
-        # email 중복 확인
+            raise HTTPException(status_code=400, detail="이미 사용 중인 닉네임입니다.")
         if await UserCrud.get_by_email(db, user.email):
-            raise HTTPException(status_code=400, detail="이미 사용 중인 이메일입니다")
+            raise HTTPException(status_code=400, detail="이미 사용 중인 이메일입니다.")
 
-        # 비밀번호 해싱
         user.password = await get_password_hash(user.password)
 
         try:
@@ -76,13 +72,13 @@ class UserService:
             return await UserService._build_user_read(db, db_user)
         except Exception:
             await db.rollback()
-            raise HTTPException(status_code=500, detail="회원가입 중 오류가 발생했습니다.")
+            raise HTTPException(status_code=500, detail="회원가입 처리 중 오류가 발생했습니다.")
 
     @staticmethod
     async def login(db: AsyncSession, user: UserLogin) -> tuple:
         db_user = await UserCrud.get_by_email(db, user.email)
         if not db_user or not await verify_password(user.password, db_user.password):
-            raise HTTPException(status_code=401, detail="잘못된 이메일 또는 비밀번호")
+            raise HTTPException(status_code=401, detail="이메일 또는 비밀번호가 올바르지 않습니다.")
 
         refresh_token = create_refresh_token(db_user.user_id)
         access_token = create_access_token(db_user.user_id)
@@ -101,11 +97,11 @@ class UserService:
             update.email = UserService._validate_email(update.email)
             existing_email = await UserCrud.get_by_email(db, update.email)
             if existing_email and existing_email.user_id != user_id:
-                raise HTTPException(status_code=400, detail="이미 사용 중인 이메일입니다")
+                raise HTTPException(status_code=400, detail="이미 사용 중인 이메일입니다.")
         if update.username:
             existing_username = await UserCrud.get_by_username(db, update.username)
             if existing_username and existing_username.user_id != user_id:
-                raise HTTPException(status_code=400, detail="이미 사용 중인 사용자 이름입니다")
+                raise HTTPException(status_code=400, detail="이미 사용 중인 닉네임입니다.")
 
         db_user = await UserCrud.update_by_id(db, user_id, update)
         if not db_user:

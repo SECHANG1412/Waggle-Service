@@ -23,17 +23,17 @@ export const useVote = () => {
       });
 
       if (response.status === 200) {
-        showSuccessAlert("투표가 성공적으로 처리되었습니다.");
+        showSuccessAlert("투표가 완료되었습니다.");
         return response.data;
       }
       return null;
     } catch (error) {
       if (error.response?.status === 403) {
-        showErrorAlert(error, "이미 투표한 주제입니다.");
+        showErrorAlert(error, "이미 투표한 토픽입니다.");
         return false;
       }
       if (await handleAuthError(error)) return false;
-      showErrorAlert(error, "투표를 진행하지 못했습니다.");
+      showErrorAlert(error, "투표를 처리하지 못했습니다.");
       return false;
     }
   };
@@ -91,7 +91,7 @@ export const useVote = () => {
       }
       return null;
     } catch (error) {
-      showErrorAlert(error, "투표 데이터를 불러오지 못했습니다.");
+      showErrorAlert(error, "투표 통계를 불러오지 못했습니다.");
       return null;
     }
   };
