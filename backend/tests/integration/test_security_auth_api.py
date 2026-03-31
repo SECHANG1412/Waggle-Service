@@ -118,6 +118,52 @@ async def test_oauth_callback_rejects_invalid_state(client):
 
     assert response.status_code == 302
     assert response.headers["location"].endswith("/?auth_error=invalid_state")
+    assert "oauth_state=" in response.headers.get("set-cookie", "")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("path", "exchange_target", "expected_error"),
+    [
+        (
+            "/auth/google/callback",
+            "app.routers.oauth.exchange_google_code_for_tokens",
+            "google_oauth_error",
+        ),
+        (
+            "/auth/naver/callback",
+            "app.routers.oauth.exchange_naver_code_for_tokens",
+            "naver_oauth_error",
+        ),
+        (
+            "/auth/kakao/callback",
+            "app.routers.oauth.exchange_kakao_code_for_tokens",
+            "kakao_oauth_error",
+        ),
+    ],
+)
+async def test_oauth_callback_redirects_unexpected_errors_per_provider(
+    client,
+    monkeypatch,
+    path,
+    exchange_target,
+    expected_error,
+):
+    client.cookies.set("oauth_state", "expected-state")
+
+    def _raise_unexpected(*args, **kwargs):
+        raise RuntimeError("unexpected callback failure")
+
+    monkeypatch.setattr(exchange_target, _raise_unexpected)
+
+    response = await client.get(
+        path,
+        params={"code": "abc", "state": "expected-state"},
+    )
+
+    assert response.status_code == 302
+    assert response.headers["location"].endswith(f"/?auth_error={expected_error}")
+    assert "oauth_state=" in response.headers.get("set-cookie", "")
 
 
 @pytest.mark.asyncio

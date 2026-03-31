@@ -1,3 +1,4 @@
+import logging
 import secrets
 
 from fastapi import APIRouter, Depends, Request
@@ -37,6 +38,7 @@ from app.services.naver_oauth import (
 
 router = APIRouter(prefix="/auth", tags=["OAuth"])
 STATE_COOKIE = "oauth_state"
+logger = logging.getLogger(__name__)
 
 
 def _set_state_cookie(response: RedirectResponse, state: str) -> None:
@@ -53,19 +55,30 @@ def _frontend_redirect_url() -> str:
     return settings.frontend_url.rstrip("/") or "http://localhost:3000"
 
 
-def _redirect_with_error(error: str) -> RedirectResponse:
+def _redirect_with_error(error: str, *, clear_state: bool = False) -> RedirectResponse:
     frontend_redirect = _frontend_redirect_url()
-    return RedirectResponse(url=f"{frontend_redirect}/?auth_error={error}", status_code=302)
+    response = RedirectResponse(
+        url=f"{frontend_redirect}/?auth_error={error}",
+        status_code=302,
+    )
+    if clear_state:
+        clear_cookie_with_policy(response, key=STATE_COOKIE, httponly=True)
+    return response
+
+
+def _handle_unexpected_callback_error(provider: str) -> RedirectResponse:
+    logger.exception("Unexpected %s OAuth callback error", provider)
+    return _redirect_with_error(f"{provider}_oauth_error", clear_state=True)
 
 
 def _validate_state(request: Request, state: str | None) -> RedirectResponse | None:
     saved_state = request.cookies.get(STATE_COOKIE)
     if not saved_state:
-        return _redirect_with_error("missing_state_cookie")
+        return _redirect_with_error("missing_state_cookie", clear_state=True)
     if not state:
-        return _redirect_with_error("missing_state")
+        return _redirect_with_error("missing_state", clear_state=True)
     if state != saved_state:
-        return _redirect_with_error("invalid_state")
+        return _redirect_with_error("invalid_state", clear_state=True)
     return None
 
 
@@ -104,18 +117,15 @@ async def google_callback(
     error: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
-    frontend_redirect = _frontend_redirect_url()
-    default_redirect = RedirectResponse(url=frontend_redirect, status_code=302)
-
     if error:
-        return _redirect_with_error(error)
+        return _redirect_with_error(error, clear_state=True)
 
     state_error = _validate_state(request, state)
     if state_error:
         return state_error
 
     if not code:
-        return _redirect_with_error("missing_code")
+        return _redirect_with_error("missing_code", clear_state=True)
 
     try:
         token_payload = await exchange_google_code_for_tokens(code)
@@ -134,9 +144,12 @@ async def google_callback(
         return await _finalize_login(db, user.user_id)
 
     except GoogleOAuthError as exc:
-        return _redirect_with_error(exc.detail or "google_oauth_error")
+        return _redirect_with_error(
+            exc.detail or "google_oauth_error",
+            clear_state=True,
+        )
     except Exception:
-        return default_redirect
+        return _handle_unexpected_callback_error("google")
 
 
 @router.get("/naver/login")
@@ -156,18 +169,15 @@ async def naver_callback(
     error: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
-    frontend_redirect = _frontend_redirect_url()
-    default_redirect = RedirectResponse(url=frontend_redirect, status_code=302)
-
     if error:
-        return _redirect_with_error(error)
+        return _redirect_with_error(error, clear_state=True)
 
     state_error = _validate_state(request, state)
     if state_error:
         return state_error
 
     if not code:
-        return _redirect_with_error("missing_code")
+        return _redirect_with_error("missing_code", clear_state=True)
 
     try:
         token_payload = await exchange_naver_code_for_tokens(code, state)
@@ -183,9 +193,12 @@ async def naver_callback(
         return await _finalize_login(db, user.user_id)
 
     except NaverOAuthError as exc:
-        return _redirect_with_error(exc.detail or "naver_oauth_error")
+        return _redirect_with_error(
+            exc.detail or "naver_oauth_error",
+            clear_state=True,
+        )
     except Exception:
-        return default_redirect
+        return _handle_unexpected_callback_error("naver")
 
 
 @router.get("/kakao/login")
@@ -205,18 +218,15 @@ async def kakao_callback(
     error: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
-    frontend_redirect = _frontend_redirect_url()
-    default_redirect = RedirectResponse(url=frontend_redirect, status_code=302)
-
     if error:
-        return _redirect_with_error(error)
+        return _redirect_with_error(error, clear_state=True)
 
     state_error = _validate_state(request, state)
     if state_error:
         return state_error
 
     if not code:
-        return _redirect_with_error("missing_code")
+        return _redirect_with_error("missing_code", clear_state=True)
 
     try:
         token_payload = await exchange_kakao_code_for_tokens(code)
@@ -238,6 +248,9 @@ async def kakao_callback(
         return await _finalize_login(db, user.user_id)
 
     except KakaoOAuthError as exc:
-        return _redirect_with_error(exc.detail or "kakao_oauth_error")
+        return _redirect_with_error(
+            exc.detail or "kakao_oauth_error",
+            clear_state=True,
+        )
     except Exception:
-        return default_redirect
+        return _handle_unexpected_callback_error("kakao")
