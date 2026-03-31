@@ -30,7 +30,7 @@ def build_authorization_url(state: str) -> str:
         "redirect_uri": settings.kakao_redirect_uri,
         "response_type": "code",
         "state": state,
-        # Email 스코프는 계정 설정에 따라 거부될 수 있으므로 필수로 요청하지 않는다.
+        # Email scope is optional in Kakao and may be unavailable depending on account consent.
         "scope": "profile_nickname profile_image",
         "prompt": "login",
     }
@@ -82,7 +82,7 @@ async def ensure_user_from_kakao(
     if provider_id is None:
         raise KakaoOAuthError(status_code=400, detail="provider_id_required")
 
-    # 이메일이 없으면 공급자 ID 기반의 placeholder 이메일을 생성한다.
+    # Fall back to a provider-based placeholder email when Kakao does not return one.
     effective_email = email or f"kakao_{provider_id}@placeholder.local"
 
     existing = await UserCrud.get_by_email(db, effective_email)
