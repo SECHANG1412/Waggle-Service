@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 class TopicBase(BaseModel):
     title: str
@@ -23,8 +23,7 @@ class TopicInDB(TopicBase):
     created_at: datetime
     user_id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TopicRead(TopicInDB):

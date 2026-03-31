@@ -1,6 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from sqlalchemy import func, or_, desc, select
+from sqlalchemy import desc, func, or_, select
 from app.db.models import Topic, TopicLike
 from app.db.schemas.topics import TopicCreate
 

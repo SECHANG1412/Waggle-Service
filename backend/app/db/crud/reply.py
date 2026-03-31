@@ -1,6 +1,6 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
 from sqlalchemy import func
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import Reply, Comment
 from app.db.schemas.replys import ReplyCreate, ReplyUpdate
 

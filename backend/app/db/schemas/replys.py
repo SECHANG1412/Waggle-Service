@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
 from datetime import datetime
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ReplyBase(BaseModel):
@@ -21,8 +21,7 @@ class ReplyInDB(ReplyBase):
     user_id: int
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ReplyRead(ReplyInDB):
@@ -31,8 +30,7 @@ class ReplyRead(ReplyInDB):
     has_liked: bool = False
     replies: list["ReplyRead"] = Field(default_factory=list)
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Forward reference for nested replies
 ReplyRead.model_rebuild()

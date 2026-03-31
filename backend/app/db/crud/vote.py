@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta, timezone
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from sqlalchemy import func
 from app.db.models import Vote
 from app.db.schemas.votes import VoteCreate
 
