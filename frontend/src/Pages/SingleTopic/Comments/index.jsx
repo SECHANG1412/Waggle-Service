@@ -82,15 +82,15 @@ const Comments = ({ topicId }) => {
     onDelete: (commentId) =>
       guardedAction(() => onDeleteComment(commentId), '댓글을 삭제하려면 로그인해 주세요.'),
     onLike: (commentId) =>
-      guardedAction(() => toggleCommentLike(commentId), '댓글에 좋아요하려면 로그인해 주세요.'),
+      guardedAction(() => toggleCommentLike(commentId), '댓글에 좋아요를 누르려면 로그인해 주세요.'),
     onReply: (commentId, content, parentReplyId = null) =>
-      guardedAction(() => createReply(commentId, content, parentReplyId), '댓글을 작성하려면 로그인해 주세요.'),
+      guardedAction(() => createReply(commentId, content, parentReplyId), '답글을 작성하려면 로그인해 주세요.'),
     onReplyEdit: (replyId, content) =>
-      guardedAction(() => updateReply(replyId, content), '댓글을 수정하려면 로그인해 주세요.'),
+      guardedAction(() => updateReply(replyId, content), '답글을 수정하려면 로그인해 주세요.'),
     onReplyDelete: (replyId) =>
-      guardedAction(() => deleteReply(replyId), '댓글을 삭제하려면 로그인해 주세요.'),
+      guardedAction(() => deleteReply(replyId), '답글을 삭제하려면 로그인해 주세요.'),
     onReplyLike: (replyId) =>
-      guardedAction(() => toggleReplyLike(replyId), '댓글에 좋아요하려면 로그인해 주세요.'),
+      guardedAction(() => toggleReplyLike(replyId), '답글에 좋아요를 누르려면 로그인해 주세요.'),
   };
 
   const startIndex = (currentPage - 1) * itemsPerPage;
