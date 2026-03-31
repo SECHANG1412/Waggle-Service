@@ -15,6 +15,15 @@ class ReplyService:
             raise HTTPException(status_code=404, detail="Comment not found")
         if getattr(comment, "is_deleted", False):
             raise HTTPException(status_code=400, detail="Cannot reply to a deleted comment")
+        if reply_data.parent_reply_id is not None:
+            parent_reply = await ReplyCrud.get_by_id(db, reply_data.parent_reply_id)
+            if not parent_reply:
+                raise HTTPException(status_code=404, detail="Parent reply not found")
+            if parent_reply.comment_id != reply_data.comment_id:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Parent reply must belong to the same comment",
+                )
         try:
             reply = await ReplyCrud.create(db, reply_data, user_id)
             await db.commit()

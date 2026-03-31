@@ -156,6 +156,59 @@ async def test_reply_create_nested_update_and_deleted_parent_guard(
 
 
 @pytest.mark.asyncio
+async def test_reply_create_rejects_missing_or_cross_comment_parent(
+    authenticated_client,
+    db_session,
+    auth_user,
+):
+    topic = await create_topic(db_session, user_id=auth_user.user_id, title="reply-parent-guard")
+    first_comment = await create_comment(
+        db_session,
+        user_id=auth_user.user_id,
+        topic_id=topic.topic_id,
+        content="first comment",
+    )
+    second_comment = await create_comment(
+        db_session,
+        user_id=auth_user.user_id,
+        topic_id=topic.topic_id,
+        content="second comment",
+    )
+    parent_reply = await create_reply(
+        db_session,
+        user_id=auth_user.user_id,
+        comment_id=first_comment.comment_id,
+        content="parent reply",
+    )
+    await db_session.commit()
+
+    missing_parent = await authenticated_client.post(
+        "/replies",
+        json={
+            "comment_id": first_comment.comment_id,
+            "content": "missing parent",
+            "parent_reply_id": 999999,
+        },
+    )
+    assert missing_parent.status_code == 404
+    assert missing_parent.json()["detail"] == "Parent reply not found"
+
+    cross_comment_parent = await authenticated_client.post(
+        "/replies",
+        json={
+            "comment_id": second_comment.comment_id,
+            "content": "wrong parent",
+            "parent_reply_id": parent_reply.reply_id,
+        },
+    )
+    assert cross_comment_parent.status_code == 400
+    assert (
+        cross_comment_parent.json()["detail"]
+        == "Parent reply must belong to the same comment"
+    )
+
+
+@pytest.mark.asyncio
 async def test_reply_delete_removes_soft_deleted_parent_when_last_child_removed(
     authenticated_client,
     db_session,
