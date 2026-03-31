@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from sqlalchemy import select
 from app.db.models import Comment
 from app.db.schemas.comments import CommentCreate, CommentUpdate
 

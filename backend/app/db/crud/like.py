@@ -1,6 +1,5 @@
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from sqlalchemy import func
 from app.db.models import TopicLike, CommentLike, ReplyLike, Topic, Comment, Reply
 
 

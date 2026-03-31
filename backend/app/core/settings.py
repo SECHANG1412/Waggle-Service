@@ -1,5 +1,5 @@
-from pydantic_settings import BaseSettings
 from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from datetime import timedelta
 
 class Settings(BaseSettings):
@@ -33,11 +33,12 @@ class Settings(BaseSettings):
 
     frontend_url: str = Field("http://localhost:3000", alias="FRONTEND_URL")
 
-    class Config:
-            env_file = ".env"
-            case_sensitive = True
-            extra = "allow"
-            populate_by_name = True
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=True,
+        extra="allow",
+        populate_by_name=True,
+    )
 
     @property
     def tmp_db(self) -> str:
