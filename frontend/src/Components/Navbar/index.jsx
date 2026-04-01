@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { FiSliders, FiBookmark } from 'react-icons/fi';
 import Logo from './layout/Logo';
 import DesktopAuthButtons from './auth/DesktopAuthButtons';
 import MobileMenu from './layout/MobileMenu';
@@ -10,7 +9,8 @@ import SearchMenu from './layout/SearchMenu';
 import { useAuth } from '../../hooks/useAuth';
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { logout, isAuthenticated, user } = useAuth();
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -42,10 +42,11 @@ const Navbar = () => {
     }
     updated.set('page', '1');
     setSearchParams(updated);
+    setIsMobileMenuOpen(false);
   };
 
   return (
-    <nav className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30">
+    <nav className="sticky top-0 z-30 border-b border-gray-200 bg-white shadow-sm">
       <div className="container mx-auto px-4 lg:px-6 py-2">
         <div className="flex items-center gap-3">
           <Logo />
@@ -56,11 +57,11 @@ const Navbar = () => {
               onSearchSubmit={onSearchSubmit}
             />
           </div>
-          <div className="flex items-center gap-3 ml-auto">
+          <div className="ml-auto flex items-center gap-3">
             {isAuthenticated && (
               <Link
                 to="/create-topic"
-                className="hidden lg:inline-flex items-center px-3 py-2 text-sm font-semibold text-slate-800 border border-slate-300 bg-white/90 rounded-lg shadow-sm hover:border-slate-400 hover:text-slate-900 hover:bg-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-200"
+                className="hidden lg:inline-flex items-center rounded-lg border border-slate-300 bg-white/90 px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:border-slate-400 hover:bg-white hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-200"
               >
                 토픽 만들기
               </Link>
@@ -68,11 +69,14 @@ const Navbar = () => {
             <DesktopAuthButtons
               userName={user?.username || 'User'}
               isAuthenticated={isAuthenticated}
-              isOpen={isOpen}
-              setIsOpen={setIsOpen}
+              isOpen={isDesktopMenuOpen}
+              setIsOpen={setIsDesktopMenuOpen}
               onLogoutClick={onLogoutClick}
             />
-            <MobileToggleButton isOpen={isOpen} toggle={() => setIsOpen(!isOpen)} />
+            <MobileToggleButton
+              isOpen={isMobileMenuOpen}
+              toggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            />
           </div>
         </div>
 
@@ -82,8 +86,8 @@ const Navbar = () => {
       </div>
 
       <MobileMenu
-        isOpen={isOpen}
-        setIsOpen={setIsOpen}
+        isOpen={isMobileMenuOpen}
+        setIsOpen={setIsMobileMenuOpen}
         isAuthenticated={isAuthenticated}
         onLogoutClick={onLogoutClick}
         searchValue={searchInput}

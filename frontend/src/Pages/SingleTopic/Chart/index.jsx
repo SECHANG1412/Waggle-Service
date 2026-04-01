@@ -3,7 +3,7 @@ import { useVote } from '../../../hooks/useVote';
 import ChartHeader from './ChartHeader';
 import ChartCanvas from './ChartCanvas';
 import { voteColors } from '../../../constants/voteColors';
-import TimeFrameButtons from "./TimeFrameButtons";
+import TimeFrameButtons from './TimeFrameButtons';
 
 const timeFrames = ['1H', '6H', '1D', '1W', '1M', 'ALL'];
 
@@ -46,7 +46,7 @@ const Chart = ({ topicId, voteOptions }) => {
 
   useEffect(() => {
     fetchTopicVotes('ALL');
-  }, []);
+  }, [fetchTopicVotes]);
 
   const onTimeFrameChage = (frame) => {
     if (frame !== selectedTimeFrame) {
@@ -56,15 +56,16 @@ const Chart = ({ topicId, voteOptions }) => {
   };
 
   return (
-    <div className="bg-gray-100 rounded-lg p-3 sm:p-5 shadow-inner mb-6 relative">
+    <div className="relative mb-6 rounded-lg bg-gray-100 p-3 shadow-inner sm:p-5">
       <ChartHeader chartMetric={chartMetric} setChartMetric={setChartMetric} loading={loading} />
-      <div className="overflow-x-auto">
-        <div className="min-w-[560px] sm:min-w-0">
+      <div className="overflow-hidden">
+        <div className="w-full">
           <ChartCanvas
             data={voteData}
             metric={chartMetric}
             options={voteOptions}
             colors={voteColors[voteOptions.length]}
+            timeFrame={selectedTimeFrame}
           />
         </div>
       </div>

@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom';
 
 const MobileAuthButtons = ({ isAuthenticated, setIsOpen, onLogoutClick }) => {
   return (
-    <div className="pt-2 flex flex-col space-y-2 w-full">
+    <div className="w-full space-y-2 pt-2">
       {isAuthenticated ? (
         <>
           <Link
             to="/profile"
             onClick={() => setIsOpen(false)}
-            className="text-gray-800 hover:bg-gray-100 block px-3 py-2 rounded-md text-base font-semibold transition-all duration-200 text-left cursor-pointer"
+            className="block w-full rounded-md px-3 py-2 text-left text-base font-semibold text-gray-800 transition-all duration-200 hover:bg-gray-100"
           >
             프로필
           </Link>
@@ -18,7 +18,7 @@ const MobileAuthButtons = ({ isAuthenticated, setIsOpen, onLogoutClick }) => {
               setIsOpen(false);
               onLogoutClick();
             }}
-            className="text-gray-800 hover:bg-gray-100 block px-3 py-2 rounded-md text-base font-semibold transition-all duration-200 text-left"
+            className="block w-full rounded-md px-3 py-2 text-left text-base font-semibold text-gray-800 transition-all duration-200 hover:bg-gray-100"
           >
             로그아웃
           </button>
@@ -28,16 +28,16 @@ const MobileAuthButtons = ({ isAuthenticated, setIsOpen, onLogoutClick }) => {
           <Link
             to="/login"
             onClick={() => setIsOpen(false)}
-            className="text-gray-800 hover:bg-gray-100 block px-3 py-2 rounded-md text-base font-semibold transition-all duration-200 text-left"
+            className="block w-full rounded-md px-3 py-2 text-left text-base font-semibold text-gray-800 transition-all duration-200 hover:bg-gray-100"
           >
             로그인
           </Link>
           <Link
             to="/signup"
             onClick={() => setIsOpen(false)}
-            className="text-white bg-blue-600 hover:bg-blue-700 block px-3 py-2 rounded-md text-base font-semibold transition-all duration-200 text-left cursor-pointer"
+            className="block w-full cursor-pointer rounded-md bg-blue-600 px-3 py-2 text-left text-base font-semibold text-white transition-all duration-200 hover:bg-blue-700"
           >
-            가입하기
+            회원가입
           </Link>
         </>
       )}
