@@ -6,6 +6,7 @@ import {
   showLoginRequiredAlert,
   showSuccessAlert,
 } from "../utils/alertUtils";
+import { parseApiDate } from "../utils/date";
 
 export const useVote = () => {
   const { isAuthenticated, isAuthLoading } = useAuth();
@@ -70,7 +71,7 @@ export const useVote = () => {
       if (response.status === 200) {
         const formattedData = Object.fromEntries(
           Object.entries(response.data).map(([timeStamp, voteData]) => {
-            const date = new Date(timeStamp);
+            const date = parseApiDate(timeStamp);
             const MM = String(date.getMonth() + 1).padStart(2, "0");
             const DD = String(date.getDate()).padStart(2, "0");
             const HH = String(date.getHours()).padStart(2, "0");

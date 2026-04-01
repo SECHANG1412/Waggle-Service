@@ -3,6 +3,7 @@ import EditableContent from './EditableContent';
 import CommentActions from './CommentActions';
 import ReplyForm from './ReplyForm';
 import { useAuth } from '../../../hooks/useAuth';
+import { formatDateTime } from '../../../utils/date';
 
 const CommentItem = ({ item, isReply = false, actions, refresh, depth = 0 }) => {
   const id = isReply ? item.reply_id : item.comment_id;
@@ -64,7 +65,7 @@ const CommentItem = ({ item, isReply = false, actions, refresh, depth = 0 }) => 
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
               <p className="font-semibold text-gray-800 truncate">{item.username}</p>
               <p className="text-xs text-gray-500 whitespace-nowrap">
-                {new Date(item.created_at).toLocaleString('ko-KR', {
+                {formatDateTime(item.created_at, 'ko-KR', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',

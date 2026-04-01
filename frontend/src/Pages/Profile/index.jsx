@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import { useAuth } from '../../hooks/useAuth';
 import { handleAuthError, showErrorAlert, showSuccessAlert } from '../../utils/alertUtils';
+import { formatDateOnly } from '../../utils/date';
 
 const Profile = () => {
   const { isAuthenticated } = useAuth();
@@ -305,7 +306,7 @@ const Profile = () => {
                     <ActivityRow
                       key={idx}
                       title={item.title}
-                      date={new Date(item.created_at).toLocaleDateString()}
+                      date={formatDateOnly(item.created_at)}
                       onView={topicId ? () => navigate(`/topic/${topicId}`) : undefined}
                     />
                   );
