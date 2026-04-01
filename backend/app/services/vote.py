@@ -9,6 +9,8 @@ from app.db.schemas.votes import VoteCreate, VoteRead
 
 
 class VoteService:
+    _MAX_SERIES_POINTS = 240
+
     @staticmethod
     async def create(db: AsyncSession, vote_data: VoteCreate, user_id: int) -> VoteRead:
         topic = await TopicCrud.get_by_id(db, vote_data.topic_id)
@@ -63,9 +65,23 @@ class VoteService:
         interval_delta: timedelta
     ):
         now = datetime.now(timezone.utc)
-        start_time = (
-            datetime(1970, 1, 1, tzinfo=timezone.utc) if delta is None else now - delta
-        )
+        if delta is None:
+            first_vote_at = await VoteCrud.get_first_vote_created_at(db, topic.topic_id)
+            topic_created_at = topic.created_at
+
+            candidates = [dt for dt in (first_vote_at, topic_created_at) if dt is not None]
+            if candidates:
+                start_time = min(candidates)
+                if start_time.tzinfo is None:
+                    start_time = start_time.replace(tzinfo=timezone.utc)
+                else:
+                    start_time = start_time.astimezone(timezone.utc)
+            else:
+                start_time = now
+        else:
+            start_time = now - delta
+
+        interval_delta = VoteService._normalize_interval(now, start_time, interval_delta)
         option_len = len(topic.vote_options)
 
         votes = await VoteCrud.get_all_by_topic_id_and_range(
@@ -91,6 +107,39 @@ class VoteService:
             current_time = next_time
 
         return result
+
+    @staticmethod
+    def _normalize_interval(
+        now: datetime, start_time: datetime, interval_delta: timedelta
+    ) -> timedelta:
+        total_seconds = max((now - start_time).total_seconds(), 0)
+        if total_seconds == 0:
+            return interval_delta
+
+        points = total_seconds / max(interval_delta.total_seconds(), 1)
+        if points <= VoteService._MAX_SERIES_POINTS:
+            return interval_delta
+
+        minimum_seconds = total_seconds / VoteService._MAX_SERIES_POINTS
+        allowed_steps = [
+            timedelta(minutes=1),
+            timedelta(minutes=5),
+            timedelta(minutes=15),
+            timedelta(minutes=30),
+            timedelta(hours=1),
+            timedelta(hours=3),
+            timedelta(hours=6),
+            timedelta(hours=12),
+            timedelta(days=1),
+            timedelta(days=3),
+            timedelta(weeks=1),
+        ]
+
+        for step in allowed_steps:
+            if step.total_seconds() >= minimum_seconds:
+                return step
+
+        return allowed_steps[-1]
 
     @staticmethod
     async def _get_aggregated_stats(

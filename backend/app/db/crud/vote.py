@@ -53,3 +53,12 @@ class VoteCrud:
 
         result = await db.execute(base_query)
         return result.scalars().all()
+
+    @staticmethod
+    async def get_first_vote_created_at(
+        db: AsyncSession, topic_id: int
+    ) -> datetime | None:
+        result = await db.execute(
+            select(func.min(Vote.created_at)).where(Vote.topic_id == topic_id)
+        )
+        return result.scalar_one_or_none()
