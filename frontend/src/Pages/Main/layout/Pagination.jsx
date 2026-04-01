@@ -4,9 +4,9 @@ const Pagination = ({ currentPage, total, perPage, onPageChange }) => {
   const totalPages = Math.ceil(total / perPage);
   const delta = 2;
 
-  if (totalPages <= 1) return null;
-
   const pages = useMemo(() => {
+    if (totalPages <= 1) return [];
+
     const left = Math.max(2, currentPage - delta);
     const right = Math.min(totalPages - 1, currentPage + delta);
     const range = [];
@@ -23,6 +23,8 @@ const Pagination = ({ currentPage, total, perPage, onPageChange }) => {
 
     return range;
   }, [currentPage, totalPages]);
+
+  if (totalPages <= 1) return null;
 
   return (
     <div className="mt-8 flex justify-center gap-2 flex-wrap">

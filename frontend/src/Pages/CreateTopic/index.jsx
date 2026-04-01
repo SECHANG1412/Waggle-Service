@@ -53,14 +53,9 @@ const CreateTopic = () => {
           ...formData,
           vote_options: validVoteOptions,
         });
-        Swal.fire({
-          icon: 'success',
-          title: '토픽 생성 완료',
-          text: '토픽이 성공적으로 등록되었습니다.',
-          confirmButtonColor: '#2563EB',
-        });
+        if (!result) return;
         navigate(`/topic/${result.topic_id}`);
-      } catch (error) {
+      } catch {
         Swal.fire({
           icon: 'error',
           title: '토픽 생성 실패',
