@@ -5,10 +5,11 @@ import { FaHeart, FaCommentDots } from 'react-icons/fa';
 import ProgressBar from './ProgressBar';
 import OptionButton from './OptionButton';
 import VoteInfo from './VoteInfo';
+import { formatDateTime } from '../../../utils/date';
 
 const TopicCard = ({ topic, onVote, onPinToggle, isAuthenticated }) => {
   const formattedDate = useMemo(() => {
-    return new Date(topic.created_at).toLocaleString('ko-KR', {
+    return formatDateTime(topic.created_at, 'ko-KR', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',

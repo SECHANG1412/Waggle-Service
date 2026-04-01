@@ -1,5 +1,6 @@
 import React from 'react';
 import { FaRegCalendarAlt } from 'react-icons/fa';
+import { formatDateTime } from '../../../utils/date';
 
 const InfoBar = ({ createdAt, totalVotes }) => {
   return (
@@ -7,7 +8,7 @@ const InfoBar = ({ createdAt, totalVotes }) => {
       <div className="flex items-center text-gray-500 text-sm mt-4 gap-2">
         <FaRegCalendarAlt className="w-4 h-4" />
         <span>
-          {new Date(createdAt).toLocaleString('ko-KR', {
+          {formatDateTime(createdAt, 'ko-KR', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
