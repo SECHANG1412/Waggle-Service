@@ -21,7 +21,6 @@ const Header = ({ title, total, sort, onSortChange }) => {
         >
           <option value="recent">최신순</option>
           <option value="likes">HOT · 좋아요순</option>
-          <option value="views">BEST · 조회순</option>
         </select>
       </div>
     </div>
