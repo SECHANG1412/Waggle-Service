@@ -9,43 +9,30 @@ const timeFrames = ['1H', '6H', '1D', '1W', '1M', 'ALL'];
 
 const Chart = ({ topicId, voteOptions }) => {
   const { getTopicVotes } = useVote();
-  const [selectedTimeFrame, setSelectedTimeFrame] = useState('ALL');
+  const [selectedTimeFrame, setSelectedTimeFrame] = useState('1D');
   const [chartMetric, setChartMetric] = useState('count');
   const [loading, SetLoading] = useState(false);
   const [voteData, setVoteData] = useState([]);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   const fetchTopicVotes = useCallback(
     async (frame) => {
       if (!topicId) return;
       SetLoading(true);
 
-      const tmpVoteData = await getTopicVotes(topicId, frame);
-      if (tmpVoteData) {
-        const chartData = Object.entries(tmpVoteData).map(([_, d]) => ({
-          time: d.formattedTime,
-          ...Object.entries(d).reduce(
-            (acc, [k, v]) =>
-              typeof v === 'object'
-                ? {
-                    ...acc,
-                    [`count_${k}`]: v.count || 0,
-                    [`percent_${k}`]: v.percent || 0,
-                  }
-                : acc,
-            {}
-          ),
-        }));
-
-        setVoteData(chartData);
+      try {
+        const tmpVoteData = await getTopicVotes(topicId, frame);
+        setVoteData(tmpVoteData || []);
+      } finally {
+        setHasLoaded(true);
+        SetLoading(false);
       }
-
-      SetLoading(false);
     },
     [topicId, getTopicVotes]
   );
 
   useEffect(() => {
-    fetchTopicVotes('ALL');
+    fetchTopicVotes('1D');
   }, [fetchTopicVotes]);
 
   const onTimeFrameChage = (frame) => {
@@ -59,15 +46,25 @@ const Chart = ({ topicId, voteOptions }) => {
     <div className="relative mb-6 rounded-lg bg-gray-100 p-3 shadow-inner sm:p-5">
       <ChartHeader chartMetric={chartMetric} setChartMetric={setChartMetric} loading={loading} />
       <div className="overflow-hidden">
-        <div className="w-full">
-          <ChartCanvas
-            data={voteData}
-            metric={chartMetric}
-            options={voteOptions}
-            colors={voteColors[voteOptions.length]}
-            timeFrame={selectedTimeFrame}
-          />
-        </div>
+        {loading ? (
+          <div className="flex h-[250px] items-center justify-center text-sm text-slate-500">
+            차트 데이터를 불러오는 중입니다.
+          </div>
+        ) : voteData.length === 0 && hasLoaded ? (
+          <div className="flex h-[250px] items-center justify-center text-sm text-slate-500">
+            표시할 투표 데이터가 없습니다.
+          </div>
+        ) : (
+          <div className="w-full">
+            <ChartCanvas
+              data={voteData}
+              metric={chartMetric}
+              options={voteOptions}
+              colors={voteColors[voteOptions.length]}
+              timeFrame={selectedTimeFrame}
+            />
+          </div>
+        )}
       </div>
       <TimeFrameButtons
         selected={selectedTimeFrame}
