@@ -1,11 +1,16 @@
 import React from 'react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
-const ChartCanvas = ({ data, metric, options, colors }) => {
+const ChartCanvas = ({ data, metric, options, colors, timeFrame }) => {
   const tickFormatter = (value) => {
     if (typeof value !== 'string') return value;
     const parts = value.split(' ');
-    return parts[1] || value;
+
+    if (timeFrame === '1H' || timeFrame === '6H' || timeFrame === '1D') {
+      return parts[1] || value;
+    }
+
+    return parts[0] || value;
   };
 
   return (
@@ -17,7 +22,7 @@ const ChartCanvas = ({ data, metric, options, colors }) => {
           tick={{ fontSize: 12 }}
           tickFormatter={tickFormatter}
           interval="preserveStartEnd"
-          minTickGap={20}
+          minTickGap={28}
         />
         <YAxis
           tick={{ fontSize: 12 }}
@@ -33,7 +38,7 @@ const ChartCanvas = ({ data, metric, options, colors }) => {
         {options.map((_, i) => (
           <Line
             key={i}
-            type={'monotone'}
+            type="monotone"
             dataKey={`${metric}_${i}`}
             name={`option_${i}`}
             stroke={colors[i]}

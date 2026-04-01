@@ -1,5 +1,6 @@
 import React from 'react';
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import Navbar from './Components/Navbar';
 import Footer from './Components/Footer/Footer';
 import Main from './Pages/Main';
@@ -8,21 +9,24 @@ import SingleTopic from './Pages/SingleTopic';
 import Profile from './Pages/Profile';
 import Login from './Pages/Login';
 import Signup from './Pages/Signup';
-import Swal from 'sweetalert2';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isAuthLoading } = useAuth();
 
   if (isAuthLoading) {
-    return null;
+    return (
+      <div className="flex min-h-[40vh] items-center justify-center px-4 text-sm text-slate-500">
+        인증 상태를 확인하는 중입니다.
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
     Swal.fire({
       icon: 'warning',
-      title: '로그인이 필요해요',
-      text: '로그인 후 이용할 수 있는 메뉴입니다.',
+      title: '로그인이 필요합니다',
+      text: '로그인 후 이용할 수 있습니다.',
       confirmButtonColor: '#2563EB',
     });
     return <Navigate to="/" replace />;
@@ -31,9 +35,9 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const RootLayout = () => (
-  <div className="flex flex-col min-h-screen bg-[#F9FAFB]">
+  <div className="flex min-h-screen flex-col bg-[#F9FAFB]">
     <Navbar />
-    <main className="flex-grow container mx-auto px-4 lg:px-6 py-1">
+    <main className="container mx-auto flex-grow px-4 py-1 lg:px-6">
       <Outlet />
     </main>
     <Footer />
@@ -41,14 +45,13 @@ const RootLayout = () => (
 );
 
 const AuthLayout = () => (
-  <div className="min-h-screen bg-[#f2f4f7] flex items-center justify-center px-4 py-10">
+  <div className="flex min-h-screen items-center justify-center bg-[#f2f4f7] px-4 py-10">
     <div className="w-full max-w-5xl">
       <Outlet />
     </div>
   </div>
 );
 
-// Ensures AuthProvider is inside Router context
 const AppRoot = () => (
   <AuthProvider>
     <Outlet />
