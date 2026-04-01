@@ -61,17 +61,17 @@ export const useVote = () => {
         });
 
         if (response.status === 200) {
-          showSuccessAlert("?Ñ‹ëª´åª›Â€ ?ê¾¨ì¦º?ì„ë¿€?ë“¬ë•²??");
+          showSuccessAlert("투표가 완료되었습니다.");
           return response.data;
         }
         return null;
       } catch (error) {
         if (error.response?.status === 403) {
-          showErrorAlert(error, "?ëŒ€? ?Ñ‹ëª´???ì¢ëµ¿?ë‚…ë•²??");
+          showErrorAlert(error, "이미 투표한 토픽입니다.");
           return false;
         }
         if (await handleAuthError(error)) return false;
-        showErrorAlert(error, "?Ñ‹ëª´ç‘œ?ï§£ì„Žâ”?ì„? ï§ì‚µë»½?ë“¬ë•²??");
+        showErrorAlert(error, "투표를 처리하지 못했습니다.");
         return false;
       }
     },
@@ -111,7 +111,7 @@ export const useVote = () => {
       }
       return null;
     } catch (error) {
-      showErrorAlert(error, "?Ñ‹ëª´ ?ë“¦í€Žç‘œ?éºëˆìœ­?ã…¼? ï§ì‚µë»½?ë“¬ë•²??");
+      showErrorAlert(error, "투표 통계를 불러오지 못했습니다.");
       return null;
     }
   }, []);
