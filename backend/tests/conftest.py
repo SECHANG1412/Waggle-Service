@@ -25,6 +25,7 @@ os.environ.setdefault("REFRESH_TOKEN_EXPIRE", "604800")
 from app.core.jwt_handler import create_access_token, create_refresh_token
 from app.db import models  # noqa: F401 - register models to Base metadata
 from app.db.database import Base, get_db
+from app.perf import register_async_engine_perf_hooks
 from main import app
 from tests.factories import create_user
 
@@ -56,7 +57,9 @@ def test_db_path(test_database_url: str) -> Path | None:
 @pytest.fixture(scope="session")
 def test_engine(test_database_url: str):
     connect_args = {"check_same_thread": False} if test_database_url.startswith("sqlite") else {}
-    return create_async_engine(test_database_url, future=True, connect_args=connect_args)
+    engine = create_async_engine(test_database_url, future=True, connect_args=connect_args)
+    register_async_engine_perf_hooks(engine)
+    return engine
 
 
 @pytest.fixture(scope="session")
