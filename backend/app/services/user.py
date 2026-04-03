@@ -124,7 +124,12 @@ class UserService:
     async def get_activity(db: AsyncSession, user_id: int) -> list[UserActivity]:
         topics = await TopicCrud.get_recent_by_user_id(db, user_id, limit=5)
         return [
-            UserActivity(type="topic", title=topic.title, created_at=topic.created_at)
+            UserActivity(
+                topic_id=topic.topic_id,
+                type="topic",
+                title=topic.title,
+                created_at=topic.created_at,
+            )
             for topic in topics
         ]
 

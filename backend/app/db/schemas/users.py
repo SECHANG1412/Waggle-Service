@@ -50,6 +50,7 @@ class UserStats(BaseModel):
 
 
 class UserActivity(BaseModel):
+    topic_id: int
     type: str
     title: str
     created_at: datetime

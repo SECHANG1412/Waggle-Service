@@ -301,7 +301,7 @@ const Profile = () => {
             ) : (
               <div className="divide-y divide-slate-100">
                 {activities.map((item, idx) => {
-                  const topicId = item.topic_id || item.id;
+                  const topicId = item.topic_id;
                   return (
                     <ActivityRow
                       key={idx}
