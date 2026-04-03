@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
 import pytest
 
-from app.core.jwt_handler import create_access_token, create_refresh_token
+from app.core.auth import ACCESS_TOKEN_EXPIRED_DETAIL
+from app.core.jwt_handler import create_access_token, create_refresh_token, create_token
 from app.db.crud import UserCrud
+from app.routers.user import REFRESH_TOKEN_EXPIRED_DETAIL
 
 
 @pytest.mark.asyncio
@@ -85,6 +89,41 @@ async def test_refresh_returns_user_payload_and_sets_new_cookies(
     assert payload["username"] == auth_user.username
     assert "access_token=" in response.headers.get("set-cookie", "")
     assert "refresh_token=" in response.headers.get("set-cookie", "")
+
+
+@pytest.mark.asyncio
+async def test_me_returns_access_token_expired_detail_when_access_cookie_is_expired(
+    client,
+    auth_user,
+):
+    expired_access_token = create_token(auth_user.user_id, timedelta(seconds=-1))
+    client.cookies.set("access_token", expired_access_token)
+
+    response = await client.get("/users/me")
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == ACCESS_TOKEN_EXPIRED_DETAIL
+
+
+@pytest.mark.asyncio
+async def test_refresh_returns_refresh_token_expired_detail_when_refresh_cookie_is_expired(
+    client,
+    db_session,
+    auth_user,
+):
+    expired_refresh_token = create_token(
+        auth_user.user_id,
+        timedelta(seconds=-1),
+        jti="expired-refresh-token",
+    )
+    await UserCrud.update_refresh_token_by_id(db_session, auth_user.user_id, expired_refresh_token)
+    await db_session.commit()
+    client.cookies.set("refresh_token", expired_refresh_token)
+
+    response = await client.post("/users/refresh")
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == REFRESH_TOKEN_EXPIRED_DETAIL
 
 
 @pytest.mark.asyncio

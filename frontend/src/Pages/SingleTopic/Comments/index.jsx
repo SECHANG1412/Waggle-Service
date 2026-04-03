@@ -4,7 +4,7 @@ import CommentItem from './CommentItem';
 import { useComment } from '../../../hooks/useComment';
 import { useReply } from '../../../hooks/useReply';
 import { useLike } from '../../../hooks/useLike';
-import { useAuth } from '../../../hooks/useAuth';
+import { useAuth } from '../../../hooks/auth-context';
 import { showLoginRequiredAlert } from '../../../utils/alertUtils';
 import PaginationControls from './PaginationControls';
 

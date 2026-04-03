@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { ModalLayout, FormButton, FormInput, ErrorMessage, SwitchAuthLink } from '../Ui';
-import { useAuth } from '../../../hooks/useAuth';
+import { useAuth } from '../../../hooks/auth-context';
 
 const SignupModal = ({ isOpen, onClose, onLoginClick }) => {
   const [formData, setFormData] = useState({

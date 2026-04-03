@@ -7,6 +7,8 @@ from app.core.settings import settings
 from app.core.jwt_handler import verify_token
 from typing import Optional
 
+ACCESS_TOKEN_EXPIRED_DETAIL = "access_token_expired"
+
 def _cookie_policy() -> dict:
     if settings.prod:
         if not settings.cookie_domain:
@@ -94,7 +96,7 @@ async def get_user_id(request: Request) -> int:
             raise HTTPException(status_code=401, detail="Malformed token: no UID")
         return user_id
     except ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Access token expired")
+        raise HTTPException(status_code=401, detail=ACCESS_TOKEN_EXPIRED_DETAIL)
     except InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid access token")
     

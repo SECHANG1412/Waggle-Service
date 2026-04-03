@@ -7,7 +7,7 @@ import OptionButton from './OptionButton';
 import VoteInfo from './VoteInfo';
 import { formatDateTime } from '../../../utils/date';
 
-const TopicCard = ({ topic, onVote, onPinToggle, isAuthenticated }) => {
+const TopicCard = ({ topic, onVote, onPinToggle }) => {
   const formattedDate = useMemo(() => {
     return formatDateTime(topic.created_at, 'ko-KR', {
       year: 'numeric',

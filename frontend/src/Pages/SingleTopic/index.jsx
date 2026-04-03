@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 import { useTopic } from '../../hooks/useTopic';
 import { useLike } from '../../hooks/useLike';
 import { useVote } from '../../hooks/useVote';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../hooks/auth-context';
 import Header from './layout/Header';
 import InfoBar from './layout/InfoBar';
 import VoteButtons from './layout/VoteButtons';
