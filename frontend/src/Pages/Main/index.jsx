@@ -4,7 +4,7 @@ import { useTopic } from '../../hooks/useTopic';
 import Pagination from './layout/Pagination';
 import Grid from './layout/Grid';
 import { useVote } from "../../hooks/useVote";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../hooks/auth-context";
 
 const SORT_MAP = {
   recent: 'created_at',
@@ -57,7 +57,7 @@ const Main = () => {
       setTotalTopics(count || 0);
     });
     loadTopics();
-  }, [category, apiSort, page, search]);
+  }, [category, search, countAllTopics, loadTopics]);
 
   const onPageChange = (p) => {
     const updated = new URLSearchParams(searchParams);

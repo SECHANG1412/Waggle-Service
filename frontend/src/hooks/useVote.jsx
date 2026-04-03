@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import api from "../utils/api";
-import { useAuth } from "./useAuth";
+import { useAuth } from "./auth-context";
 import {
   handleAuthError,
   showErrorAlert,

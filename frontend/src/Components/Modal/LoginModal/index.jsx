@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { FcGoogle } from 'react-icons/fc';
 import { SiKakaotalk, SiNaver } from 'react-icons/si';
 import { ModalLayout, ErrorMessage, FormButton, FormInput, SwitchAuthLink } from '../Ui';
-import { useAuth } from '../../../hooks/useAuth';
+import { useAuth } from '../../../hooks/auth-context';
 
 const LoginModal = ({ isOpen, onClose, onSignupClick }) => {
   const [formData, setFormData] = useState({ email: '', password: '' });

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import EditableContent from './EditableContent';
 import CommentActions from './CommentActions';
 import ReplyForm from './ReplyForm';
-import { useAuth } from '../../../hooks/useAuth';
+import { useAuth } from '../../../hooks/auth-context';
 import { formatDateTime } from '../../../utils/date';
 
 const CommentItem = ({ item, isReply = false, actions, refresh, depth = 0 }) => {

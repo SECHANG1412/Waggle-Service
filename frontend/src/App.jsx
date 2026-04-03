@@ -9,7 +9,8 @@ import SingleTopic from './Pages/SingleTopic';
 import Profile from './Pages/Profile';
 import Login from './Pages/Login';
 import Signup from './Pages/Signup';
-import { AuthProvider, useAuth } from './hooks/useAuth';
+import { AuthProvider } from './hooks/useAuth';
+import { useAuth } from './hooks/auth-context';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isAuthLoading } = useAuth();

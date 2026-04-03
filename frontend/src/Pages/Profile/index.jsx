@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../hooks/auth-context';
 import { handleAuthError, showErrorAlert, showSuccessAlert } from '../../utils/alertUtils';
 import { formatDateOnly } from '../../utils/date';
 

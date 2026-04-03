@@ -6,7 +6,7 @@ import MobileMenu from './layout/MobileMenu';
 import MobileToggleButton from './layout/MobileToggleButton';
 import Categories from './layout/Categories';
 import SearchMenu from './layout/SearchMenu';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../hooks/auth-context';
 
 const Navbar = () => {
   const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
