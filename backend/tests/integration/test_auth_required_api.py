@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 from httpx import AsyncClient
 
+from app.db.crud import UserCrud
 from tests.factories import create_topic, create_user
 
 
@@ -38,3 +39,28 @@ async def test_forbidden_delete_topic_returns_403(client: AsyncClient, db_sessio
     set_auth_cookies(client, attacker.user_id)
     response = await client.delete(f"/topics/{topic.topic_id}")
     assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_update_me_hashes_password_before_saving(
+    authenticated_client: AsyncClient,
+    db_session,
+    auth_user,
+    monkeypatch,
+):
+    async def fake_get_password_hash(password: str) -> str:
+        return f"hashed::{password}"
+
+    monkeypatch.setattr("app.services.user.get_password_hash", fake_get_password_hash)
+
+    response = await authenticated_client.put(
+        "/users/me",
+        json={"password": "new-plain-password"},
+    )
+
+    assert response.status_code == 200
+
+    await db_session.refresh(auth_user)
+    db_user = await UserCrud.get_by_id(db_session, auth_user.user_id)
+    assert db_user is not None
+    assert db_user.password == "hashed::new-plain-password"
