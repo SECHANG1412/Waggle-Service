@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import pytest
 
+from app.core.jwt_handler import create_access_token, create_refresh_token
+from app.db.crud import UserCrud
+
 
 @pytest.mark.asyncio
 async def test_csrf_blocks_unsafe_request_when_header_missing(client, auth_user, set_auth_cookies):
@@ -55,6 +58,33 @@ async def test_csrf_allows_unsafe_request_with_matching_token(authenticated_clie
 
     assert response.status_code == 200
     assert response.json()["title"] == "allowed-topic"
+
+
+@pytest.mark.asyncio
+async def test_refresh_returns_user_payload_and_sets_new_cookies(
+    client,
+    db_session,
+    auth_user,
+    async_session_maker,
+    monkeypatch,
+):
+    refresh_token = create_refresh_token(auth_user.user_id)
+    await UserCrud.update_refresh_token_by_id(db_session, auth_user.user_id, refresh_token)
+    await db_session.commit()
+
+    monkeypatch.setattr("app.middleware.token_refresh.AsyncSessionLocal", async_session_maker)
+    client.cookies.set("access_token", create_access_token(auth_user.user_id))
+    client.cookies.set("refresh_token", refresh_token)
+
+    response = await client.post("/users/refresh")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["user_id"] == auth_user.user_id
+    assert payload["email"] == auth_user.email
+    assert payload["username"] == auth_user.username
+    assert "access_token=" in response.headers.get("set-cookie", "")
+    assert "refresh_token=" in response.headers.get("set-cookie", "")
 
 
 @pytest.mark.asyncio

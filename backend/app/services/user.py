@@ -103,6 +103,9 @@ class UserService:
             if existing_username and existing_username.user_id != user_id:
                 raise HTTPException(status_code=400, detail="이미 사용 중인 닉네임입니다.")
 
+        if update.password:
+            update.password = await get_password_hash(update.password)
+
         db_user = await UserCrud.update_by_id(db, user_id, update)
         if not db_user:
             raise HTTPException(status_code=404, detail="User not found")

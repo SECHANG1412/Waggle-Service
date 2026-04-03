@@ -105,4 +105,4 @@ async def refresh_token(
         raise
 
     set_auth_cookies(response, new_access, new_refresh)
-    return user
+    return await UserService.get_user(db, user_id)
