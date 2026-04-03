@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+
 import pytest
 from httpx import AsyncClient
 
@@ -64,3 +66,36 @@ async def test_update_me_hashes_password_before_saving(
     db_user = await UserCrud.get_by_id(db_session, auth_user.user_id)
     assert db_user is not None
     assert db_user.password == "hashed::new-plain-password"
+
+
+@pytest.mark.asyncio
+async def test_user_activity_includes_topic_id_and_latest_first(
+    authenticated_client: AsyncClient,
+    db_session,
+    auth_user,
+):
+    base_time = datetime.now(timezone.utc) - timedelta(hours=1)
+    older_topic = await create_topic(
+        db_session,
+        user_id=auth_user.user_id,
+        title="older-topic",
+        created_at=base_time,
+    )
+    latest_topic = await create_topic(
+        db_session,
+        user_id=auth_user.user_id,
+        title="latest-topic",
+        created_at=base_time + timedelta(minutes=1),
+    )
+    await db_session.commit()
+
+    response = await authenticated_client.get("/users/activity")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert [item["topic_id"] for item in payload] == [
+        latest_topic.topic_id,
+        older_topic.topic_id,
+    ]
+    assert payload[0]["title"] == "latest-topic"
+    assert payload[0]["type"] == "topic"
