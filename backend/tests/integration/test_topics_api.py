@@ -67,6 +67,24 @@ async def test_topic_detail_success_and_not_found(authenticated_client, db_sessi
 
 
 @pytest.mark.asyncio
+async def test_topic_pin_success_and_missing_topic_returns_404(
+    authenticated_client,
+    db_session,
+    auth_user,
+):
+    topic = await create_topic(db_session, user_id=auth_user.user_id, title="pin-target")
+    await db_session.commit()
+
+    pinned = await authenticated_client.post(f"/topics/{topic.topic_id}/pin")
+    missing = await authenticated_client.post("/topics/999999/pin")
+
+    assert pinned.status_code == 200
+    assert pinned.json() is True
+    assert missing.status_code == 404
+    assert missing.json()["detail"] == "Topic not found"
+
+
+@pytest.mark.asyncio
 async def test_topics_list_validation_errors(authenticated_client):
     invalid_limit = await authenticated_client.get("/topics", params={"limit": 0})
     invalid_offset = await authenticated_client.get("/topics", params={"offset": -1})
