@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Literal
 from app.db.database import get_db
 from app.core.auth import get_user_id, get_user_id_optional
 from app.db.schemas.topics import TopicCreate, TopicRead
 from app.services import TopicService
-from app.db.crud import PinnedTopicCrud
+from app.db.crud import PinnedTopicCrud, TopicCrud
 
 router = APIRouter(prefix="/topics", tags=["Topic"])
 
@@ -67,6 +67,9 @@ async def pin_topic(
     user_id: int = Depends(get_user_id),
     db: AsyncSession = Depends(get_db),
 ):
+    topic = await TopicCrud.get_by_id(db, topic_id)
+    if not topic:
+        raise HTTPException(status_code=404, detail="Topic not found")
     await PinnedTopicCrud.pin(db, user_id, topic_id)
     await db.commit()
     return True
