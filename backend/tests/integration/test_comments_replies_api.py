@@ -47,6 +47,14 @@ async def test_comment_create_list_update_and_forbidden_delete(
 
 
 @pytest.mark.asyncio
+async def test_comment_list_missing_topic_returns_404(authenticated_client):
+    response = await authenticated_client.get("/comments/by-topic/999999")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Topic not found"
+
+
+@pytest.mark.asyncio
 async def test_comment_delete_soft_and_hard_delete_behaviors(
     authenticated_client,
     db_session,

@@ -81,6 +81,9 @@ class CommentService:
     async def get_all_by_topic_id(
         db: AsyncSession, topic_id: int, user_id: int | None = None
     ) -> list[CommentRead]:
+        topic = await TopicCrud.get_by_id(db, topic_id)
+        if not topic:
+            raise HTTPException(status_code=404, detail="Topic not found")
         comments = await CommentCrud.get_all_by_topic_id(db, topic_id)
         return [
             await CommentService._build_comment_read(db, comment, user_id)
