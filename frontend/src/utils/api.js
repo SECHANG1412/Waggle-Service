@@ -1,5 +1,5 @@
-import axios from "axios";
-import { showLoginRequiredAlert } from "./alertUtils";
+import axios from 'axios';
+import { showLoginRequiredAlert } from './alertUtils';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -7,13 +7,13 @@ const api = axios.create({
 });
 
 const getCookie = (name) => {
-  if (typeof document === "undefined") return null;
+  if (typeof document === 'undefined') return null;
 
   const cookie = document.cookie
-    .split("; ")
+    .split('; ')
     .find((entry) => entry.startsWith(`${name}=`));
 
-  return cookie ? decodeURIComponent(cookie.split("=")[1]) : null;
+  return cookie ? decodeURIComponent(cookie.split('=')[1]) : null;
 };
 
 let isRefreshing = false;
@@ -32,11 +32,11 @@ const processQueue = (error, tokenRefreshed) => {
 
 api.interceptors.request.use((config) => {
   const method = config.method?.toUpperCase();
-  if (method && ["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-    const csrfToken = getCookie("csrf_token");
+  if (method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    const csrfToken = getCookie('csrf_token');
     if (csrfToken) {
       config.headers = config.headers ?? {};
-      config.headers["X-CSRF-Token"] = csrfToken;
+      config.headers['X-CSRF-Token'] = csrfToken;
     }
   }
 
@@ -47,7 +47,7 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    const isRefreshRequest = originalRequest?.url?.includes("/users/refresh");
+    const isRefreshRequest = originalRequest?.url?.includes('/users/refresh');
 
     // If unauthorized, attempt refresh token once.
     if (error.response?.status === 401 && !isRefreshRequest && !originalRequest._retry) {
@@ -64,12 +64,12 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        await api.post("/users/refresh"); // backend endpoint sets refreshed cookies
+        await api.post('/users/refresh'); // backend endpoint sets refreshed cookies
         processQueue(null, true);
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        await showLoginRequiredAlert("세션이 만료되었습니다. 다시 로그인해 주세요.");
+        await showLoginRequiredAlert('세션이 만료되었습니다. 다시 로그인해 주세요.');
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

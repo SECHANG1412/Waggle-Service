@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
         const detail = error.response.data?.detail;
 
         if (EXPIRED_TOKEN_DETAILS.has(detail)) {
-          showErrorAlert(error, '?ëª„ë€¡??ï§ëš®ì¦º?ì„ë¿€?ë“¬ë•²?? ?ã…¼ë–† æ¿¡ì’“ë ‡?ëª…ë¹ äºŒì‡±ê½­??');
+          showErrorAlert(error, '세션이 만료되었습니다. 다시 로그인해 주세요.');
           navigate('/login');
         }
       }
@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error(error);
-      setError(error.response?.data.detail || 'æ¿¡ì’“ë ‡?ëª„ë¿‰ ?ã…½ë™£?ë‰ë’¿?ëˆë–Ž.');
+      setError(error.response?.data.detail || '로그인에 실패했습니다.');
       setIsAuthenticated(false);
       return false;
     }
@@ -59,19 +59,19 @@ export const AuthProvider = ({ children }) => {
   const signup = async ({ email, username, password, confirmPassword }) => {
     setError('');
     if (!email.includes('@')) {
-      setError('?Ñ‰ì»®ç‘œ??ëŒ€ì°“???ëº¤ë–‡???ë‚…ì °?ëŒï¼œ?ëª„ìŠ‚.');
+      setError('올바른 이메일 주소를 입력해 주세요.');
       return false;
     }
     if (username.length < 2) {
-      setError('?ë°ê½•?ê¾©? 2???ëŒê¸½?ëŒë¼±???â‘¸ë•²??');
+      setError('닉네임은 2자 이상이어야 합니다.');
       return false;
     }
     if (password.length < 6) {
-      setError('é®ê¾¨?è¸°ëŠìƒ‡??6???ëŒê¸½?ëŒë¼±???â‘¸ë•²??');
+      setError('비밀번호는 6자 이상이어야 합니다.');
       return false;
     }
     if (password !== confirmPassword) {
-      setError('é®ê¾¨?è¸°ëŠìƒ‡åª›Â€ ?ì‡±íŠ‚?ì„? ?ë”†ë’¿?ëˆë–Ž.');
+      setError('비밀번호가 일치하지 않습니다.');
       return false;
     }
     try {
@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }) => {
       return false;
     } catch (error) {
       console.error(error);
-      setError(error.response?.data.detail || '?ëš¯ìåª›Â€?ë‚†ë¿‰ ?ã…½ë™£?ë‰ë’¿?ëˆë–Ž.');
+      setError(error.response?.data.detail || '회원가입에 실패했습니다.');
       return false;
     }
   };
@@ -103,7 +103,7 @@ export const AuthProvider = ({ children }) => {
         navigate('/');
       }
     } catch (error) {
-      console.error('æ¿¡ì’“ë ‡?ê¾©ì ?ã…½ë™£:', error);
+      console.error('로그아웃 실패:', error);
     } finally {
       setIsAuthenticated(false);
       setUser(null);
