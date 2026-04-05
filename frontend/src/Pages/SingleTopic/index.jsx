@@ -22,11 +22,30 @@ const SingleTopic = () => {
 
   const [topic, setTopic] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [fetchState, setFetchState] = useState('idle');
 
   const fetchTopic = useCallback(async () => {
     setLoading(true);
+    setFetchState('loading');
+
     const topicData = await getTopicById(id);
-    if (topicData) setTopic(topicData);
+
+    if (topicData === null) {
+      setTopic(null);
+      setFetchState('not-found');
+      setLoading(false);
+      return;
+    }
+
+    if (topicData === undefined) {
+      setTopic(null);
+      setFetchState('error');
+      setLoading(false);
+      return;
+    }
+
+    setTopic(topicData);
+    setFetchState('ready');
     setLoading(false);
   }, [id, getTopicById]);
 
@@ -53,8 +72,8 @@ const SingleTopic = () => {
 
   const onDelete = async () => {
     const confirm = await Swal.fire({
-      title: '토픽을 삭제할까요?',
-      text: '삭제 후에는 되돌릴 수 없습니다.',
+      title: '토픽을 삭제하시겠습니까?',
+      text: '삭제한 토픽은 복구할 수 없습니다.',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#EF4444',
@@ -73,16 +92,25 @@ const SingleTopic = () => {
     return (
       <div className="flex justify-center items-center py-10 text-gray-500">
         <div className="animate-spin h-6 w-6 border-4 border-blue-500 border-t-transparent rounded-full mr-3" />
-        <span>로딩 중...</span>
+        <span>불러오는 중입니다...</span>
       </div>
     );
 
-  if (!topic)
+  if (fetchState === 'not-found')
     return (
       <div className="text-center py-10 bg-gray-50 rounded-lg">
-        <p className="text-lg text-gray-500">토픽을 찾을 수 없습니다.</p>
+        <p className="text-lg text-gray-500">존재하지 않는 토픽입니다.</p>
       </div>
     );
+
+  if (fetchState === 'error')
+    return (
+      <div className="text-center py-10 bg-gray-50 rounded-lg">
+        <p className="text-lg text-gray-500">토픽을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
+      </div>
+    );
+
+  if (!topic) return null;
 
   return (
     <div className="max-w-5xl mx-auto bg-white shadow-lg rounded-2xl p-4 sm:p-6 lg:p-8 border border-gray-200">
