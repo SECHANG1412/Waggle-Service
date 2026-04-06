@@ -37,8 +37,25 @@ def _markdown_table(rows: list[dict]) -> str:
     return "\n".join([header, separator, *body])
 
 
+def _baseline_row(endpoint: str, response, explain_rows: list[dict]) -> dict:
+    return {
+        "endpoint": endpoint,
+        "query_count": int(response.headers["X-Perf-Query-Count"]),
+        "query_time_ms": float(response.headers["X-Perf-Query-Time-Ms"]),
+        "response_time_ms": float(response.headers["X-Perf-Response-Time-Ms"]),
+        "unique_selects": len(explain_rows),
+    }
+
+
+def _print_explain(label: str, explain_rows: list[dict]) -> None:
+    print(f"[EXPLAIN] {label}")
+    for row in explain_rows:
+        print(f"- {row['sql']}")
+        print(f"  {_format_plan(row['plan'])}")
+
+
 @pytest.mark.asyncio
-async def test_topic_and_comment_read_perf_baseline(
+async def test_read_api_perf_baseline(
     authenticated_client,
     db_session,
     auth_user,
@@ -98,48 +115,62 @@ async def test_topic_and_comment_read_perf_baseline(
         f"/topics/{topic.topic_id}",
         headers={"X-Perf-Debug": "1"},
     )
+    topics_response = await authenticated_client.get(
+        "/topics",
+        params={"limit": 10, "offset": 0},
+        headers={"X-Perf-Debug": "1"},
+    )
     comments_response = await authenticated_client.get(
         f"/comments/by-topic/{topic.topic_id}",
         headers={"X-Perf-Debug": "1"},
     )
+    vote_stats_response = await authenticated_client.get(
+        f"/votes/topic/{topic.topic_id}",
+        params={"time_range": "all", "interval": "1h"},
+        headers={"X-Perf-Debug": "1"},
+    )
 
     assert topic_response.status_code == 200
+    assert topics_response.status_code == 200
     assert comments_response.status_code == 200
+    assert vote_stats_response.status_code == 200
 
     topic_trace_id = topic_response.headers["X-Perf-Trace-Id"]
+    topics_trace_id = topics_response.headers["X-Perf-Trace-Id"]
     comments_trace_id = comments_response.headers["X-Perf-Trace-Id"]
+    vote_stats_trace_id = vote_stats_response.headers["X-Perf-Trace-Id"]
     topic_explain = await build_explain_rows(db_session, topic_trace_id)
+    topics_explain = await build_explain_rows(db_session, topics_trace_id)
     comments_explain = await build_explain_rows(db_session, comments_trace_id)
+    vote_stats_explain = await build_explain_rows(db_session, vote_stats_trace_id)
 
     baseline_rows = [
-        {
-            "endpoint": f"/topics/{topic.topic_id}",
-            "query_count": int(topic_response.headers["X-Perf-Query-Count"]),
-            "query_time_ms": float(topic_response.headers["X-Perf-Query-Time-Ms"]),
-            "response_time_ms": float(topic_response.headers["X-Perf-Response-Time-Ms"]),
-            "unique_selects": len(topic_explain),
-        },
-        {
-            "endpoint": f"/comments/by-topic/{topic.topic_id}",
-            "query_count": int(comments_response.headers["X-Perf-Query-Count"]),
-            "query_time_ms": float(comments_response.headers["X-Perf-Query-Time-Ms"]),
-            "response_time_ms": float(comments_response.headers["X-Perf-Response-Time-Ms"]),
-            "unique_selects": len(comments_explain),
-        },
+        _baseline_row("/topics", topics_response, topics_explain),
+        _baseline_row(f"/topics/{topic.topic_id}", topic_response, topic_explain),
+        _baseline_row(
+            f"/comments/by-topic/{topic.topic_id}",
+            comments_response,
+            comments_explain,
+        ),
+        _baseline_row(
+            f"/votes/topic/{topic.topic_id}?time_range=all&interval=1h",
+            vote_stats_response,
+            vote_stats_explain,
+        ),
     ]
 
     print()
     print(_markdown_table(baseline_rows))
     print()
-    print("[EXPLAIN] /topics/{topic_id}")
-    for row in topic_explain:
-        print(f"- {row['sql']}")
-        print(f"  {_format_plan(row['plan'])}")
-    print("[EXPLAIN] /comments/by-topic/{topic_id}")
-    for row in comments_explain:
-        print(f"- {row['sql']}")
-        print(f"  {_format_plan(row['plan'])}")
+    _print_explain("/topics", topics_explain)
+    _print_explain("/topics/{topic_id}", topic_explain)
+    _print_explain("/comments/by-topic/{topic_id}", comments_explain)
+    _print_explain("/votes/topic/{topic_id}", vote_stats_explain)
     assert baseline_rows[0]["query_count"] > 0
     assert baseline_rows[1]["query_count"] > 0
+    assert baseline_rows[2]["query_count"] > 0
+    assert baseline_rows[3]["query_count"] > 0
+    assert len(topics_explain) > 0
     assert len(topic_explain) > 0
     assert len(comments_explain) > 0
+    assert len(vote_stats_explain) > 0
