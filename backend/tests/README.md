@@ -47,8 +47,8 @@ The integration tests currently cover:
   - `time_range=all` full-period aggregation contract
 - `tests/integration/test_read_api_perf_baseline.py`
   - request-level query count, query time, and response time capture for read APIs
-  - EXPLAIN output capture for `/topics/{topic_id}` and `/comments/by-topic/{topic_id}`
-  - markdown baseline table output for before/after comparison
+  - baseline capture for `/topics`, `/topics/{topic_id}`, `/comments/by-topic/{topic_id}`, `/votes/topic/{topic_id}`
+  - EXPLAIN output capture and markdown baseline table output for before/after comparison
 
 ## Prerequisites
 
