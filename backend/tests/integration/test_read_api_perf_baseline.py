@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 import pytest
+from tabulate import tabulate
 
 from app.perf import build_explain_rows, clear_captured_stats
 from tests.factories import (
@@ -27,14 +28,28 @@ def _format_plan(plan: Sequence[dict]) -> str:
     return " | ".join(fragments)
 
 
-def _markdown_table(rows: list[dict]) -> str:
-    header = "| endpoint | query_count | query_time_ms | response_time_ms | unique_selects |"
-    separator = "| --- | ---: | ---: | ---: | ---: |"
-    body = [
-        f"| {row['endpoint']} | {row['query_count']} | {row['query_time_ms']:.3f} | {row['response_time_ms']:.3f} | {row['unique_selects']} |"
+def _perf_table(rows: list[dict]) -> str:
+    table_rows = [
+        [
+            row["endpoint"],
+            row["query_count"],
+            f"{row['query_time_ms']:.3f}",
+            f"{row['response_time_ms']:.3f}",
+            row["unique_selects"],
+        ]
         for row in rows
     ]
-    return "\n".join([header, separator, *body])
+    return tabulate(
+        table_rows,
+        headers=[
+            "endpoint",
+            "query_count",
+            "query_time_ms",
+            "response_time_ms",
+            "unique_selects",
+        ],
+        tablefmt="grid",
+    )
 
 
 def _baseline_row(endpoint: str, response, explain_rows: list[dict]) -> dict:
@@ -160,7 +175,7 @@ async def test_read_api_perf_baseline(
     ]
 
     print()
-    print(_markdown_table(baseline_rows))
+    print(_perf_table(baseline_rows))
     print()
     _print_explain("/topics", topics_explain)
     _print_explain("/topics/{topic_id}", topic_explain)
