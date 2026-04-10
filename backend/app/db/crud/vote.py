@@ -19,6 +19,17 @@ class VoteCrud:
         return result.scalars().all()
 
     @staticmethod
+    async def get_vote_counts_by_topic_id(
+        db: AsyncSession, topic_id: int
+    ) -> dict[int, int]:
+        result = await db.execute(
+            select(Vote.vote_index, func.count(Vote.vote_id))
+            .where(Vote.topic_id == topic_id)
+            .group_by(Vote.vote_index)
+        )
+        return {vote_index: count for vote_index, count in result.all()}
+
+    @staticmethod
     async def get_all_by_user_id(db: AsyncSession, user_id: int):
         result = await db.execute(select(Vote).filter(Vote.user_id == user_id))
         return result.scalars().all()

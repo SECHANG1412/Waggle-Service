@@ -111,6 +111,20 @@ class LikeCrud:
         return result.scalar()
 
     @staticmethod
+    async def count_topic_likes_by_topic_ids(
+        db: AsyncSession, topic_ids: list[int]
+    ) -> dict[int, int]:
+        if not topic_ids:
+            return {}
+
+        result = await db.execute(
+            select(TopicLike.topic_id, func.count(TopicLike.like_id))
+            .where(TopicLike.topic_id.in_(topic_ids))
+            .group_by(TopicLike.topic_id)
+        )
+        return {topic_id: count for topic_id, count in result.all()}
+
+    @staticmethod
     async def count_comment_likes(db: AsyncSession, comment_id: int) -> int:
         result = await db.execute(
             select(func.count(CommentLike.like_id)).where(
