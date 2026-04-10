@@ -34,12 +34,27 @@ class TopicService:
         user_id: int | None = None
     ) -> list[TopicRead]:
         db_topics = await TopicCrud.get_all_with_filters(db,search,category,sort,limit,offset)
+        topic_ids = [topic.topic_id for topic in db_topics]
         pinned_map: dict[int, int] = {}
+        pinned_topic_ids: set[int] = set()
         if user_id is not None:
             pinned = await PinnedTopicCrud.list_by_user(db, user_id)
             pinned_map = {p.topic_id: idx for idx, p in enumerate(pinned)}
+            pinned_topic_ids = {p.topic_id for p in pinned}
+        like_counts = await LikeCrud.count_topic_likes_by_topic_ids(db, topic_ids)
+        comment_counts = await CommentCrud.count_active_by_topic_ids(db, topic_ids)
 
-        topic_reads = [await TopicService._build_topic_read(db, db_topic, user_id) for db_topic in db_topics]
+        topic_reads = [
+            await TopicService._build_topic_read(
+                db,
+                db_topic,
+                user_id,
+                like_count=like_counts.get(db_topic.topic_id, 0),
+                comment_count=comment_counts.get(db_topic.topic_id, 0),
+                is_pinned=db_topic.topic_id in pinned_topic_ids,
+            )
+            for db_topic in db_topics
+        ]
 
         if pinned_map:
             topic_reads.sort(key=lambda t: pinned_map.get(t.topic_id, 10**9))
@@ -66,22 +81,30 @@ class TopicService:
             raise
     
     @staticmethod
-    async def _build_topic_read(db: AsyncSession, topic: Topic, user_id: int | None = None) -> TopicRead:
-        
-        votes = await VoteCrud.get_all_by_topic_id(db, topic.topic_id)
-        like_count = await LikeCrud.count_topic_likes(db, topic.topic_id)
-        comment_count = await CommentCrud.count_active_by_topic_id(db, topic.topic_id)
+    async def _build_topic_read(
+        db: AsyncSession,
+        topic: Topic,
+        user_id: int | None = None,
+        like_count: int | None = None,
+        comment_count: int | None = None,
+        is_pinned: bool = False,
+    ) -> TopicRead:
+        vote_counts = await VoteCrud.get_vote_counts_by_topic_id(db, topic.topic_id)
+        if like_count is None:
+            like_count = await LikeCrud.count_topic_likes(db, topic.topic_id)
+        if comment_count is None:
+            comment_count = await CommentCrud.count_active_by_topic_id(db, topic.topic_id)
         reply_count = await ReplyCrud.count_by_topic_id(db, topic.topic_id)
 
         vote_results = [0] * len(topic.vote_options)
-        for vote in votes:
-            if 0 <= vote.vote_index < len(vote_results):
-                vote_results[vote.vote_index] += 1
+        for vote_index, count in vote_counts.items():
+            if 0 <= vote_index < len(vote_results):
+                vote_results[vote_index] = count
 
         result = TopicRead(
             **topic.__dict__,
             vote_results=vote_results,
-            total_vote=len(votes),
+            total_vote=sum(vote_counts.values()),
             like_count=like_count,
             comment_count=comment_count + reply_count)
 
@@ -94,6 +117,6 @@ class TopicService:
             )
 
         if user_id is not None:
-            result.is_pinned = await PinnedTopicCrud.is_pinned(db, user_id, topic.topic_id)
+            result.is_pinned = is_pinned
 
         return result

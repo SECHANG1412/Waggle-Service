@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import func, select
 from app.db.models import Comment
 from app.db.schemas.comments import CommentCreate, CommentUpdate
 
@@ -44,9 +44,26 @@ class CommentCrud:
     @staticmethod
     async def count_active_by_topic_id(db: AsyncSession, topic_id: int) -> int:
         result = await db.execute(
-            select(Comment).filter(Comment.topic_id == topic_id, Comment.is_deleted == False)
+            select(func.count())
+            .select_from(Comment)
+            .where(Comment.topic_id == topic_id, Comment.is_deleted == False)
         )
-        return len(result.scalars().all())
+        return result.scalar() or 0
+
+    @staticmethod
+    async def count_active_by_topic_ids(
+        db: AsyncSession, topic_ids: list[int]
+    ) -> dict[int, int]:
+        if not topic_ids:
+            return {}
+
+        result = await db.execute(
+            select(Comment.topic_id, func.count())
+            .select_from(Comment)
+            .where(Comment.topic_id.in_(topic_ids), Comment.is_deleted == False)
+            .group_by(Comment.topic_id)
+        )
+        return {topic_id: count for topic_id, count in result.all()}
 
     @staticmethod
     async def delete_by_id(db: AsyncSession, comment_id: int):
