@@ -1,50 +1,71 @@
-services:
-  db:
-    image: mysql:8.0
-    container_name: db
-    environment:
-      MYSQL_DATABASE: talkAndVote
-      MYSQL_USER: admin_talkandvote
-      MYSQL_PASSWORD: password
-      MYSQL_ROOT_PASSWORD: root_password
-    ports:
-      - "3307:3306"
-    volumes:
-      - db_data:/var/lib/mysql
-    networks:
-      - my_network
-
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    env_file:
-      - ./backend/.env.prod
-    depends_on:
-      - db
-    networks:
-      - my_network
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --log-level debug
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    env_file:
-      - ./frontend/.env.prod
-    depends_on:
-      - backend
-    networks:
-      - my_network
-
-volumes:
-  db_data:
-  redis_data:
-
-networks:
-  my_network:
-    driver: bridge
+  services:                                                                                       
+    db:                                                                                           
+      image: mysql:8.0                                                                            
+      container_name: db                                                                          
+      environment:
+        MYSQL_DATABASE: talkAndVote                                                               
+        MYSQL_USER: admin_talkandvote                                                             
+        MYSQL_PASSWORD: password                                                                  
+        MYSQL_ROOT_PASSWORD: root_password                                                        
+      ports:                                                                                      
+        - "3307:3306"                                                                             
+      volumes:                                                                                    
+        - db_data:/var/lib/mysql                                                                  
+      networks:                                                                                   
+        - my_network                                                                              
+                                                                                                  
+    backend:                                                                                      
+      build:                                                                                      
+        context: ./backend                                                                        
+        dockerfile: Dockerfile                                                                    
+      ports:                                                                                      
+        - "8000:8000"                                                                             
+      env_file:                                                                                   
+        - ./backend/.env.prod                                                                     
+      depends_on:                                                                                 
+        - db                                                                                      
+      networks:                                                                                   
+        - my_network                                                                              
+      command: uvicorn main:app --host 0.0.0.0 --port 8000 --log-level debug                      
+                                                                                                  
+    frontend:                                                                                     
+      build:                                                                                      
+        context: ./frontend                                                                       
+        dockerfile: Dockerfile                                                                    
+      ports:                                                                                      
+        - "3000:3000"
+      env_file:                                                                                   
+        - ./frontend/.env.prod                                                                    
+      depends_on:                                                                                 
+        - backend                                                                                 
+      networks:                                                                                   
+        - my_network                                                                              
+                                                                                                  
+    prometheus:                                                                                   
+      image: prom/prometheus                                                                      
+      container_name: prometheus                                                                  
+      ports:                                                                                      
+        - "9090:9090"                                                                             
+      volumes:                                                                                    
+        - ./prometheus.yml:/etc/prometheus/prometheus.yml                                         
+      networks:                                                                                   
+        - my_network
+                                                                                                  
+    grafana:                                                                                      
+      image: grafana/grafana                                                                      
+      container_name: grafana                                                                     
+      ports:                                                                                      
+        - "3001:3000"                                                                             
+      volumes:                                                                                    
+        - grafana_data:/var/lib/grafana                                                           
+      networks:                                                                                   
+        - my_network                                                                              
+                                                                                                  
+  volumes:                                                                                        
+    db_data:                                                                                      
+    redis_data:                                                                                   
+    grafana_data:                                                                                 
+                                                                                                  
+  networks:                                                                                       
+    my_network:                                                                                   
+      driver: bridge   

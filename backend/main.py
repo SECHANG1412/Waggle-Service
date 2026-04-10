@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.concurrency import asynccontextmanager
+from fastapi.responses import Response
 from app.db.database import Base, async_engine
 from app.db import models  # ensure all models (including new ones) are registered
 from app.routers import user, topic, vote, comment, reply, like, oauth
@@ -11,6 +12,8 @@ from app.middleware.admin_auth import AdminBasicAuthMiddleware
 from app.middleware.token_refresh import TokenRefreshMiddleware
 from app.middleware.csrf import CSRFMiddleware
 from app.middleware.performance import PerformanceMiddleware
+from app.middleware.prometheus import PrometheusMiddleware
+from app.metrics import render_metrics
 from app.admin.setup import setup_admin
 from app.core.settings import settings
 
@@ -53,6 +56,7 @@ app.add_middleware(
 )
 
 # CSRF should run before token refresh to ensure requests are validated early
+app.add_middleware(PrometheusMiddleware)
 app.add_middleware(PerformanceMiddleware)
 app.add_middleware(CSRFMiddleware)
 app.add_middleware(TokenRefreshMiddleware)
@@ -64,6 +68,12 @@ app.include_router(vote.router)
 app.include_router(comment.router)
 app.include_router(reply.router)
 app.include_router(like.router)
+
+
+@app.get("/metrics")
+async def metrics():
+    payload, content_type = render_metrics()
+    return Response(content=payload, media_type=content_type)
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
