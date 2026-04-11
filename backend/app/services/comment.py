@@ -93,6 +93,8 @@ class CommentService:
         like_counts = await LikeCrud.count_comment_likes_by_comment_ids(
             db, comment_ids
         )
+        comment_user_ids = list({comment.user_id for comment in comments})
+        comment_users = await UserCrud.get_by_ids(db, comment_user_ids)
         return [
             await CommentService._build_comment_read(
                 db,
@@ -100,6 +102,7 @@ class CommentService:
                 user_id,
                 replies=replies_by_comment_id.get(comment.comment_id, []),
                 like_count=like_counts.get(comment.comment_id, 0),
+                username=comment_users[comment.user_id].username,
             )
             for comment in comments
         ]
@@ -111,8 +114,12 @@ class CommentService:
         user_id: int | None = None,
         replies: list[ReplyRead] | None = None,
         like_count: int | None = None,
+        username: str | None = None,
     ) -> CommentRead:
-        user = await UserCrud.get_by_id(db=db, user_id=comment.user_id)
+        comment_username = username
+        if comment_username is None:
+            user = await UserCrud.get_by_id(db=db, user_id=comment.user_id)
+            comment_username = user.username
         comment_replies = (
             replies
             if replies is not None
@@ -138,7 +145,7 @@ class CommentService:
             content=comment.content,
             is_deleted=comment.is_deleted,
             created_at=comment.created_at,
-            username=user.username,
+            username=comment_username,
             replies=comment_replies,
             like_count=comment_like_count,
             has_liked=has_liked,

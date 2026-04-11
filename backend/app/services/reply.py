@@ -89,7 +89,9 @@ class ReplyService:
     ) -> dict[int, list[ReplyRead]]:
         replies = await ReplyCrud.get_all_by_comment_ids(db, comment_ids)
         reply_ids = [reply.reply_id for reply in replies]
+        reply_user_ids = list({reply.user_id for reply in replies})
         like_counts = await LikeCrud.count_reply_likes_by_reply_ids(db, reply_ids)
+        reply_users = await UserCrud.get_by_ids(db, reply_user_ids)
         built_by_comment_id: dict[int, list[ReplyRead]] = {
             comment_id: [] for comment_id in comment_ids
         }
@@ -101,6 +103,7 @@ class ReplyService:
                     reply,
                     user_id,
                     like_count=like_counts.get(reply.reply_id, 0),
+                    username=reply_users[reply.user_id].username,
                 )
             )
 
@@ -127,8 +130,12 @@ class ReplyService:
         reply: Reply,
         user_id: int | None = None,
         like_count: int | None = None,
+        username: str | None = None,
     ) -> ReplyRead:
-        user = await UserCrud.get_by_id(db=db, user_id=reply.user_id)
+        reply_username = username
+        if reply_username is None:
+            user = await UserCrud.get_by_id(db=db, user_id=reply.user_id)
+            reply_username = user.username
         reply_like_count = (
             like_count
             if like_count is not None
@@ -139,7 +146,7 @@ class ReplyService:
 
         return ReplyRead(
             **reply.__dict__,
-            username=user.username,
+            username=reply_username,
             like_count=reply_like_count,
             has_liked=has_liked,
         )

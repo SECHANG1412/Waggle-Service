@@ -9,6 +9,14 @@ class UserCrud:
     async def get_by_id(db: AsyncSession, user_id: int) -> User | None:
         result = await db.execute(select(User).filter(User.user_id == user_id))
         return result.scalar_one_or_none()
+
+    @staticmethod
+    async def get_by_ids(db: AsyncSession, user_ids: list[int]) -> dict[int, User]:
+        if not user_ids:
+            return {}
+
+        result = await db.execute(select(User).filter(User.user_id.in_(user_ids)))
+        return {user.user_id: user for user in result.scalars().all()}
     
     @staticmethod
     async def create(db: AsyncSession, user: UserCreate) -> User:
