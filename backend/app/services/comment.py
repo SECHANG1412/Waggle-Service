@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.crud import CommentCrud, LikeCrud, ReplyCrud, TopicCrud, UserCrud
 from app.db.models import Comment
 from app.db.schemas.comments import CommentCreate, CommentRead, CommentUpdate
+from app.db.schemas.replys import ReplyRead
 from app.services.reply import ReplyService
 
 
@@ -85,18 +86,34 @@ class CommentService:
         if not topic:
             raise HTTPException(status_code=404, detail="Topic not found")
         comments = await CommentCrud.get_all_by_topic_id(db, topic_id)
+        comment_ids = [comment.comment_id for comment in comments]
+        replies_by_comment_id = await ReplyService.get_all_by_comment_ids(
+            db, comment_ids, user_id
+        )
         return [
-            await CommentService._build_comment_read(db, comment, user_id)
+            await CommentService._build_comment_read(
+                db,
+                comment,
+                user_id,
+                replies=replies_by_comment_id.get(comment.comment_id, []),
+            )
             for comment in comments
         ]
 
     @staticmethod
     async def _build_comment_read(
-        db: AsyncSession, comment: Comment, user_id: int | None = None
+        db: AsyncSession,
+        comment: Comment,
+        user_id: int | None = None,
+        replies: list[ReplyRead] | None = None,
     ) -> CommentRead:
         user = await UserCrud.get_by_id(db=db, user_id=comment.user_id)
-        replies = await ReplyService.get_all_by_comment_id(
-            db, comment.comment_id, user_id
+        comment_replies = (
+            replies
+            if replies is not None
+            else await ReplyService.get_all_by_comment_id(
+                db, comment.comment_id, user_id
+            )
         )
         like_count = await LikeCrud.count_comment_likes(db, comment.comment_id)
         has_liked = (
@@ -113,7 +130,7 @@ class CommentService:
             is_deleted=comment.is_deleted,
             created_at=comment.created_at,
             username=user.username,
-            replies=replies,
+            replies=comment_replies,
             like_count=like_count,
             has_liked=has_liked,
         )

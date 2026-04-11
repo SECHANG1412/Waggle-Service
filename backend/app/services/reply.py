@@ -81,7 +81,29 @@ class ReplyService:
     ) -> list[ReplyRead]:
         replies = await ReplyCrud.get_all_by_comment_id(db, comment_id)
         built = [await ReplyService._build_reply_read(db, r, user_id) for r in replies]
+        return ReplyService._build_reply_tree(built)
 
+    @staticmethod
+    async def get_all_by_comment_ids(
+        db: AsyncSession, comment_ids: list[int], user_id: int | None = None
+    ) -> dict[int, list[ReplyRead]]:
+        replies = await ReplyCrud.get_all_by_comment_ids(db, comment_ids)
+        built_by_comment_id: dict[int, list[ReplyRead]] = {
+            comment_id: [] for comment_id in comment_ids
+        }
+
+        for reply in replies:
+            built_by_comment_id.setdefault(reply.comment_id, []).append(
+                await ReplyService._build_reply_read(db, reply, user_id)
+            )
+
+        return {
+            comment_id: ReplyService._build_reply_tree(built)
+            for comment_id, built in built_by_comment_id.items()
+        }
+
+    @staticmethod
+    def _build_reply_tree(built: list[ReplyRead]) -> list[ReplyRead]:
         # Build nested tree using parent_reply_id
         reply_map: dict[int, ReplyRead] = {r.reply_id: r for r in built}
         roots: list[ReplyRead] = []
