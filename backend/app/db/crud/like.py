@@ -134,11 +134,39 @@ class LikeCrud:
         return result.scalar()
 
     @staticmethod
+    async def count_comment_likes_by_comment_ids(
+        db: AsyncSession, comment_ids: list[int]
+    ) -> dict[int, int]:
+        if not comment_ids:
+            return {}
+
+        result = await db.execute(
+            select(CommentLike.comment_id, func.count(CommentLike.like_id))
+            .where(CommentLike.comment_id.in_(comment_ids))
+            .group_by(CommentLike.comment_id)
+        )
+        return {comment_id: count for comment_id, count in result.all()}
+
+    @staticmethod
     async def count_reply_likes(db: AsyncSession, reply_id: int) -> int:
         result = await db.execute(
             select(func.count(ReplyLike.like_id)).where(ReplyLike.reply_id == reply_id)
         )
         return result.scalar()
+
+    @staticmethod
+    async def count_reply_likes_by_reply_ids(
+        db: AsyncSession, reply_ids: list[int]
+    ) -> dict[int, int]:
+        if not reply_ids:
+            return {}
+
+        result = await db.execute(
+            select(ReplyLike.reply_id, func.count(ReplyLike.like_id))
+            .where(ReplyLike.reply_id.in_(reply_ids))
+            .group_by(ReplyLike.reply_id)
+        )
+        return {reply_id: count for reply_id, count in result.all()}
 
     @staticmethod
     async def has_user_liked_topic(

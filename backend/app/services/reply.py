@@ -81,7 +81,39 @@ class ReplyService:
     ) -> list[ReplyRead]:
         replies = await ReplyCrud.get_all_by_comment_id(db, comment_id)
         built = [await ReplyService._build_reply_read(db, r, user_id) for r in replies]
+        return ReplyService._build_reply_tree(built)
 
+    @staticmethod
+    async def get_all_by_comment_ids(
+        db: AsyncSession, comment_ids: list[int], user_id: int | None = None
+    ) -> dict[int, list[ReplyRead]]:
+        replies = await ReplyCrud.get_all_by_comment_ids(db, comment_ids)
+        reply_ids = [reply.reply_id for reply in replies]
+        reply_user_ids = list({reply.user_id for reply in replies})
+        like_counts = await LikeCrud.count_reply_likes_by_reply_ids(db, reply_ids)
+        reply_users = await UserCrud.get_by_ids(db, reply_user_ids)
+        built_by_comment_id: dict[int, list[ReplyRead]] = {
+            comment_id: [] for comment_id in comment_ids
+        }
+
+        for reply in replies:
+            built_by_comment_id.setdefault(reply.comment_id, []).append(
+                await ReplyService._build_reply_read(
+                    db,
+                    reply,
+                    user_id,
+                    like_count=like_counts.get(reply.reply_id, 0),
+                    username=reply_users[reply.user_id].username,
+                )
+            )
+
+        return {
+            comment_id: ReplyService._build_reply_tree(built)
+            for comment_id, built in built_by_comment_id.items()
+        }
+
+    @staticmethod
+    def _build_reply_tree(built: list[ReplyRead]) -> list[ReplyRead]:
         # Build nested tree using parent_reply_id
         reply_map: dict[int, ReplyRead] = {r.reply_id: r for r in built}
         roots: list[ReplyRead] = []
@@ -94,16 +126,27 @@ class ReplyService:
 
     @staticmethod
     async def _build_reply_read(
-        db: AsyncSession, reply: Reply, user_id: int | None = None
+        db: AsyncSession,
+        reply: Reply,
+        user_id: int | None = None,
+        like_count: int | None = None,
+        username: str | None = None,
     ) -> ReplyRead:
-        user = await UserCrud.get_by_id(db=db, user_id=reply.user_id)
-        like_count = await LikeCrud.count_reply_likes(db, reply.reply_id)
+        reply_username = username
+        if reply_username is None:
+            user = await UserCrud.get_by_id(db=db, user_id=reply.user_id)
+            reply_username = user.username
+        reply_like_count = (
+            like_count
+            if like_count is not None
+            else await LikeCrud.count_reply_likes(db, reply.reply_id)
+        )
         has_liked = await LikeCrud.has_user_liked_reply(db, reply.reply_id, user_id) if user_id else False
 
 
         return ReplyRead(
             **reply.__dict__,
-            username=user.username,
-            like_count=like_count,
+            username=reply_username,
+            like_count=reply_like_count,
             has_liked=has_liked,
         )

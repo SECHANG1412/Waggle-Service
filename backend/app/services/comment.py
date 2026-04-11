@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.crud import CommentCrud, LikeCrud, ReplyCrud, TopicCrud, UserCrud
 from app.db.models import Comment
 from app.db.schemas.comments import CommentCreate, CommentRead, CommentUpdate
+from app.db.schemas.replys import ReplyRead
 from app.services.reply import ReplyService
 
 
@@ -85,20 +86,52 @@ class CommentService:
         if not topic:
             raise HTTPException(status_code=404, detail="Topic not found")
         comments = await CommentCrud.get_all_by_topic_id(db, topic_id)
+        comment_ids = [comment.comment_id for comment in comments]
+        replies_by_comment_id = await ReplyService.get_all_by_comment_ids(
+            db, comment_ids, user_id
+        )
+        like_counts = await LikeCrud.count_comment_likes_by_comment_ids(
+            db, comment_ids
+        )
+        comment_user_ids = list({comment.user_id for comment in comments})
+        comment_users = await UserCrud.get_by_ids(db, comment_user_ids)
         return [
-            await CommentService._build_comment_read(db, comment, user_id)
+            await CommentService._build_comment_read(
+                db,
+                comment,
+                user_id,
+                replies=replies_by_comment_id.get(comment.comment_id, []),
+                like_count=like_counts.get(comment.comment_id, 0),
+                username=comment_users[comment.user_id].username,
+            )
             for comment in comments
         ]
 
     @staticmethod
     async def _build_comment_read(
-        db: AsyncSession, comment: Comment, user_id: int | None = None
+        db: AsyncSession,
+        comment: Comment,
+        user_id: int | None = None,
+        replies: list[ReplyRead] | None = None,
+        like_count: int | None = None,
+        username: str | None = None,
     ) -> CommentRead:
-        user = await UserCrud.get_by_id(db=db, user_id=comment.user_id)
-        replies = await ReplyService.get_all_by_comment_id(
-            db, comment.comment_id, user_id
+        comment_username = username
+        if comment_username is None:
+            user = await UserCrud.get_by_id(db=db, user_id=comment.user_id)
+            comment_username = user.username
+        comment_replies = (
+            replies
+            if replies is not None
+            else await ReplyService.get_all_by_comment_id(
+                db, comment.comment_id, user_id
+            )
         )
-        like_count = await LikeCrud.count_comment_likes(db, comment.comment_id)
+        comment_like_count = (
+            like_count
+            if like_count is not None
+            else await LikeCrud.count_comment_likes(db, comment.comment_id)
+        )
         has_liked = (
             await LikeCrud.has_user_liked_comment(db, comment.comment_id, user_id)
             if user_id
@@ -112,8 +145,8 @@ class CommentService:
             content=comment.content,
             is_deleted=comment.is_deleted,
             created_at=comment.created_at,
-            username=user.username,
-            replies=replies,
-            like_count=like_count,
+            username=comment_username,
+            replies=comment_replies,
+            like_count=comment_like_count,
             has_liked=has_liked,
         )

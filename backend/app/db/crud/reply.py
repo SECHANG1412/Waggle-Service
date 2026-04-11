@@ -36,6 +36,22 @@ class ReplyCrud:
         return result.scalars().all()
 
     @staticmethod
+    async def get_all_by_comment_ids(db: AsyncSession, comment_ids: list[int]):
+        if not comment_ids:
+            return []
+
+        result = await db.execute(
+            select(Reply)
+                .filter(Reply.comment_id.in_(comment_ids))
+                .order_by(
+                    Reply.comment_id.asc(),
+                    Reply.created_at.asc(),
+                    Reply.reply_id.asc(),
+                )
+        )
+        return result.scalars().all()
+
+    @staticmethod
     async def count_by_comment_id(db: AsyncSession, comment_id: int) -> int:
         result = await db.execute(select(func.count(Reply.reply_id)).where(Reply.comment_id == comment_id))
         return result.scalar_one() or 0
