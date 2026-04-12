@@ -8,7 +8,7 @@ const PaginationControls = ({ currentPage, totalPages, onPageChange }) => {
         disabled={currentPage === 1}
         className="rounded bg-gray-100 px-4 py-2 text-sm disabled:bg-gray-100/50"
       >
-        Previous
+        이전
       </button>
       <span className="px-3 py-2 text-sm text-gray-600">
         {currentPage} / {totalPages}
@@ -18,7 +18,7 @@ const PaginationControls = ({ currentPage, totalPages, onPageChange }) => {
         disabled={currentPage === totalPages}
         className="rounded bg-gray-100 px-4 py-2 text-sm disabled:bg-gray-100/50"
       >
-        Next
+        다음
       </button>
     </div>
   );
