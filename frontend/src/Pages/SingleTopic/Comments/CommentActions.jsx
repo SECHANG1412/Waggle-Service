@@ -17,8 +17,8 @@ const CommentActions = ({
         className={`inline-flex h-9 items-center gap-1 rounded-md px-2 transition-colors ${
           hasLiked ? 'text-blue-600 hover:text-blue-700' : 'text-gray-400 hover:text-blue-500'
         }`}
-        aria-label="Like"
-        title="Like"
+        aria-label="좋아요"
+        title="좋아요"
       >
         <FaHeart className={`h-5 w-5 ${hasLiked ? 'fill-blue-600' : 'fill-none stroke-[20] stroke-black'}`} />
         <span className="text-sm">{likeCount}</span>
@@ -27,8 +27,8 @@ const CommentActions = ({
       <button
         onClick={onReplyClick}
         className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-400 transition-colors hover:text-blue-500"
-        aria-label="Reply"
-        title="Reply"
+        aria-label="답글"
+        title="답글"
       >
         <FaRegComment className="h-4 w-4" />
       </button>
@@ -38,16 +38,16 @@ const CommentActions = ({
           <button
             onClick={onEditClick}
             className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-400 transition-colors hover:text-blue-500"
-            aria-label="Edit"
-            title="Edit"
+            aria-label="수정"
+            title="수정"
           >
             <FaEdit className="h-4 w-4" />
           </button>
           <button
             onClick={onDeleteClick}
             className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-400 transition-colors hover:text-red-500"
-            aria-label="Delete"
-            title="Delete"
+            aria-label="삭제"
+            title="삭제"
           >
             <FaTrash className="h-4 w-4" />
           </button>
