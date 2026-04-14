@@ -45,7 +45,7 @@ const LoginModal = ({ isOpen, onClose, onSignupClick }) => {
   }, [baseUrl]);
 
   return (
-    <ModalLayout isOpen={isOpen} onClose={onClose} title="Welcome to Waggle">
+    <ModalLayout isOpen={isOpen} onClose={onClose} title="로그인">
       <div className="space-y-4">
         <div className="space-y-2">
           <button
@@ -54,7 +54,7 @@ const LoginModal = ({ isOpen, onClose, onSignupClick }) => {
             className="w-full flex items-center justify-center gap-3 bg-[#1a73e8] text-white font-semibold py-3 rounded-lg hover:bg-[#155fc2] transition-colors shadow-sm"
           >
             <FcGoogle className="text-2xl bg-white rounded-full p-1" />
-            <span>Continue with Google</span>
+            <span>Google로 계속하기</span>
           </button>
 
           <button
@@ -63,7 +63,7 @@ const LoginModal = ({ isOpen, onClose, onSignupClick }) => {
             className="w-full flex items-center justify-center gap-3 bg-[#03c75a] text-white font-semibold py-3 rounded-lg hover:brightness-95 transition-colors shadow-sm"
           >
             <SiNaver className="text-xl" />
-            <span>Continue with Naver</span>
+            <span>Naver로 계속하기</span>
           </button>
 
           <button
@@ -72,13 +72,13 @@ const LoginModal = ({ isOpen, onClose, onSignupClick }) => {
             className="w-full flex items-center justify-center gap-3 bg-[#fee500] text-[#3c1e1e] font-semibold py-3 rounded-lg hover:brightness-95 transition-colors shadow-sm"
           >
             <SiKakaotalk className="text-xl" />
-            <span>Continue with Kakao</span>
+            <span>Kakao로 계속하기</span>
           </button>
         </div>
 
         <div className="flex items-center gap-3 text-sm text-gray-400">
           <span className="flex-1 h-px bg-gray-200" />
-          <span>OR</span>
+          <span>또는</span>
           <span className="flex-1 h-px bg-gray-200" />
         </div>
 
@@ -88,7 +88,7 @@ const LoginModal = ({ isOpen, onClose, onSignupClick }) => {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            placeholder="Email address"
+            placeholder="이메일"
           />
 
           <FormInput
@@ -96,18 +96,18 @@ const LoginModal = ({ isOpen, onClose, onSignupClick }) => {
             name="password"
             value={formData.password}
             onChange={handleChange}
-            placeholder="Password"
+            placeholder="비밀번호"
           />
 
           <ErrorMessage error={error} />
           <FormButton classname="bg-gray-200 text-gray-600 hover:bg-gray-300 font-semibold">
-            Continue
+            계속하기
           </FormButton>
         </form>
 
         <SwitchAuthLink
-          message="Don't have an account?"
-          buttonText="Sign up"
+          message="아직 계정이 없으신가요?"
+          buttonText="회원가입"
           onClick={onSignupClick}
         />
       </div>
