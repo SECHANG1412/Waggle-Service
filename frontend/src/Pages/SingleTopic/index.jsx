@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Swal from 'sweetalert2';
 import { useTopic } from '../../hooks/useTopic';
 import { useLike } from '../../hooks/useLike';
 import { useVote } from '../../hooks/useVote';
 import { useAuth } from '../../hooks/auth-context';
+import { showConfirmDialog } from '../../utils/alertUtils';
 import Header from './layout/Header';
 import InfoBar from './layout/InfoBar';
 import VoteButtons from './layout/VoteButtons';
@@ -71,16 +71,14 @@ const SingleTopic = () => {
   };
 
   const onDelete = async () => {
-    const confirm = await Swal.fire({
-      title: '토픽을 삭제하시겠습니까?',
-      text: '삭제한 토픽은 복구할 수 없습니다.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#EF4444',
-      cancelButtonColor: '#9CA3AF',
-      confirmButtonText: '삭제',
-      cancelButtonText: '취소',
-    });
+    const confirm = await showConfirmDialog(
+      '토픽을 삭제하시겠습니까?',
+      '삭제한 토픽은 복구할 수 없습니다.',
+      '삭제',
+      '취소',
+      '#EF4444',
+      '#9CA3AF'
+    );
     if (!confirm.isConfirmed) return;
     const success = await deleteTopic(id);
     if (success) {
