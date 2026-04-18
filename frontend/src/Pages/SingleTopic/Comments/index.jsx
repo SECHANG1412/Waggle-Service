@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import Swal from 'sweetalert2';
 import CommentItem from './CommentItem';
 import { useComment } from '../../../hooks/useComment';
 import { useReply } from '../../../hooks/useReply';
 import { useLike } from '../../../hooks/useLike';
 import { useAuth } from '../../../hooks/auth-context';
-import { showLoginRequiredAlert } from '../../../utils/alertUtils';
+import { showConfirmDialog, showLoginRequiredAlert } from '../../../utils/alertUtils';
 import PaginationControls from './PaginationControls';
 
 const Comments = ({ topicId }) => {
@@ -54,16 +53,14 @@ const Comments = ({ topicId }) => {
   };
 
   const onDeleteComment = async (commentId) => {
-    const confirm = await Swal.fire({
-      title: '댓글을 삭제하시겠습니까?',
-      text: '삭제하면 되돌릴 수 없습니다.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#EF4444',
-      cancelButtonColor: '#9CA3AF',
-      confirmButtonText: '삭제',
-      cancelButtonText: '취소',
-    });
+    const confirm = await showConfirmDialog(
+      '댓글을 삭제하시겠습니까?',
+      '삭제하면 되돌릴 수 없습니다.',
+      '삭제',
+      '취소',
+      '#EF4444',
+      '#9CA3AF'
+    );
 
     if (confirm.isConfirmed) {
       const success = await deleteComment(commentId);
