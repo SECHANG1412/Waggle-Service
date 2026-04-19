@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router-dom';
-import Swal from 'sweetalert2';
 import Navbar from './Components/Navbar';
 import Footer from './Components/Footer/Footer';
 import Main from './Pages/Main';
@@ -11,9 +10,16 @@ import Login from './Pages/Login';
 import Signup from './Pages/Signup';
 import { AuthProvider } from './hooks/useAuth';
 import { useAuth } from './hooks/auth-context';
+import { showLoginRequiredAlert } from './utils/alertUtils';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isAuthLoading } = useAuth();
+
+  useEffect(() => {
+    if (!isAuthLoading && !isAuthenticated) {
+      showLoginRequiredAlert('로그인 후 이용할 수 있습니다.');
+    }
+  }, [isAuthenticated, isAuthLoading]);
 
   if (isAuthLoading) {
     return (
@@ -24,12 +30,6 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    Swal.fire({
-      icon: 'warning',
-      title: '로그인이 필요합니다',
-      text: '로그인 후 이용할 수 있습니다.',
-      confirmButtonColor: '#2563EB',
-    });
     return <Navigate to="/" replace />;
   }
   return children;
