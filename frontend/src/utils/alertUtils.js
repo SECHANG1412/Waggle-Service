@@ -33,6 +33,15 @@ export const showErrorAlert = (error, defaultMessage = '요청 처리 중 오류
   });
 };
 
+export const showWarningAlert = (title, text) => {
+  Swal.fire({
+    icon: 'warning',
+    title,
+    text,
+    confirmButtonColor: '#EF4444',
+  });
+};
+
 export const showSuccessAlert = (message) => {
   Swal.fire({
     icon: 'success',
