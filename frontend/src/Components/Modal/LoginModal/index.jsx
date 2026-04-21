@@ -1,8 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { FcGoogle } from 'react-icons/fc';
-import { SiKakaotalk, SiNaver } from 'react-icons/si';
 import { ModalLayout, ErrorMessage, FormButton, FormInput, SwitchAuthLink } from '../Ui';
 import { useAuth } from '../../../hooks/auth-context';
+import SocialAuthButtons from '../../Auth/SocialAuthButtons';
 
 const LoginModal = ({ isOpen, onClose, onSignupClick }) => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -32,49 +31,10 @@ const LoginModal = ({ isOpen, onClose, onSignupClick }) => {
     [formData, login, onClose]
   );
 
-  const handleGoogleLogin = useCallback(() => {
-    window.location.href = `${baseUrl}/auth/google/login`;
-  }, [baseUrl]);
-
-  const handleNaverLogin = useCallback(() => {
-    window.location.href = `${baseUrl}/auth/naver/login`;
-  }, [baseUrl]);
-
-  const handleKakaoLogin = useCallback(() => {
-    window.location.href = `${baseUrl}/auth/kakao/login`;
-  }, [baseUrl]);
-
   return (
     <ModalLayout isOpen={isOpen} onClose={onClose} title="로그인">
       <div className="space-y-4">
-        <div className="space-y-2">
-          <button
-            type="button"
-            onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-3 bg-[#1a73e8] text-white font-semibold py-3 rounded-lg hover:bg-[#155fc2] transition-colors shadow-sm"
-          >
-            <FcGoogle className="text-2xl bg-white rounded-full p-1" />
-            <span>Google로 계속하기</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleNaverLogin}
-            className="w-full flex items-center justify-center gap-3 bg-[#03c75a] text-white font-semibold py-3 rounded-lg hover:brightness-95 transition-colors shadow-sm"
-          >
-            <SiNaver className="text-xl" />
-            <span>Naver로 계속하기</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleKakaoLogin}
-            className="w-full flex items-center justify-center gap-3 bg-[#fee500] text-[#3c1e1e] font-semibold py-3 rounded-lg hover:brightness-95 transition-colors shadow-sm"
-          >
-            <SiKakaotalk className="text-xl" />
-            <span>Kakao로 계속하기</span>
-          </button>
-        </div>
+        <SocialAuthButtons baseUrl={baseUrl} />
 
         <div className="flex items-center gap-3 text-sm text-gray-400">
           <span className="flex-1 h-px bg-gray-200" />
