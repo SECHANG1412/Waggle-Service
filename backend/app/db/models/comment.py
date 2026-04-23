@@ -1,13 +1,16 @@
 from __future__ import annotations
 from datetime import datetime
 from typing import List
-from sqlalchemy import ForeignKey, String, TIMESTAMP, func
+from sqlalchemy import ForeignKey, String, TIMESTAMP, func, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 
 
 class Comment(Base):
     __tablename__ = "comments"
+    __table_args__ = (
+        Index("ix_comments_topic_deleted", "topic_id", "is_deleted"),
+    )
 
     comment_id: Mapped[int] = mapped_column(primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)
