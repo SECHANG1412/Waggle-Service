@@ -66,6 +66,21 @@ class ReplyCrud:
         return result.scalar_one() or 0
 
     @staticmethod
+    async def count_by_topic_ids(
+        db: AsyncSession, topic_ids: list[int]
+    ) -> dict[int, int]:
+        if not topic_ids:
+            return {}
+
+        result = await db.execute(
+            select(Comment.topic_id, func.count(Reply.reply_id))
+            .join(Comment, Reply.comment_id == Comment.comment_id)
+            .where(Comment.topic_id.in_(topic_ids))
+            .group_by(Comment.topic_id)
+        )
+        return {topic_id: count for topic_id, count in result.all()}
+
+    @staticmethod
     async def delete_by_id(db: AsyncSession, reply_id: int):
         reply = await db.get(Reply, reply_id)
         if reply:

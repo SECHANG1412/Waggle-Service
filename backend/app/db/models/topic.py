@@ -1,13 +1,17 @@
 from __future__ import annotations
 from datetime import datetime
 from typing import List, Optional
-from sqlalchemy import ForeignKey, String, Integer, TIMESTAMP, func, JSON
+from sqlalchemy import ForeignKey, String, Integer, TIMESTAMP, func, JSON, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 
 
 class Topic(Base):
     __tablename__ = "topics"
+    __table_args__ = (
+        Index("ix_topics_created_at", "created_at"),
+        Index("ix_topics_category_created_at", "category", "created_at"),
+    )
 
     topic_id: Mapped[int] = mapped_column(primary_key=True, index=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)

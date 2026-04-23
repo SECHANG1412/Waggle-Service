@@ -41,16 +41,20 @@ class TopicService:
             pinned = await PinnedTopicCrud.list_by_user(db, user_id)
             pinned_map = {p.topic_id: idx for idx, p in enumerate(pinned)}
             pinned_topic_ids = {p.topic_id for p in pinned}
+        vote_counts_by_topic = await VoteCrud.get_vote_counts_by_topic_ids(db, topic_ids)
         like_counts = await LikeCrud.count_topic_likes_by_topic_ids(db, topic_ids)
         comment_counts = await CommentCrud.count_active_by_topic_ids(db, topic_ids)
+        reply_counts = await ReplyCrud.count_by_topic_ids(db, topic_ids)
 
         topic_reads = [
             await TopicService._build_topic_read(
                 db,
                 db_topic,
                 user_id,
+                vote_counts=vote_counts_by_topic.get(db_topic.topic_id, {}),
                 like_count=like_counts.get(db_topic.topic_id, 0),
                 comment_count=comment_counts.get(db_topic.topic_id, 0),
+                reply_count=reply_counts.get(db_topic.topic_id, 0),
                 is_pinned=db_topic.topic_id in pinned_topic_ids,
             )
             for db_topic in db_topics
@@ -85,16 +89,20 @@ class TopicService:
         db: AsyncSession,
         topic: Topic,
         user_id: int | None = None,
+        vote_counts: dict[int, int] | None = None,
         like_count: int | None = None,
         comment_count: int | None = None,
+        reply_count: int | None = None,
         is_pinned: bool = False,
     ) -> TopicRead:
-        vote_counts = await VoteCrud.get_vote_counts_by_topic_id(db, topic.topic_id)
+        if vote_counts is None:
+            vote_counts = await VoteCrud.get_vote_counts_by_topic_id(db, topic.topic_id)
         if like_count is None:
             like_count = await LikeCrud.count_topic_likes(db, topic.topic_id)
         if comment_count is None:
             comment_count = await CommentCrud.count_active_by_topic_id(db, topic.topic_id)
-        reply_count = await ReplyCrud.count_by_topic_id(db, topic.topic_id)
+        if reply_count is None:
+            reply_count = await ReplyCrud.count_by_topic_id(db, topic.topic_id)
 
         vote_results = [0] * len(topic.vote_options)
         for vote_index, count in vote_counts.items():

@@ -30,6 +30,24 @@ class VoteCrud:
         return {vote_index: count for vote_index, count in result.all()}
 
     @staticmethod
+    async def get_vote_counts_by_topic_ids(
+        db: AsyncSession, topic_ids: list[int]
+    ) -> dict[int, dict[int, int]]:
+        if not topic_ids:
+            return {}
+
+        result = await db.execute(
+            select(Vote.topic_id, Vote.vote_index, func.count(Vote.vote_id))
+            .where(Vote.topic_id.in_(topic_ids))
+            .group_by(Vote.topic_id, Vote.vote_index)
+        )
+
+        vote_counts: dict[int, dict[int, int]] = {}
+        for topic_id, vote_index, count in result.all():
+            vote_counts.setdefault(topic_id, {})[vote_index] = count
+        return vote_counts
+
+    @staticmethod
     async def get_all_by_user_id(db: AsyncSession, user_id: int):
         result = await db.execute(select(Vote).filter(Vote.user_id == user_id))
         return result.scalars().all()

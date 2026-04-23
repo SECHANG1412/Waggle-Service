@@ -1,6 +1,6 @@
 from __future__ import annotations
 from datetime import datetime
-from sqlalchemy import ForeignKey, TIMESTAMP, func, UniqueConstraint
+from sqlalchemy import ForeignKey, TIMESTAMP, func, UniqueConstraint, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 
@@ -17,6 +17,7 @@ class TopicLike(Base):
 
     __table_args__ = (
         UniqueConstraint("user_id", "topic_id", name="unique_topic_like"),
+        Index("ix_topic_likes_topic_id", "topic_id"),
     )
     topic: Mapped["Topic"] = relationship("Topic", back_populates="likes")
     user: Mapped["User"] = relationship("User", back_populates="topic_likes")

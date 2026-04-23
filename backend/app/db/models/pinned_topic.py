@@ -1,12 +1,15 @@
 from __future__ import annotations
 from datetime import datetime
-from sqlalchemy import ForeignKey, TIMESTAMP, func
+from sqlalchemy import ForeignKey, TIMESTAMP, func, Index
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.database import Base
 
 
 class PinnedTopic(Base):
     __tablename__ = "pinned_topics"
+    __table_args__ = (
+        Index("ix_pinned_topics_user_pinned_at", "user_id", "pinned_at"),
+    )
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), primary_key=True)
     topic_id: Mapped[int] = mapped_column(ForeignKey("topics.topic_id"), primary_key=True)
