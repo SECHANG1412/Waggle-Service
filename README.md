@@ -1,20 +1,67 @@
 # Waggle
 
-투표형 커뮤니티 주제를 만들고, 투표하고, 댓글과 대댓글로 의견을 나눌 수 있는 웹 서비스입니다.
+Waggle is a voting-based community service built with React, FastAPI, and MySQL.
 
-현재 프로젝트는 기능 구현과 함께 조회 API 성능 개선 작업을 진행하고 있습니다. 최근에는 주요 조회 API의 기준선 측정과 병목 분석 환경을 먼저 정리하는 방향으로 성능 개선을 진행 중입니다.
+This project goes beyond CRUD implementation and includes performance diagnosis and optimization of the `/topics` read path through local/Docker verification and AWS EC2 load testing.
 
-## 주요 기능
+## Technical Highlights
 
-- 주제 생성, 조회, 삭제
-- 다중 선택지 기반 투표
-- 주제 좋아요 및 고정
-- 댓글, 대댓글, 좋아요
-- OAuth 기반 로그인
-- 주제 목록 검색, 카테고리 필터, 정렬
-- 투표 통계 차트 조회
+- React + Vite frontend and FastAPI backend
+- MySQL 8, SQLAlchemy 2, Alembic-based schema management
+- Prometheus, Grafana, and CloudWatch-based monitoring
+- k6-based stage and fixed-load testing on AWS EC2
+- `/topics` API read-path optimization through batched aggregation and index tuning
 
-## 기술 스택
+## Performance Optimization
+
+The main bottleneck was the `/topics` list API.
+
+While building the response, the server repeatedly queried per-topic counts and aggregates such as comments, replies, likes, and votes. As the topic list grew, both query volume and response construction cost increased.
+
+The optimization focused on switching from per-topic repeated lookups to list-level batched aggregation.
+
+- Vote results aggregated once by `topic_id`
+- Comment, reply, and like counts batched by `topic_id`
+- Read-path indexes added for sorting, filtering, and aggregation
+- Repeated per-topic access removed from response construction
+
+Under the same AWS EC2 `300 VU / 5 min` condition:
+
+| Metric | Before | After |
+| --- | ---: | ---: |
+| Avg response time | 7.00s | 2.1s |
+| p95 response time | 13.96s | 7.8s |
+| Throughput | 37 req/s | 95 req/s |
+| Failure rate | 0.22% | 0.003~0.004% |
+
+The key result was not lower CPU usage itself, but lower per-request processing cost, allowing the same EC2 instance to handle more requests.
+
+## Infrastructure
+
+- Service EC2
+  - Nginx
+  - FastAPI backend
+  - MySQL
+  - Prometheus
+  - Grafana
+- Load Test EC2
+  - k6
+- Monitoring
+  - Prometheus
+  - Grafana
+  - AWS CloudWatch / CloudWatch Agent
+
+## Core Features
+
+- Topic creation, listing, detail, deletion
+- Voting and vote result aggregation
+- Comments and replies
+- Topic likes and pinned topics
+- Search, category filter, and sorting
+- OAuth login support
+- User profile and activity stats
+
+## Tech Stack
 
 ### Frontend
 
@@ -36,10 +83,14 @@
 ### Test / Infra
 
 - pytest
-- SQLite (기본 통합 테스트용)
 - Docker Compose
+- Prometheus
+- Grafana
+- AWS EC2
+- CloudWatch
+- k6
 
-## 프로젝트 구조
+## Project Structure
 
 ```text
 .
@@ -49,27 +100,29 @@
 |   `-- tests
 |-- frontend
 |   `-- src
-`-- docker-compose.yml
+|-- k6
+|-- docker-compose.yml
+`-- prometheus.yml
 ```
 
-## 실행 방법
+## Getting Started
 
-### 1. Docker Compose로 실행
-
-프로젝트 루트에서 아래 명령을 실행합니다.
+### Run with Docker Compose
 
 ```bash
 docker compose up -d --build
 ```
 
-기본 포트:
+Available endpoints:
 
 - Frontend: `http://localhost:3000`
 - Backend: `http://localhost:8000`
 - Swagger UI: `http://localhost:8000/docs`
 - MySQL: `localhost:3307`
+- Prometheus: `http://localhost:9090`
+- Grafana: `http://localhost:3001`
 
-### 2. 로컬에서 Frontend 실행
+### Run Frontend Locally
 
 ```bash
 cd frontend
@@ -77,9 +130,7 @@ npm install
 npm run dev
 ```
 
-### 3. 로컬에서 Backend 실행
-
-환경 변수 파일을 준비한 뒤 아래 명령을 실행합니다.
+### Run Backend Locally
 
 ```bash
 cd backend
@@ -87,9 +138,9 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-## 테스트
+## Testing
 
-### 통합 테스트 실행
+### Backend Integration Tests
 
 ```bash
 cd backend
@@ -97,35 +148,21 @@ pip install -r requirements-dev.txt
 pytest -q tests/integration
 ```
 
-### 조회 API 기준선 측정
-
-주요 조회 API의 요청당 쿼리 수, DB 시간, 응답 시간을 확인할 수 있습니다.
+### Read API Baseline Test
 
 ```bash
 cd backend
 pytest tests/integration/test_read_api_perf_baseline.py -q -s
 ```
 
-대상 API:
+Target APIs:
 
 - `/topics`
 - `/topics/{topic_id}`
 - `/comments/by-topic/{topic_id}`
 - `/votes/topic/{topic_id}`
 
-## 성능 개선 진행 현황
+## Related Documents
 
-현재는 조회 성능 개선 작업의 1단계인 기준선 수립을 완료한 상태입니다.
-
-- 대상 API 확정
-- 핵심 지표 확정
-- 현재 응답시간 및 쿼리 수 기록
-- 테스트 환경 정의
-- 베이스라인 표 작성
-
-다음 단계에서는 부하테스트 시나리오와 모니터링 설계를 진행할 예정입니다.
-
-## 참고 문서
-
-- Frontend 기본 문서: `frontend/README.md`
-- Backend 테스트 문서: `backend/tests/README.md`
+- Frontend details: `frontend/README.md`
+- Backend test details: `backend/tests/README.md`
