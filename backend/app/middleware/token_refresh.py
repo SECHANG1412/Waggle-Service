@@ -9,6 +9,9 @@ from app.core.auth import set_auth_cookies, clear_auth_cookies
 
 class TokenRefreshMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
+        if request.url.path == "/users/refresh":
+            return await call_next(request)
+
         access_token = request.cookies.get("access_token")
         refresh_token = request.cookies.get("refresh_token")
         new_tokens: tuple[str, str] | None = None
