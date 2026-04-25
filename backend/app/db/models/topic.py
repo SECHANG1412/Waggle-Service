@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import datetime
 from typing import List, Optional
-from sqlalchemy import ForeignKey, String, Integer, TIMESTAMP, func, JSON, Index
+from sqlalchemy import ForeignKey, String, TIMESTAMP, func, JSON, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 

@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.crud import VoteCrud, TopicCrud
-from app.db.models import Vote, Topic
+from app.db.models import Topic
 from app.db.schemas.votes import VoteCreate, VoteRead
 
 
