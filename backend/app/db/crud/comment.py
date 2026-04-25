@@ -46,7 +46,7 @@ class CommentCrud:
         result = await db.execute(
             select(func.count())
             .select_from(Comment)
-            .where(Comment.topic_id == topic_id, Comment.is_deleted == False)
+            .where(Comment.topic_id == topic_id, not Comment.is_deleted)
         )
         return result.scalar() or 0
 
@@ -60,7 +60,7 @@ class CommentCrud:
         result = await db.execute(
             select(Comment.topic_id, func.count())
             .select_from(Comment)
-            .where(Comment.topic_id.in_(topic_ids), Comment.is_deleted == False)
+            .where(Comment.topic_id.in_(topic_ids), not Comment.is_deleted)
             .group_by(Comment.topic_id)
         )
         return {topic_id: count for topic_id, count in result.all()}

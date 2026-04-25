@@ -1,12 +1,11 @@
-import os
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.concurrency import asynccontextmanager
 from fastapi.responses import Response
-from app.db.database import Base, async_engine
-from app.db import models  # ensure all models (including new ones) are registered
+from app.db.database import async_engine
+from app.db import models as models  # keep model registration side effects
 from app.routers import user, topic, vote, comment, reply, like, oauth
 from app.middleware.admin_auth import AdminBasicAuthMiddleware
 from app.middleware.token_refresh import TokenRefreshMiddleware
@@ -74,6 +73,7 @@ app.include_router(like.router)
 async def metrics():
     payload, content_type = render_metrics()
     return Response(content=payload, media_type=content_type)
+
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
