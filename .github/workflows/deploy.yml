@@ -26,23 +26,38 @@ jobs:
           script: |
             set -e
 
+            echo "[1/8] Move to project directory"
             cd /home/ubuntu/Waggle-Service
 
+            echo "[2/8] Pull latest code"
             git checkout main
             git pull --ff-only
 
+            echo "[3/8] Rebuild backend container"
             docker compose up -d --build backend
+
+            echo "[4/8] Run Alembic migration"
             docker compose exec backend alembic upgrade head
 
+            echo "[5/8] Build frontend assets"
             cd /home/ubuntu/Waggle-Service/frontend
             npm ci
             npm run build
 
+            echo "[6/8] Validate and reload nginx"
             sudo nginx -t
             sudo systemctl reload nginx
 
+            echo "[7/8] Check running containers"
             cd /home/ubuntu/Waggle-Service
             docker compose ps
 
-            curl -f http://localhost:8000/docs > /dev/null
-            curl -f "http://localhost:8000/topics?page=1&limit=10" > /dev/null
+            echo "[8/8] Run health checks"
+            curl -f http://localhost:8000/docs > /dev/null || {
+              echo "Backend docs health check failed"
+              exit 1
+            }
+            curl -f "http://localhost:8000/topics?page=1&limit=10" > /dev/null || {
+              echo "Topics API health check failed"
+              exit 1
+            }
