@@ -1,10 +1,12 @@
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.concurrency import asynccontextmanager
 from fastapi.responses import Response
-from app.db.database import async_engine
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db.database import async_engine, get_db
 from app.db import models as models  # keep model registration side effects
 from app.routers import user, topic, vote, comment, reply, like, oauth
 from app.middleware.admin_auth import AdminBasicAuthMiddleware
@@ -73,6 +75,24 @@ app.include_router(like.router)
 async def metrics():
     payload, content_type = render_metrics()
     return Response(content=payload, media_type=content_type)
+
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+
+@app.get("/health/db")
+async def health_db(db: AsyncSession = Depends(get_db)):
+    try:
+        await db.execute(text("SELECT 1"))
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={"status": "error", "database": "disconnected"},
+        ) from exc
+
+    return {"status": "ok", "database": "connected"}
 
 
 if __name__ == "__main__":
