@@ -26,37 +26,45 @@ jobs:
           script: |
             set -e
 
-            echo "[1/8] Move to project directory"
+            echo "[1/10] Move to project directory"
             cd /home/ubuntu/Waggle-Service
 
-            echo "[2/8] Pull latest code"
+            echo "[2/10] Pull latest code"
             git checkout main
             git pull --ff-only
 
-            echo "[3/8] Rebuild backend container"
+            echo "[3/10] Rebuild backend container"
             docker compose up -d --build backend
 
-            echo "[4/8] Run Alembic migration"
+            echo "[4/10] Run Alembic migration"
             docker compose exec backend alembic upgrade head
 
-            echo "[5/8] Build frontend assets"
+            echo "[5/10] Build frontend assets"
             cd /home/ubuntu/Waggle-Service/frontend
             npm ci
             npm run build
 
-            echo "[6/8] Validate and reload nginx"
+            echo "[6/10] Validate and reload nginx"
             sudo nginx -t
             sudo systemctl reload nginx
 
-            echo "[7/8] Check running containers"
+            echo "[7/10] Check running containers"
             cd /home/ubuntu/Waggle-Service
             docker compose ps
 
-            echo "[8/8] Run health checks"
-            curl -f http://localhost:8000/docs > /dev/null || {
-              echo "Backend docs health check failed"
+            echo "[8/10] Check application health"
+            curl -f http://localhost:8000/health > /dev/null || {
+              echo "Application health check failed"
               exit 1
             }
+
+            echo "[9/10] Check database health"
+            curl -f http://localhost:8000/health/db > /dev/null || {
+              echo "Database health check failed"
+              exit 1
+            }
+
+            echo "[10/10] Run topics smoke test"
             curl -f "http://localhost:8000/topics?page=1&limit=10" > /dev/null || {
               echo "Topics API health check failed"
               exit 1
