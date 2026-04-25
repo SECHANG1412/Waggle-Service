@@ -1,10 +1,8 @@
 [tool.ruff]
 target-version = "py311"
 
-[tool.ruff.lint]
-per-file-ignores = {
-  "app/db/crud/__init__.py" = ["F401"],
-  "app/db/models/__init__.py" = ["F401"],
-  "app/db/models/*.py" = ["F821"],
-  "app/services/__init__.py" = ["F401"],
-}
+[tool.ruff.lint.per-file-ignores]
+"app/db/crud/__init__.py" = ["F401"]
+"app/db/models/__init__.py" = ["F401"]
+"app/db/models/*.py" = ["F821"]
+"app/services/__init__.py" = ["F401"]
