@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from types import SimpleNamespace
 
 import pytest
 
@@ -92,6 +93,29 @@ async def test_refresh_returns_user_payload_and_sets_new_cookies(
 
 
 @pytest.mark.asyncio
+async def test_refresh_succeeds_when_access_cookie_is_expired(
+    client,
+    db_session,
+    auth_user,
+):
+    expired_access_token = create_token(auth_user.user_id, timedelta(seconds=-1))
+    refresh_token = create_refresh_token(auth_user.user_id)
+    await UserCrud.update_refresh_token_by_id(db_session, auth_user.user_id, refresh_token)
+    await db_session.commit()
+
+    client.cookies.set("access_token", expired_access_token)
+    client.cookies.set("refresh_token", refresh_token)
+
+    response = await client.post("/users/refresh")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["user_id"] == auth_user.user_id
+    assert "access_token=" in response.headers.get("set-cookie", "")
+    assert "refresh_token=" in response.headers.get("set-cookie", "")
+
+
+@pytest.mark.asyncio
 async def test_me_returns_access_token_expired_detail_when_access_cookie_is_expired(
     client,
     auth_user,
@@ -135,6 +159,51 @@ async def test_oauth_callback_requires_saved_state_cookie(client):
 
     assert response.status_code == 302
     assert response.headers["location"].endswith("/?auth_error=missing_state_cookie")
+
+
+@pytest.mark.asyncio
+async def test_google_oauth_callback_succeeds_with_matching_state_and_clears_state_cookie(
+    client,
+    monkeypatch,
+):
+    client.cookies.set("oauth_state", "expected-state")
+
+    async def _exchange_google_code_for_tokens(code):
+        assert code == "abc"
+        return {"access_token": "google-access-token"}
+
+    async def _fetch_google_user_info(access_token):
+        assert access_token == "google-access-token"
+        return {"email": "oauth_user@example.com", "name": "OAuth User"}
+
+    async def _ensure_user_from_google(db, email, name):
+        assert email == "oauth_user@example.com"
+        assert name == "OAuth User"
+        return SimpleNamespace(user_id=1)
+
+    monkeypatch.setattr(
+        "app.routers.oauth.exchange_google_code_for_tokens",
+        _exchange_google_code_for_tokens,
+    )
+    monkeypatch.setattr(
+        "app.routers.oauth.fetch_google_user_info",
+        _fetch_google_user_info,
+    )
+    monkeypatch.setattr(
+        "app.routers.oauth.ensure_user_from_google",
+        _ensure_user_from_google,
+    )
+
+    response = await client.get(
+        "/auth/google/callback",
+        params={"code": "abc", "state": "expected-state"},
+    )
+
+    assert response.status_code == 302
+    set_cookie = response.headers.get("set-cookie", "")
+    assert "oauth_state=" in set_cookie
+    assert "access_token=" in set_cookie
+    assert "refresh_token=" in set_cookie
 
 
 @pytest.mark.asyncio

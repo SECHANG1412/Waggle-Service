@@ -1,3 +1,5 @@
+from secrets import compare_digest
+
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from fastapi.responses import PlainTextResponse
@@ -31,7 +33,7 @@ class CSRFMiddleware(BaseHTTPMiddleware):
 
             header_token = request.headers.get("X-CSRF-Token")
             cookie_token = request.cookies.get("csrf_token")
-            if not header_token or not cookie_token or header_token != cookie_token:
+            if not header_token or not cookie_token or not compare_digest(header_token, cookie_token):
                 return PlainTextResponse("CSRF validation failed", status_code=403)
 
         return await call_next(request)

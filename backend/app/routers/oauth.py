@@ -1,5 +1,6 @@
 import logging
 import secrets
+from secrets import compare_digest
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
@@ -77,7 +78,7 @@ def _validate_state(request: Request, state: str | None) -> RedirectResponse | N
         return _redirect_with_error("missing_state_cookie", clear_state=True)
     if not state:
         return _redirect_with_error("missing_state", clear_state=True)
-    if state != saved_state:
+    if not compare_digest(state, saved_state):
         return _redirect_with_error("invalid_state", clear_state=True)
     return None
 
