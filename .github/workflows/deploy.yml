@@ -1,0 +1,48 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy To EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -e
+
+            cd /home/ubuntu/Waggle-Service
+
+            git checkout main
+            git pull --ff-only
+
+            docker compose up -d --build backend
+            docker compose exec backend alembic upgrade head
+
+            cd /home/ubuntu/Waggle-Service/frontend
+            npm ci
+            npm run build
+
+            sudo nginx -t
+            sudo systemctl reload nginx
+
+            cd /home/ubuntu/Waggle-Service
+            docker compose ps
+
+            curl -f http://localhost:8000/docs > /dev/null
+            curl -f "http://localhost:8000/topics?page=1&limit=10" > /dev/null
