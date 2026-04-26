@@ -1,12 +1,13 @@
 import Swal from 'sweetalert2';
+import { AUTH_MESSAGES, COMMON_MESSAGES } from '../constants/messages';
 
 export const handleAuthError = async (error) => {
   if (error?.response?.status === 401) {
     await Swal.fire({
-      title: '로그인이 필요합니다',
-      text: '서비스 이용을 위해 먼저 로그인해 주세요.',
+      title: AUTH_MESSAGES.loginRequiredTitle,
+      text: AUTH_MESSAGES.loginRequiredText,
       icon: 'warning',
-      confirmButtonText: '확인',
+      confirmButtonText: COMMON_MESSAGES.confirm,
       confirmButtonColor: '#34D399',
     });
     return true;
@@ -14,20 +15,25 @@ export const handleAuthError = async (error) => {
   return false;
 };
 
-export const showLoginRequiredAlert = async (message = '로그인이 필요한 기능입니다.') => {
+export const showLoginRequiredAlert = async (
+  message = AUTH_MESSAGES.loginRequiredFeature
+) => {
   await Swal.fire({
-    title: '로그인이 필요합니다',
+    title: AUTH_MESSAGES.loginRequiredTitle,
     text: message,
     icon: 'warning',
-    confirmButtonText: '확인',
+    confirmButtonText: COMMON_MESSAGES.confirm,
     confirmButtonColor: '#34D399',
   });
 };
 
-export const showErrorAlert = (error, defaultMessage = '요청 처리 중 오류가 발생했습니다.') => {
+export const showErrorAlert = (
+  error,
+  defaultMessage = COMMON_MESSAGES.defaultError
+) => {
   Swal.fire({
     icon: 'error',
-    title: '오류가 발생했습니다',
+    title: COMMON_MESSAGES.defaultError,
     text: error?.response?.data?.error || error?.response?.data?.detail || defaultMessage,
     confirmButtonColor: '#EF4444',
   });
@@ -45,7 +51,7 @@ export const showWarningAlert = (title, text) => {
 export const showSuccessAlert = (message) => {
   Swal.fire({
     icon: 'success',
-    title: '성공',
+    title: COMMON_MESSAGES.success,
     text: message,
     confirmButtonColor: '#34D399',
   });
@@ -54,8 +60,8 @@ export const showSuccessAlert = (message) => {
 export const showConfirmDialog = async (
   title,
   text,
-  confirmButtonText = '확인',
-  cancelButtonText = '취소',
+  confirmButtonText = COMMON_MESSAGES.confirm,
+  cancelButtonText = COMMON_MESSAGES.cancel,
   confirmButtonColor = '#d33',
   cancelButtonColor = '#3085d6'
 ) => {

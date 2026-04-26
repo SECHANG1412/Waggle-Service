@@ -1,16 +1,17 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useTopic } from '../../hooks/useTopic';
-import { useLike } from '../../hooks/useLike';
-import { useVote } from '../../hooks/useVote';
+import { COMMON_MESSAGES, TOPIC_MESSAGES } from '../../constants/messages';
+import { voteColors } from '../../constants/voteColors';
 import { useAuth } from '../../hooks/auth-context';
+import { useLike } from '../../hooks/useLike';
+import { useTopic } from '../../hooks/useTopic';
+import { useVote } from '../../hooks/useVote';
 import { showConfirmDialog } from '../../utils/alertUtils';
+import Chart from './Chart';
+import Comments from './Comments';
 import Header from './layout/Header';
 import InfoBar from './layout/InfoBar';
 import VoteButtons from './layout/VoteButtons';
-import { voteColors } from '../../constants/voteColors';
-import Chart from './Chart';
-import Comments from './Comments';
 
 const SingleTopic = () => {
   const { id } = useParams();
@@ -72,10 +73,10 @@ const SingleTopic = () => {
 
   const onDelete = async () => {
     const confirm = await showConfirmDialog(
-      '토픽을 삭제하시겠습니까?',
-      '삭제한 토픽은 복구할 수 없습니다.',
-      '삭제',
-      '취소',
+      TOPIC_MESSAGES.deleteConfirmTitle,
+      TOPIC_MESSAGES.deleteConfirmText,
+      COMMON_MESSAGES.delete,
+      COMMON_MESSAGES.cancel,
       '#EF4444',
       '#9CA3AF'
     );
@@ -97,14 +98,14 @@ const SingleTopic = () => {
   if (fetchState === 'not-found')
     return (
       <div className="text-center py-10 bg-gray-50 rounded-lg">
-        <p className="text-lg text-gray-500">존재하지 않는 토픽입니다.</p>
+        <p className="text-lg text-gray-500">{TOPIC_MESSAGES.notFound}</p>
       </div>
     );
 
   if (fetchState === 'error')
     return (
       <div className="text-center py-10 bg-gray-50 rounded-lg">
-        <p className="text-lg text-gray-500">토픽을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
+        <p className="text-lg text-gray-500">{TOPIC_MESSAGES.loadError}</p>
       </div>
     );
 
@@ -123,7 +124,7 @@ const SingleTopic = () => {
               onClick={onDelete}
               className="px-3 py-2 text-sm bg-red-50 text-red-600 rounded-lg hover:bg-red-100 border border-red-100"
             >
-              삭제
+              {COMMON_MESSAGES.delete}
             </button>
           ) : null
         }

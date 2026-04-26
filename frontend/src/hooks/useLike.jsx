@@ -1,5 +1,6 @@
-import api from "../utils/api";
-import { handleAuthError, showErrorAlert } from "../utils/alertUtils";
+import { LIKE_MESSAGES } from '../constants/messages';
+import api from '../utils/api';
+import { handleAuthError, showErrorAlert } from '../utils/alertUtils';
 
 export const useLike = () => {
   const toggleTopicLike = async (topicId) => {
@@ -12,7 +13,7 @@ export const useLike = () => {
       return null;
     } catch (error) {
       if (await handleAuthError(error)) return null;
-      showErrorAlert(error, "좋아요 처리에 실패했습니다.");
+      showErrorAlert(error, LIKE_MESSAGES.toggleFailed);
       return null;
     }
   };
@@ -27,7 +28,7 @@ export const useLike = () => {
       return null;
     } catch (error) {
       if (await handleAuthError(error)) return null;
-      showErrorAlert(error, "좋아요 처리에 실패했습니다.");
+      showErrorAlert(error, LIKE_MESSAGES.toggleFailed);
       return null;
     }
   };
@@ -42,7 +43,7 @@ export const useLike = () => {
       return null;
     } catch (error) {
       if (await handleAuthError(error)) return null;
-      showErrorAlert(error, "좋아요 처리에 실패했습니다.");
+      showErrorAlert(error, LIKE_MESSAGES.toggleFailed);
       return null;
     }
   };

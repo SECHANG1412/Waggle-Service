@@ -1,15 +1,16 @@
 import React, { useEffect } from 'react';
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router-dom';
-import Navbar from './Components/Navbar';
 import Footer from './Components/Footer/Footer';
-import Main from './Pages/Main';
-import CreateTopic from './Pages/CreateTopic';
-import SingleTopic from './Pages/SingleTopic';
-import Profile from './Pages/Profile';
-import Login from './Pages/Login';
-import Signup from './Pages/Signup';
-import { AuthProvider } from './hooks/useAuth';
+import Navbar from './Components/Navbar';
+import { AUTH_MESSAGES } from './constants/messages';
 import { useAuth } from './hooks/auth-context';
+import { AuthProvider } from './hooks/useAuth';
+import CreateTopic from './Pages/CreateTopic';
+import Login from './Pages/Login';
+import Main from './Pages/Main';
+import Profile from './Pages/Profile';
+import Signup from './Pages/Signup';
+import SingleTopic from './Pages/SingleTopic';
 import { showLoginRequiredAlert } from './utils/alertUtils';
 
 const ProtectedRoute = ({ children }) => {
@@ -17,7 +18,7 @@ const ProtectedRoute = ({ children }) => {
 
   useEffect(() => {
     if (!isAuthLoading && !isAuthenticated) {
-      showLoginRequiredAlert('로그인 후 이용할 수 있습니다.');
+      showLoginRequiredAlert(AUTH_MESSAGES.loginRequiredAfterLogin);
     }
   }, [isAuthenticated, isAuthLoading]);
 

@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { COMMENT_MESSAGES, COMMON_MESSAGES } from '../constants/messages';
 import api from '../utils/api';
 import { handleAuthError, showErrorAlert, showSuccessAlert } from '../utils/alertUtils';
 
@@ -7,19 +8,19 @@ export const useComment = () => {
 
   const createComment = useCallback(async (topicId, content) => {
     try {
-      const response = await api.post(`/comments`, {
+      const response = await api.post('/comments', {
         topic_id: topicId,
         content,
       });
 
       if (isSuccess(response.status)) {
-        showSuccessAlert('댓글이 등록되었습니다.');
+        showSuccessAlert(COMMENT_MESSAGES.createSuccess);
         return response.data;
       }
       return null;
     } catch (error) {
       if (await handleAuthError(error)) return null;
-      showErrorAlert(error, '댓글을 등록하지 못했습니다.');
+      showErrorAlert(error, COMMENT_MESSAGES.createFailed);
       return null;
     }
   }, []);
@@ -31,11 +32,11 @@ export const useComment = () => {
       if (isSuccess(response.status)) {
         return response.data;
       }
-      showErrorAlert(new Error('API 오류'), '댓글을 불러오지 못했습니다.');
+      showErrorAlert(new Error(COMMON_MESSAGES.apiError), COMMENT_MESSAGES.fetchFailed);
       return null;
     } catch (error) {
       if (await handleAuthError(error)) return;
-      showErrorAlert(error, '댓글을 불러오지 못했습니다.');
+      showErrorAlert(error, COMMENT_MESSAGES.fetchFailed);
       return null;
     }
   }, []);
@@ -45,14 +46,14 @@ export const useComment = () => {
       const response = await api.delete(`/comments/${commentId}`);
 
       if (isSuccess(response.status)) {
-        showSuccessAlert('댓글이 삭제되었습니다.');
+        showSuccessAlert(COMMENT_MESSAGES.deleteSuccess);
         return true;
       }
-      showErrorAlert(new Error('API 오류'), '댓글을 삭제하지 못했습니다.');
+      showErrorAlert(new Error(COMMON_MESSAGES.apiError), COMMENT_MESSAGES.deleteFailed);
       return false;
     } catch (error) {
       if (await handleAuthError(error)) return;
-      showErrorAlert(error, '댓글을 삭제하지 못했습니다.');
+      showErrorAlert(error, COMMENT_MESSAGES.deleteFailed);
       return false;
     }
   }, []);
@@ -62,13 +63,13 @@ export const useComment = () => {
       const response = await api.put(`/comments/${commentId}`, { content });
 
       if (isSuccess(response.status)) {
-        showSuccessAlert('댓글이 수정되었습니다.');
+        showSuccessAlert(COMMENT_MESSAGES.updateSuccess);
         return response.data;
       }
       return null;
     } catch (error) {
       if (await handleAuthError(error)) return null;
-      showErrorAlert(error, '댓글을 수정하지 못했습니다.');
+      showErrorAlert(error, COMMENT_MESSAGES.updateFailed);
       return null;
     }
   }, []);

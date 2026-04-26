@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../utils/api';
+import { PROFILE_MESSAGES } from '../../constants/messages';
 import { useAuth } from '../../hooks/auth-context';
 import { handleAuthError, showErrorAlert, showSuccessAlert } from '../../utils/alertUtils';
+import api from '../../utils/api';
 import { formatDateOnly } from '../../utils/date';
 
 const Profile = () => {
@@ -24,7 +25,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       if (!isAuthenticated) {
-        setError('로그인이 필요합니다.');
+        setError(PROFILE_MESSAGES.loginRequired);
         setLoading(false);
         setLoadingStats(false);
         setLoadingActivity(false);
@@ -44,9 +45,9 @@ const Profile = () => {
         setError('');
       } catch (err) {
         setUser(null);
-        setError('프로필 정보를 불러오지 못했습니다.');
+        setError(PROFILE_MESSAGES.fetchFailed);
         if (!(await handleAuthError(err))) {
-          showErrorAlert(err, '프로필 정보를 불러오지 못했습니다.');
+          showErrorAlert(err, PROFILE_MESSAGES.fetchFailed);
         }
       } finally {
         setLoading(false);
@@ -69,7 +70,7 @@ const Profile = () => {
       } catch (err) {
         setStats({ topics: 0, votes: 0, likes: 0 });
         if (!(await handleAuthError(err))) {
-          showErrorAlert(err, '통계 정보를 불러오지 못했습니다.');
+          showErrorAlert(err, PROFILE_MESSAGES.statsFetchFailed);
         }
       } finally {
         setLoadingStats(false);
@@ -88,7 +89,7 @@ const Profile = () => {
       } catch (err) {
         setActivities([]);
         if (!(await handleAuthError(err))) {
-          showErrorAlert(err, '최근 활동을 불러오지 못했습니다.');
+          showErrorAlert(err, PROFILE_MESSAGES.activityFetchFailed);
         }
       } finally {
         setLoadingActivity(false);
@@ -107,7 +108,7 @@ const Profile = () => {
 
   const onSave = async () => {
     if (!form.name.trim()) {
-      showErrorAlert(new Error(''), '이름을 입력해 주세요.');
+      showErrorAlert(new Error(''), PROFILE_MESSAGES.nameRequired);
       return;
     }
     try {
@@ -122,10 +123,10 @@ const Profile = () => {
         joinedAt: res.data.created_at?.slice(0, 10) || user?.joinedAt || '',
       });
       setEditMode(false);
-      showSuccessAlert('프로필이 수정되었습니다.');
+      showSuccessAlert(PROFILE_MESSAGES.updateSuccess);
     } catch (err) {
       if (!(await handleAuthError(err))) {
-        showErrorAlert(err, '프로필 수정에 실패했습니다.');
+        showErrorAlert(err, PROFILE_MESSAGES.updateFailed);
       }
     } finally {
       setSaving(false);
@@ -149,7 +150,7 @@ const Profile = () => {
   if (!isAuthenticated || error) {
     return (
       <div className="max-w-3xl mx-auto bg-white shadow-sm rounded-2xl p-8 text-center border border-slate-200">
-        <p className="text-slate-600">{error || '로그인이 필요합니다.'}</p>
+        <p className="text-slate-600">{error || PROFILE_MESSAGES.loginRequired}</p>
       </div>
     );
   }
@@ -157,7 +158,6 @@ const Profile = () => {
   return (
     <div className="bg-slate-100 min-h-screen py-12 px-4">
       <div className="max-w-5xl mx-auto space-y-6">
-        {/* Header */}
         <div className="flex items-center gap-4 rounded-xl bg-white border border-slate-200 p-6 shadow-md">
           <div className="h-16 w-16 rounded-full bg-gradient-to-br from-slate-300 to-slate-100 text-slate-800 flex items-center justify-center text-2xl font-bold border border-slate-300 shadow-sm">
             {avatarUrl ? (
@@ -175,18 +175,16 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <StatCard label="작성 토픽" value={loadingStats ? '...' : stats.topics} />
-          <StatCard label="투표 참여" value={loadingStats ? '...' : stats.votes} />
+          <StatCard label="작성한 토픽" value={loadingStats ? '...' : stats.topics} />
+          <StatCard label="투표 횟수" value={loadingStats ? '...' : stats.votes} />
           <StatCard label="받은 좋아요" value={loadingStats ? '...' : stats.likes} />
         </div>
 
-        {/* Sections */}
         <div className="grid md:grid-cols-2 gap-6">
           <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-md space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-900">기본 정보</h3>
+              <h3 className="text-lg font-semibold text-slate-900">계정 정보</h3>
               {editMode ? (
                 <div className="flex gap-2">
                   <button
@@ -324,16 +322,6 @@ const StatCard = ({ label, value }) => (
   <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-md">
     <p className="text-sm text-slate-600 font-semibold">{label}</p>
     <p className="text-2xl font-bold text-slate-900 mt-1">{value}</p>
-  </div>
-);
-
-const Card = ({ title, children, action }) => (
-  <div className="p-5 rounded-xl border border-slate-100 bg-white shadow-sm">
-    <div className="flex items-center justify-between mb-4">
-      <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
-      {action}
-    </div>
-    <div className="space-y-3">{children}</div>
   </div>
 );
 

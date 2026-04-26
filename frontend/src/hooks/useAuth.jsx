@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AUTH_MESSAGES } from '../constants/messages';
 import api from '../utils/api';
 import { showErrorAlert } from '../utils/alertUtils';
 import { AuthContext } from './auth-context';
@@ -25,7 +26,7 @@ export const AuthProvider = ({ children }) => {
         const detail = error.response.data?.detail;
 
         if (EXPIRED_TOKEN_DETAILS.has(detail)) {
-          showErrorAlert(error, '세션이 만료되었습니다. 다시 로그인해 주세요.');
+          showErrorAlert(error, AUTH_MESSAGES.sessionExpired);
           navigate('/login');
         }
       }
@@ -50,7 +51,7 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error(error);
-      setError(error.response?.data.detail || '로그인에 실패했습니다.');
+      setError(error.response?.data.detail || AUTH_MESSAGES.loginFailed);
       setIsAuthenticated(false);
       return false;
     }
@@ -59,19 +60,19 @@ export const AuthProvider = ({ children }) => {
   const signup = async ({ email, username, password, confirmPassword }) => {
     setError('');
     if (!email.includes('@')) {
-      setError('올바른 이메일 주소를 입력해 주세요.');
+      setError(AUTH_MESSAGES.invalidEmail);
       return false;
     }
     if (username.length < 2) {
-      setError('닉네임은 2자 이상이어야 합니다.');
+      setError(AUTH_MESSAGES.invalidUsername);
       return false;
     }
     if (password.length < 6) {
-      setError('비밀번호는 6자 이상이어야 합니다.');
+      setError(AUTH_MESSAGES.invalidPassword);
       return false;
     }
     if (password !== confirmPassword) {
-      setError('비밀번호가 일치하지 않습니다.');
+      setError(AUTH_MESSAGES.passwordMismatch);
       return false;
     }
     try {
@@ -88,7 +89,7 @@ export const AuthProvider = ({ children }) => {
       return false;
     } catch (error) {
       console.error(error);
-      setError(error.response?.data.detail || '회원가입에 실패했습니다.');
+      setError(error.response?.data.detail || AUTH_MESSAGES.signupFailed);
       return false;
     }
   };
@@ -103,7 +104,7 @@ export const AuthProvider = ({ children }) => {
         navigate('/');
       }
     } catch (error) {
-      console.error('로그아웃 실패:', error);
+      console.error(AUTH_MESSAGES.logoutFailed, error);
     } finally {
       setIsAuthenticated(false);
       setUser(null);

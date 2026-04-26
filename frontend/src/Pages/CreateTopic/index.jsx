@@ -1,12 +1,13 @@
 import React, { useCallback, useState } from 'react';
-import { useTopic } from '../../hooks/useTopic';
 import { useNavigate } from 'react-router-dom';
-import FormField from './layout/FormField';
-import VoteOptionInputs from './layout/VoteOptionInputs';
-import CategorySelect from './layout/CategorySelect';
-import SubmitButton from './layout/SubmitButton';
 import { CATEGORIES } from '../../constants/categories';
+import { CREATE_TOPIC_MESSAGES } from '../../constants/messages';
+import { useTopic } from '../../hooks/useTopic';
 import { showErrorAlert, showWarningAlert } from '../../utils/alertUtils';
+import CategorySelect from './layout/CategorySelect';
+import FormField from './layout/FormField';
+import SubmitButton from './layout/SubmitButton';
+import VoteOptionInputs from './layout/VoteOptionInputs';
 
 const CreateTopic = () => {
   const { addTopic } = useTopic();
@@ -30,11 +31,17 @@ const CreateTopic = () => {
       const validVoteOptions = formData.vote_options.filter((opt) => opt.trim() !== '');
 
       if (new Set(validVoteOptions).size !== validVoteOptions.length) {
-        showWarningAlert('중복된 투표 옵션', '서로 다른 옵션을 입력해 주세요.');
+        showWarningAlert(
+          CREATE_TOPIC_MESSAGES.duplicateOptionTitle,
+          CREATE_TOPIC_MESSAGES.duplicateOptionText
+        );
         return;
       }
       if (validVoteOptions.length < 2) {
-        showWarningAlert('투표 옵션 부족', '최소 2개 이상의 옵션이 필요해요.');
+        showWarningAlert(
+          CREATE_TOPIC_MESSAGES.insufficientOptionsTitle,
+          CREATE_TOPIC_MESSAGES.insufficientOptionsText
+        );
         return;
       }
 
@@ -46,7 +53,7 @@ const CreateTopic = () => {
         if (!result) return;
         navigate(`/topic/${result.topic_id}`);
       } catch (error) {
-        showErrorAlert(error, '다시 시도해 주세요.');
+        showErrorAlert(error, CREATE_TOPIC_MESSAGES.retry);
       }
     },
     [formData, addTopic, navigate]
@@ -62,7 +69,10 @@ const CreateTopic = () => {
 
   const onOptionAdd = useCallback(() => {
     if (formData.vote_options.length >= 4) {
-      showWarningAlert('옵션 개수 초과', '투표 옵션은 최대 4개까지 가능합니다.');
+      showWarningAlert(
+        CREATE_TOPIC_MESSAGES.optionLimitTitle,
+        CREATE_TOPIC_MESSAGES.optionLimitText
+      );
       return;
     }
     setFormData((prev) => ({
@@ -81,21 +91,21 @@ const CreateTopic = () => {
   return (
     <div className="flex items-center justify-center px-4 py-10 bg-slate-50">
       <div className="max-w-3xl w-full bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-        <h2 className="text-2xl font-semibold text-slate-900 mb-6">새로운 토픽 만들기</h2>
+        <h2 className="text-2xl font-semibold text-slate-900 mb-6">새 토픽 만들기</h2>
         <form onSubmit={onSubmit} className="space-y-6">
           <FormField
             label="제목"
             name="title"
             value={formData.title}
             onChange={onChange}
-            placeholder="토픽 제목을 입력하세요"
+            placeholder="토픽 제목을 입력해 주세요."
           />
           <FormField
             label="설명"
             name="description"
             value={formData.description}
             onChange={onChange}
-            placeholder="토픽을 설명해주세요"
+            placeholder="토픽을 설명해 주세요."
           />
           <VoteOptionInputs
             formData={formData}
