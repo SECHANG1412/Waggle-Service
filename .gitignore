@@ -9,3 +9,11 @@ frontend/.env.prod
 frontend/.env.production
 .env.local
 .env.prod
+
+# Test database artifacts
+backend/tests/*.db
+backend/tests/*.sqlite
+backend/tests/*.sqlite3
+*.db
+*.sqlite
+*.sqlite3
