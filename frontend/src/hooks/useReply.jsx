@@ -1,16 +1,17 @@
-import api from "../utils/api";
+import { COMMON_MESSAGES, REPLY_MESSAGES } from '../constants/messages';
+import api from '../utils/api';
 import {
   handleAuthError,
-  showErrorAlert,
   showConfirmDialog,
-} from "../utils/alertUtils";
+  showErrorAlert,
+} from '../utils/alertUtils';
 
 export const useReply = () => {
   const isSuccess = (status) => status >= 200 && status < 300;
 
   const createReply = async (commentId, content, parentReplyId = null) => {
     try {
-      const response = await api.post(`/replies`, {
+      const response = await api.post('/replies', {
         comment_id: commentId,
         content,
         parent_reply_id: parentReplyId,
@@ -20,7 +21,7 @@ export const useReply = () => {
       return null;
     } catch (error) {
       if (await handleAuthError(error)) return null;
-      showErrorAlert(error, "답글을 등록하지 못했습니다.");
+      showErrorAlert(error, REPLY_MESSAGES.createFailed);
       return null;
     }
   };
@@ -28,12 +29,12 @@ export const useReply = () => {
   const deleteReply = async (replyId) => {
     try {
       const confirm = await showConfirmDialog(
-        "답글을 삭제하시겠습니까?",
-        "삭제한 답글은 복구할 수 없습니다.",
-        "삭제",
-        "취소",
-        "#EF4444",
-        "#9CA3AF"
+        REPLY_MESSAGES.deleteConfirmTitle,
+        REPLY_MESSAGES.deleteConfirmText,
+        COMMON_MESSAGES.delete,
+        COMMON_MESSAGES.cancel,
+        '#EF4444',
+        '#9CA3AF'
       );
       if (!confirm.isConfirmed) return false;
 
@@ -45,7 +46,7 @@ export const useReply = () => {
       return null;
     } catch (error) {
       if (await handleAuthError(error)) return null;
-      showErrorAlert(error, "답글을 삭제하지 못했습니다.");
+      showErrorAlert(error, REPLY_MESSAGES.deleteFailed);
       return null;
     }
   };
@@ -58,7 +59,7 @@ export const useReply = () => {
       return null;
     } catch (error) {
       if (await handleAuthError(error)) return null;
-      showErrorAlert(error, "답글을 수정하지 못했습니다.");
+      showErrorAlert(error, REPLY_MESSAGES.updateFailed);
       return null;
     }
   };

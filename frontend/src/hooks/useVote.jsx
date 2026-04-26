@@ -1,43 +1,44 @@
-import { useCallback } from "react";
-import api from "../utils/api";
-import { useAuth } from "./auth-context";
+import { useCallback } from 'react';
+import { VOTE_MESSAGES } from '../constants/messages';
+import api from '../utils/api';
+import { parseApiDate } from '../utils/date';
+import { useAuth } from './auth-context';
 import {
   handleAuthError,
   showErrorAlert,
   showLoginRequiredAlert,
   showSuccessAlert,
-} from "../utils/alertUtils";
-import { parseApiDate } from "../utils/date";
+} from '../utils/alertUtils';
 
 const getIntervalForTimeRange = (timeRange) => {
   switch (timeRange) {
-    case "1H":
-    case "6H":
-      return "1m";
-    case "1D":
-      return "5m";
-    case "1W":
-      return "30m";
-    case "1M":
-      return "3h";
-    case "ALL":
-      return "12h";
+    case '1H':
+    case '6H':
+      return '1m';
+    case '1D':
+      return '5m';
+    case '1W':
+      return '30m';
+    case '1M':
+      return '3h';
+    case 'ALL':
+      return '12h';
     default:
-      return "1m";
+      return '1m';
   }
 };
 
 const getFormattedTime = (date, timeRange) => {
-  const MM = String(date.getMonth() + 1).padStart(2, "0");
-  const DD = String(date.getDate()).padStart(2, "0");
-  const HH = String(date.getHours()).padStart(2, "0");
-  const mm = String(date.getMinutes()).padStart(2, "0");
+  const MM = String(date.getMonth() + 1).padStart(2, '0');
+  const DD = String(date.getDate()).padStart(2, '0');
+  const HH = String(date.getHours()).padStart(2, '0');
+  const mm = String(date.getMinutes()).padStart(2, '0');
 
-  if (timeRange === "1H" || timeRange === "6H" || timeRange === "1D") {
+  if (timeRange === '1H' || timeRange === '6H' || timeRange === '1D') {
     return `${HH}:${mm}`;
   }
 
-  if (timeRange === "1W") {
+  if (timeRange === '1W') {
     return `${MM}/${DD} ${HH}:${mm}`;
   }
 
@@ -55,37 +56,37 @@ export const useVote = () => {
       }
 
       try {
-        const response = await api.post("/votes", {
+        const response = await api.post('/votes', {
           topic_id: topicId,
           vote_index: voteIndex,
         });
 
         if (response.status === 200) {
-          showSuccessAlert("투표가 완료되었습니다.");
+          showSuccessAlert(VOTE_MESSAGES.submitSuccess);
           return response.data;
         }
         return null;
       } catch (error) {
         if (error.response?.status === 403) {
-          showErrorAlert(error, "이미 투표한 토픽입니다.");
+          showErrorAlert(error, VOTE_MESSAGES.alreadyVoted);
           return false;
         }
         if (await handleAuthError(error)) return false;
-        showErrorAlert(error, "투표를 처리하지 못했습니다.");
+        showErrorAlert(error, VOTE_MESSAGES.submitFailed);
         return false;
       }
     },
     [isAuthenticated, isAuthLoading]
   );
 
-  const getTopicVotes = useCallback(async (topicId, timeRange = "ALL") => {
+  const getTopicVotes = useCallback(async (topicId, timeRange = 'ALL') => {
     try {
-      const convertedTimeRange = timeRange === "1M" ? "30d" : timeRange;
-      const isAllTime = convertedTimeRange === "ALL";
+      const convertedTimeRange = timeRange === '1M' ? '30d' : timeRange;
+      const isAllTime = convertedTimeRange === 'ALL';
 
       const params = {
         interval: getIntervalForTimeRange(timeRange),
-        time_range: isAllTime ? "all" : convertedTimeRange.toLowerCase(),
+        time_range: isAllTime ? 'all' : convertedTimeRange.toLowerCase(),
       };
       const response = await api.get(`/votes/topic/${topicId}`, { params });
 
@@ -97,7 +98,7 @@ export const useVote = () => {
             label: getFormattedTime(date, timeRange),
             ...Object.entries(voteData).reduce(
               (acc, [key, value]) =>
-                typeof value === "object"
+                typeof value === 'object'
                   ? {
                       ...acc,
                       [`count_${key}`]: value.count || 0,
@@ -111,7 +112,7 @@ export const useVote = () => {
       }
       return null;
     } catch (error) {
-      showErrorAlert(error, "투표 통계를 불러오지 못했습니다.");
+      showErrorAlert(error, VOTE_MESSAGES.statsFetchFailed);
       return null;
     }
   }, []);

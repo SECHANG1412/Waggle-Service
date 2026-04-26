@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
+import { TOPIC_MESSAGES } from '../constants/messages';
 import api from '../utils/api';
-import { showErrorAlert, showSuccessAlert, handleAuthError } from '../utils/alertUtils';
+import { handleAuthError, showErrorAlert, showSuccessAlert } from '../utils/alertUtils';
 
 export const useTopic = () => {
   const [loading, setLoading] = useState(false);
@@ -24,7 +25,7 @@ export const useTopic = () => {
       }
       return null;
     } catch (error) {
-      showErrorAlert(error, '토픽 목록을 불러오지 못했습니다.');
+      showErrorAlert(error, TOPIC_MESSAGES.fetchFailed);
       return null;
     } finally {
       setLoading(false);
@@ -37,7 +38,7 @@ export const useTopic = () => {
       return response.status === 200;
     } catch (error) {
       if (await handleAuthError(error)) return false;
-      showErrorAlert(error, '토픽을 고정하지 못했습니다.');
+      showErrorAlert(error, TOPIC_MESSAGES.pinFailed);
       return false;
     }
   }, []);
@@ -48,7 +49,7 @@ export const useTopic = () => {
       return response.status === 200;
     } catch (error) {
       if (await handleAuthError(error)) return false;
-      showErrorAlert(error, '토픽 고정을 해제하지 못했습니다.');
+      showErrorAlert(error, TOPIC_MESSAGES.unpinFailed);
       return false;
     }
   }, []);
@@ -69,7 +70,7 @@ export const useTopic = () => {
       }
       return null;
     } catch (error) {
-      showErrorAlert(error, '토픽 수를 불러오지 못했습니다.');
+      showErrorAlert(error, TOPIC_MESSAGES.countFailed);
       return null;
     } finally {
       setLoading(false);
@@ -82,13 +83,13 @@ export const useTopic = () => {
       const response = await api.post('/topics', topicData);
 
       if (response.status === 200) {
-        showSuccessAlert('토픽이 등록되었습니다.');
+        showSuccessAlert(TOPIC_MESSAGES.createSuccess);
         return response.data;
       }
       return null;
     } catch (error) {
       if (await handleAuthError(error)) return null;
-      showErrorAlert(error, '토픽을 등록하지 못했습니다.');
+      showErrorAlert(error, TOPIC_MESSAGES.createFailed);
       return null;
     } finally {
       setLoading(false);
@@ -107,7 +108,7 @@ export const useTopic = () => {
     } catch (error) {
       if (error.response?.status === 404) return null;
       if (await handleAuthError(error)) return undefined;
-      showErrorAlert(error, '토픽 정보를 불러오지 못했습니다.');
+      showErrorAlert(error, TOPIC_MESSAGES.detailFetchFailed);
       return undefined;
     } finally {
       setLoading(false);
@@ -119,13 +120,13 @@ export const useTopic = () => {
     try {
       const response = await api.delete(`/topics/${topicId}`);
       if (response.status === 200) {
-        showSuccessAlert('토픽이 삭제되었습니다.');
+        showSuccessAlert(TOPIC_MESSAGES.deleteSuccess);
         return true;
       }
       return false;
     } catch (error) {
       if (await handleAuthError(error)) return false;
-      showErrorAlert(error, '토픽을 삭제하지 못했습니다.');
+      showErrorAlert(error, TOPIC_MESSAGES.deleteFailed);
       return false;
     } finally {
       setLoading(false);

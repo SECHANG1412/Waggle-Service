@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import CommentItem from './CommentItem';
-import { useComment } from '../../../hooks/useComment';
-import { useReply } from '../../../hooks/useReply';
-import { useLike } from '../../../hooks/useLike';
+import React, { useCallback, useEffect, useState } from 'react';
+import { COMMENT_MESSAGES, COMMON_MESSAGES, REPLY_MESSAGES } from '../../../constants/messages';
 import { useAuth } from '../../../hooks/auth-context';
+import { useComment } from '../../../hooks/useComment';
+import { useLike } from '../../../hooks/useLike';
+import { useReply } from '../../../hooks/useReply';
 import { showConfirmDialog, showLoginRequiredAlert } from '../../../utils/alertUtils';
+import CommentItem from './CommentItem';
 import PaginationControls from './PaginationControls';
 
 const Comments = ({ topicId }) => {
@@ -41,7 +42,7 @@ const Comments = ({ topicId }) => {
 
   const onCreateComment = async (e) => {
     e?.preventDefault();
-    if (!(await ensureAuth('댓글을 작성하려면 로그인해 주세요.'))) return;
+    if (!(await ensureAuth(COMMENT_MESSAGES.loginRequiredCreate))) return;
     if (!newComment.trim()) return;
     setIsSubmitting(true);
     const result = await createComment(topicId, newComment.trim());
@@ -54,10 +55,10 @@ const Comments = ({ topicId }) => {
 
   const onDeleteComment = async (commentId) => {
     const confirm = await showConfirmDialog(
-      '댓글을 삭제하시겠습니까?',
-      '삭제하면 되돌릴 수 없습니다.',
-      '삭제',
-      '취소',
+      COMMENT_MESSAGES.deleteConfirmTitle,
+      COMMENT_MESSAGES.deleteConfirmText,
+      COMMON_MESSAGES.delete,
+      COMMON_MESSAGES.cancel,
       '#EF4444',
       '#9CA3AF'
     );
@@ -75,19 +76,22 @@ const Comments = ({ topicId }) => {
 
   const onCommentActions = {
     onEdit: (commentId, content) =>
-      guardedAction(() => updateComment(commentId, content), '댓글을 수정하려면 로그인해 주세요.'),
+      guardedAction(() => updateComment(commentId, content), COMMENT_MESSAGES.loginRequiredEdit),
     onDelete: (commentId) =>
-      guardedAction(() => onDeleteComment(commentId), '댓글을 삭제하려면 로그인해 주세요.'),
+      guardedAction(() => onDeleteComment(commentId), COMMENT_MESSAGES.loginRequiredDelete),
     onLike: (commentId) =>
-      guardedAction(() => toggleCommentLike(commentId), '댓글에 좋아요를 누르려면 로그인해 주세요.'),
+      guardedAction(() => toggleCommentLike(commentId), COMMENT_MESSAGES.loginRequiredLike),
     onReply: (commentId, content, parentReplyId = null) =>
-      guardedAction(() => createReply(commentId, content, parentReplyId), '답글을 작성하려면 로그인해 주세요.'),
+      guardedAction(
+        () => createReply(commentId, content, parentReplyId),
+        REPLY_MESSAGES.loginRequiredCreate
+      ),
     onReplyEdit: (replyId, content) =>
-      guardedAction(() => updateReply(replyId, content), '답글을 수정하려면 로그인해 주세요.'),
+      guardedAction(() => updateReply(replyId, content), REPLY_MESSAGES.loginRequiredEdit),
     onReplyDelete: (replyId) =>
-      guardedAction(() => deleteReply(replyId), '답글을 삭제하려면 로그인해 주세요.'),
+      guardedAction(() => deleteReply(replyId), REPLY_MESSAGES.loginRequiredDelete),
     onReplyLike: (replyId) =>
-      guardedAction(() => toggleReplyLike(replyId), '답글에 좋아요를 누르려면 로그인해 주세요.'),
+      guardedAction(() => toggleReplyLike(replyId), REPLY_MESSAGES.loginRequiredLike),
   };
 
   const startIndex = (currentPage - 1) * itemsPerPage;

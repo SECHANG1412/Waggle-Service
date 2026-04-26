@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { AUTH_MESSAGES } from '../constants/messages';
 import { showLoginRequiredAlert } from './alertUtils';
 
 const api = axios.create({
@@ -49,10 +50,8 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     const isRefreshRequest = originalRequest?.url?.includes('/users/refresh');
 
-    // If unauthorized, attempt refresh token once.
     if (error.response?.status === 401 && !isRefreshRequest && !originalRequest._retry) {
       if (isRefreshing) {
-        // queue the request until refresh completes
         return new Promise((resolve, reject) => {
           refreshQueue.push({ resolve, reject });
         })
@@ -64,19 +63,18 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        await api.post('/users/refresh'); // backend endpoint sets refreshed cookies
+        await api.post('/users/refresh');
         processQueue(null, true);
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        await showLoginRequiredAlert('세션이 만료되었습니다. 다시 로그인해 주세요.');
+        await showLoginRequiredAlert(AUTH_MESSAGES.sessionExpired);
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
       }
     }
 
-    // For other errors, propagate
     return Promise.reject(error);
   }
 );
