@@ -6,6 +6,7 @@ import { AUTH_MESSAGES } from './constants/messages';
 import { useAuth } from './hooks/auth-context';
 import { AuthProvider } from './hooks/useAuth';
 import Admin from './Pages/Admin';
+import AdminInquiries from './Pages/Admin/Inquiries';
 import Contact from './Pages/Contact';
 import CreateTopic from './Pages/CreateTopic';
 import Login from './Pages/Login';
@@ -126,7 +127,7 @@ const AdminRoute = () => {
     );
   }
 
-  return <Admin />;
+  return <Outlet />;
 };
 
 const NavigateButton = ({ to, children }) => (
@@ -162,7 +163,14 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <Main /> },
           { path: 'contact', element: <Contact /> },
-          { path: 'admin', element: <AdminRoute /> },
+          {
+            path: 'admin',
+            element: <AdminRoute />,
+            children: [
+              { index: true, element: <Admin /> },
+              { path: 'inquiries', element: <AdminInquiries /> },
+            ],
+          },
           {
             element: (
               <ProtectedRoute>
