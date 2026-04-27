@@ -10,8 +10,8 @@ const Footer = () => {
 
   return (
     <footer className="border-t border-gray-200 bg-white text-gray-700">
-      <div className="mx-auto max-w-5xl px-4 py-7">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-[1.2fr_1fr_1fr] md:items-start">
+      <div className="mx-auto max-w-3xl px-4 py-7">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3 md:items-start md:pl-14">  
           <div className="flex flex-col">
             <h3 className="mb-3 text-base font-semibold text-gray-900">Waggle</h3>
             <p className="max-w-xs text-sm leading-6 text-gray-600">
@@ -33,7 +33,7 @@ const Footer = () => {
           </nav>
 
           <div className="flex flex-col">
-            <h3 className="mb-3 text-base font-semibold text-gray-900">Email</h3>
+            <h3 className="-mt-px mb-2 text-base font-semibold text-gray-900">Email</h3>
             <p className="text-sm leading-6 text-gray-600">waggle0123@gmail.com</p>
           </div>
         </div>
