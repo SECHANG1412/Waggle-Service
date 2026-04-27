@@ -21,3 +21,8 @@ class InquiryRead(InquiryCreate):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class InquiryStatusUpdate(BaseModel):
+    status: InquiryStatus
+    reason: str = Field(..., min_length=1, max_length=500)
