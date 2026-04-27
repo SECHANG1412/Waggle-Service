@@ -72,13 +72,6 @@ const TopicCard = ({ topic, onVote, onPinToggle }) => {
         </div>
 
         <VoteInfo createdAt={formattedDate} likeCount={topic.like_count} totalVote={topic.total_vote} commentCount={commentCount} />
-        <Link
-          to={`/topic/${topic.topic_id}`}
-          className="mt-3 inline-flex w-fit text-sm font-semibold text-blue-600 transition hover:text-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
-          aria-label={`${topic.title} 상세 페이지로 이동`}
-        >
-          상세 보기
-        </Link>
       </article>
   );
 };

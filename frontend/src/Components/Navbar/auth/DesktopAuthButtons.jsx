@@ -15,7 +15,7 @@ const AvatarPlaceholder = ({ name }) => {
   );
 };
 
-const DesktopAuthButtons = ({ userName, isAuthenticated, isOpen, setIsOpen, onLogoutClick }) => {
+const DesktopAuthButtons = ({ userName, isAuthenticated, isAdmin, isOpen, setIsOpen, onLogoutClick }) => {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -51,6 +51,15 @@ const DesktopAuthButtons = ({ userName, isAuthenticated, isOpen, setIsOpen, onLo
               </div>
 
               <div className="py-1">
+                {isAdmin && (
+                  <Link
+                    to="/manage"
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <span>Admin</span>
+                  </Link>
+                )}
                 <Link
                   to="/profile"
                   className="flex items-center gap-2 px-4 py-2 text-sm text-gray-800 hover:bg-gray-50"

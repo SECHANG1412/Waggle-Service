@@ -1,11 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const MobileAuthButtons = ({ isAuthenticated, setIsOpen, onLogoutClick }) => {
+const MobileAuthButtons = ({ isAuthenticated, isAdmin, setIsOpen, onLogoutClick }) => {
   return (
     <div className="w-full space-y-2 pt-2">
       {isAuthenticated ? (
         <>
+          {isAdmin && (
+            <Link
+              to="/manage"
+              onClick={() => setIsOpen(false)}
+              className="block w-full rounded-md px-3 py-2 text-left text-base font-semibold text-blue-700 transition-all duration-200 hover:bg-blue-50"
+            >
+              Admin
+            </Link>
+          )}
           <Link
             to="/profile"
             onClick={() => setIsOpen(false)}
