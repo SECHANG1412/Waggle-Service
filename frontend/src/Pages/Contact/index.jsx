@@ -68,11 +68,27 @@ const Contact = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-          <p className="text-sm font-semibold text-slate-700">문의 작성자</p>
-          <p className="mt-1 text-sm text-slate-600">
-            {user?.username || '사용자'} / {user?.email || '-'}
-          </p>
+        <div className="grid gap-5 md:grid-cols-2">
+          <label className="block">
+            <span className="text-sm font-semibold text-slate-700">이름</span>
+            <input
+              value={user?.username || ''}
+              readOnly
+              className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700"
+              aria-label="문의 작성자 이름"
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-sm font-semibold text-slate-700">이메일</span>
+            <input
+              type="email"
+              value={user?.email || ''}
+              readOnly
+              className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700"
+              aria-label="문의 작성자 이메일"
+            />
+          </label>
         </div>
 
         <label className="block">

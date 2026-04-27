@@ -1,5 +1,5 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import desc, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import AdminActionLog
 
@@ -51,3 +51,30 @@ class AdminActionLogCrud:
         query = query.order_by(desc(AdminActionLog.created_at), desc(AdminActionLog.log_id)).limit(limit)
         result = await db.execute(query)
         return list(result.scalars().all())
+
+    @staticmethod
+    async def get_latest_reasons_by_targets(
+        db: AsyncSession,
+        *,
+        action: str,
+        target_type: str,
+        target_ids: list[int],
+    ) -> dict[int, str]:
+        if not target_ids:
+            return {}
+
+        result = await db.execute(
+            select(AdminActionLog)
+            .where(
+                AdminActionLog.action == action,
+                AdminActionLog.target_type == target_type,
+                AdminActionLog.target_id.in_(target_ids),
+            )
+            .order_by(desc(AdminActionLog.created_at), desc(AdminActionLog.log_id))
+        )
+
+        latest_reasons: dict[int, str] = {}
+        for log in result.scalars().all():
+            if log.target_id not in latest_reasons:
+                latest_reasons[log.target_id] = log.reason
+        return latest_reasons
