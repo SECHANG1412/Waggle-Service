@@ -8,6 +8,7 @@ from app.db.models import (
     TopicLike,
     CommentLike,
     ReplyLike,
+    Inquiry,
 )
 
 
@@ -94,3 +95,17 @@ class ReplyLikeAdmin(ModelView, model=ReplyLike):
     name = "Reply Like"
     name_plural = "Reply Likes"
     icon = "fa-solid fa-heart"
+
+
+class InquiryAdmin(ModelView, model=Inquiry):
+    column_list = [
+        Inquiry.inquiry_id,
+        Inquiry.name,
+        Inquiry.email,
+        Inquiry.title,
+        Inquiry.status,
+        Inquiry.created_at,
+    ]
+    name = "Inquiry"
+    name_plural = "Inquiries"
+    icon = "fa-solid fa-envelope"

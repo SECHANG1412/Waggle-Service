@@ -5,6 +5,7 @@ import Navbar from './Components/Navbar';
 import { AUTH_MESSAGES } from './constants/messages';
 import { useAuth } from './hooks/auth-context';
 import { AuthProvider } from './hooks/useAuth';
+import Contact from './Pages/Contact';
 import CreateTopic from './Pages/CreateTopic';
 import Login from './Pages/Login';
 import Main from './Pages/Main';
@@ -69,6 +70,7 @@ const router = createBrowserRouter([
         element: <RootLayout />,
         children: [
           { index: true, element: <Main /> },
+          { path: 'contact', element: <Contact /> },
           {
             element: (
               <ProtectedRoute>

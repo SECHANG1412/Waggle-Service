@@ -1,0 +1,135 @@
+import React, { useCallback, useState } from 'react';
+import { Link } from 'react-router-dom';
+import api from '../../utils/api';
+
+const initialForm = {
+  name: '',
+  email: '',
+  title: '',
+  content: '',
+};
+
+const Contact = () => {
+  const [formData, setFormData] = useState(initialForm);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState(null);
+
+  const handleChange = useCallback((event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  }, []);
+
+  const handleSubmit = useCallback(
+    async (event) => {
+      event.preventDefault();
+      setIsSubmitting(true);
+      setMessage(null);
+
+      try {
+        await api.post('/inquiries', {
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          title: formData.title.trim(),
+          content: formData.content.trim(),
+        });
+        setFormData(initialForm);
+        setMessage({ type: 'success', text: '문의가 접수되었습니다. 확인 후 서비스 운영에 반영하겠습니다.' });
+      } catch {
+        setMessage({ type: 'error', text: '문의를 접수하지 못했습니다. 입력 내용을 확인한 뒤 다시 시도해 주세요.' });
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [formData]
+  );
+
+  const isSuccess = message?.type === 'success';
+
+  return (
+    <section className="mx-auto max-w-3xl px-4 py-10">
+      <div className="mb-8">
+        <Link to="/" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
+          홈으로 돌아가기
+        </Link>
+        <h1 className="mt-4 text-3xl font-bold text-slate-900">문의하기</h1>
+        <p className="mt-3 text-sm leading-6 text-slate-600">
+          서비스 이용 중 불편한 점이나 개선 의견을 남겨 주세요. 남겨주신 문의는 운영자가 확인할 수 있도록 저장됩니다.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="grid gap-5 md:grid-cols-2">
+          <label className="block">
+            <span className="text-sm font-semibold text-slate-700">이름</span>
+            <input
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              maxLength={50}
+              className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="이름을 입력해 주세요"
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-sm font-semibold text-slate-700">이메일</span>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              maxLength={100}
+              className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="reply@example.com"
+            />
+          </label>
+        </div>
+
+        <label className="block">
+          <span className="text-sm font-semibold text-slate-700">제목</span>
+          <input
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            required
+            maxLength={150}
+            className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="문의 제목을 입력해 주세요"
+          />
+        </label>
+
+        <label className="block">
+          <span className="text-sm font-semibold text-slate-700">문의 내용</span>
+          <textarea
+            name="content"
+            value={formData.content}
+            onChange={handleChange}
+            required
+            maxLength={2000}
+            rows={7}
+            className="mt-2 w-full resize-y rounded-lg border border-slate-200 px-3 py-2 text-sm leading-6 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="문의 내용을 입력해 주세요"
+          />
+        </label>
+
+        {message && (
+          <p className={`text-sm font-medium ${isSuccess ? 'text-green-700' : 'text-red-600'}`}>
+            {message.text}
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+        >
+          {isSubmitting ? '문의 접수 중...' : '문의 접수하기'}
+        </button>
+      </form>
+    </section>
+  );
+};
+
+export default Contact;
