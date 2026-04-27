@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
-import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { createBrowserRouter, Link, Navigate, Outlet, RouterProvider } from 'react-router-dom';
 import Footer from './Components/Footer/Footer';
 import Navbar from './Components/Navbar';
 import { AUTH_MESSAGES } from './constants/messages';
 import { useAuth } from './hooks/auth-context';
 import { AuthProvider } from './hooks/useAuth';
+import Admin from './Pages/Admin';
 import Contact from './Pages/Contact';
 import CreateTopic from './Pages/CreateTopic';
 import Login from './Pages/Login';
@@ -12,6 +13,7 @@ import Main from './Pages/Main';
 import Profile from './Pages/Profile';
 import Signup from './Pages/Signup';
 import SingleTopic from './Pages/SingleTopic';
+import api from './utils/api';
 import { showLoginRequiredAlert } from './utils/alertUtils';
 
 const ProtectedRoute = ({ children }) => {
@@ -47,6 +49,95 @@ const RootLayout = () => (
   </div>
 );
 
+const AdminRoute = () => {
+  const { isAuthenticated, isAuthLoading } = useAuth();
+  const [status, setStatus] = useState('checking');
+
+  useEffect(() => {
+    let mounted = true;
+
+    const verifyAdmin = async () => {
+      if (isAuthLoading) return;
+      if (!isAuthenticated) {
+        setStatus('login-required');
+        return;
+      }
+
+      setStatus('checking');
+
+      try {
+        await api.get('/admin-api/me');
+        if (mounted) setStatus('allowed');
+      } catch (error) {
+        if (!mounted) return;
+        if (error.response?.status === 403) {
+          setStatus('forbidden');
+          return;
+        }
+        if (error.response?.status === 401) {
+          setStatus('login-required');
+          return;
+        }
+        setStatus('error');
+      }
+    };
+
+    verifyAdmin();
+
+    return () => {
+      mounted = false;
+    };
+  }, [isAuthenticated, isAuthLoading]);
+
+  if (isAuthLoading || status === 'checking') {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center px-4 text-sm text-slate-500">
+        관리자 권한을 확인하고 있습니다.
+      </div>
+    );
+  }
+
+  if (status === 'login-required') {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (status === 'forbidden') {
+    return (
+      <div className="mx-auto flex min-h-[50vh] max-w-2xl flex-col justify-center px-4 py-16">
+        <p className="text-sm font-semibold text-blue-600">접근 권한 없음</p>
+        <h1 className="mt-3 text-2xl font-bold text-slate-900">관리자만 접근할 수 있습니다.</h1>
+        <p className="mt-3 text-sm leading-6 text-slate-600">
+          현재 계정에는 관리자 권한이 없습니다. 서비스 이용은 메인 화면에서 계속할 수 있습니다.
+        </p>
+        <NavigateButton to="/">메인으로 돌아가기</NavigateButton>
+      </div>
+    );
+  }
+
+  if (status === 'error') {
+    return (
+      <div className="mx-auto flex min-h-[50vh] max-w-2xl flex-col justify-center px-4 py-16">
+        <p className="text-sm font-semibold text-red-600">확인 실패</p>
+        <h1 className="mt-3 text-2xl font-bold text-slate-900">관리자 권한을 확인하지 못했습니다.</h1>
+        <p className="mt-3 text-sm leading-6 text-slate-600">
+          잠시 후 다시 시도해 주세요.
+        </p>
+      </div>
+    );
+  }
+
+  return <Admin />;
+};
+
+const NavigateButton = ({ to, children }) => (
+  <Link
+    to={to}
+    className="mt-6 inline-flex w-fit rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+  >
+    {children}
+  </Link>
+);
+
 const AuthLayout = () => (
   <div className="flex min-h-screen items-center justify-center bg-[#f2f4f7] px-4 py-10">
     <div className="w-full max-w-5xl">
@@ -71,6 +162,7 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <Main /> },
           { path: 'contact', element: <Contact /> },
+          { path: 'admin', element: <AdminRoute /> },
           {
             element: (
               <ProtectedRoute>
