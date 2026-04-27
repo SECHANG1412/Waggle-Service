@@ -101,12 +101,18 @@ async def create_comment(
     topic_id: int,
     content: str = "comment",
     is_deleted: bool = False,
+    is_hidden: bool = False,
+    hidden_at: datetime | None = None,
+    hidden_by: int | None = None,
 ) -> Comment:
     comment = Comment(
         user_id=user_id,
         topic_id=topic_id,
         content=content,
         is_deleted=is_deleted,
+        is_hidden=is_hidden,
+        hidden_at=hidden_at,
+        hidden_by=hidden_by,
     )
     db.add(comment)
     await db.flush()

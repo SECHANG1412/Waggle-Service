@@ -3,9 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import require_admin_user_id
 from app.db.database import get_db
+from app.db.schemas.comments import CommentAdminRead, CommentModerationUpdate
 from app.db.schemas.inquiries import InquiryRead, InquiryStatusUpdate
 from app.db.schemas.topics import TopicAdminRead, TopicModerationUpdate
-from app.services import InquiryService, TopicService
+from app.services import CommentService, InquiryService, TopicService
 
 router = APIRouter(prefix="/admin-api", tags=["Admin"])
 
@@ -70,3 +71,31 @@ async def unhide_topic(
     db: AsyncSession = Depends(get_db),
 ):
     return await TopicService.unhide_for_admin(db, topic_id, update, admin_user_id)
+
+
+@router.get("/comments", response_model=list[CommentAdminRead])
+async def list_comments_for_admin(
+    _admin_user_id: int = Depends(require_admin_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    return await CommentService.get_all_for_admin(db)
+
+
+@router.patch("/comments/{comment_id}/hide", response_model=CommentAdminRead)
+async def hide_comment(
+    comment_id: int,
+    update: CommentModerationUpdate,
+    admin_user_id: int = Depends(require_admin_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    return await CommentService.hide_for_admin(db, comment_id, update, admin_user_id)
+
+
+@router.patch("/comments/{comment_id}/unhide", response_model=CommentAdminRead)
+async def unhide_comment(
+    comment_id: int,
+    update: CommentModerationUpdate,
+    admin_user_id: int = Depends(require_admin_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    return await CommentService.unhide_for_admin(db, comment_id, update, admin_user_id)

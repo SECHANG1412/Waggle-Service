@@ -1,5 +1,7 @@
+from datetime import datetime, timezone
+
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import func, select
+from sqlalchemy import desc, func, select
 from app.db.models import Comment
 from app.db.schemas.comments import CommentCreate, CommentUpdate
 
@@ -31,7 +33,7 @@ class CommentCrud:
     async def get_all_by_topic_id(db: AsyncSession, topic_id: int):
         result = await db.execute(
             select(Comment)
-            .filter(Comment.topic_id == topic_id)
+            .where(Comment.topic_id == topic_id, Comment.is_hidden.is_(False))
             .order_by(Comment.created_at.asc(), Comment.comment_id.asc())
         )
         return result.scalars().all()
@@ -46,7 +48,11 @@ class CommentCrud:
         result = await db.execute(
             select(func.count())
             .select_from(Comment)
-            .where(Comment.topic_id == topic_id, not Comment.is_deleted)
+            .where(
+                Comment.topic_id == topic_id,
+                Comment.is_deleted.is_(False),
+                Comment.is_hidden.is_(False),
+            )
         )
         return result.scalar() or 0
 
@@ -60,10 +66,39 @@ class CommentCrud:
         result = await db.execute(
             select(Comment.topic_id, func.count())
             .select_from(Comment)
-            .where(Comment.topic_id.in_(topic_ids), not Comment.is_deleted)
+            .where(
+                Comment.topic_id.in_(topic_ids),
+                Comment.is_deleted.is_(False),
+                Comment.is_hidden.is_(False),
+            )
             .group_by(Comment.topic_id)
         )
         return {topic_id: count for topic_id, count in result.all()}
+
+    @staticmethod
+    async def get_all_for_admin(db: AsyncSession) -> list[Comment]:
+        result = await db.execute(select(Comment).order_by(desc(Comment.created_at)))
+        return list(result.scalars().all())
+
+    @staticmethod
+    async def hide(
+        db: AsyncSession,
+        comment: Comment,
+        admin_user_id: int,
+    ) -> Comment:
+        comment.is_hidden = True
+        comment.hidden_at = datetime.now(timezone.utc)
+        comment.hidden_by = admin_user_id
+        await db.flush()
+        return comment
+
+    @staticmethod
+    async def unhide(db: AsyncSession, comment: Comment) -> Comment:
+        comment.is_hidden = False
+        comment.hidden_at = None
+        comment.hidden_by = None
+        await db.flush()
+        return comment
 
     @staticmethod
     async def delete_by_id(db: AsyncSession, comment_id: int):
