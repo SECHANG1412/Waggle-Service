@@ -17,6 +17,7 @@ class UserAdmin(ModelView, model=User):
         User.user_id,
         User.username,
         User.email,
+        User.is_admin,
         User.created_at,
     ]
     name = "User"

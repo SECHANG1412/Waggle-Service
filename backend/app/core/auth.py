@@ -1,9 +1,12 @@
 # backend/app/core/auth.py
 
 import secrets
-from fastapi import Request, Response, HTTPException
+from fastapi import Depends, Request, Response, HTTPException
 from jwt import ExpiredSignatureError, InvalidTokenError
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.settings import settings
+from app.db.crud import UserCrud
+from app.db.database import get_db
 from app.core.jwt_handler import verify_token
 from typing import Optional
 
@@ -110,6 +113,18 @@ async def get_user_id_optional(request: Request) -> Optional[int]:
         return verify_token(access_token)
     except (ExpiredSignatureError, InvalidTokenError):
         return None
+
+
+async def require_admin_user_id(
+    user_id: int = Depends(get_user_id),
+    db: AsyncSession = Depends(get_db),
+) -> int:
+    user = await UserCrud.get_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    if not user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return user_id
 
 
 def clear_auth_cookies(response: Response) -> None:
