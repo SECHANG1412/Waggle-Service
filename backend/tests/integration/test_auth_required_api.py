@@ -6,7 +6,7 @@ import pytest
 from httpx import AsyncClient
 
 from app.db.crud import UserCrud
-from tests.factories import create_topic, create_user
+from tests.factories import create_comment, create_topic, create_user
 
 
 @pytest.mark.asyncio
@@ -99,3 +99,77 @@ async def test_user_activity_includes_topic_id_and_latest_first(
     ]
     assert payload[0]["title"] == "latest-topic"
     assert payload[0]["type"] == "topic"
+
+
+@pytest.mark.asyncio
+async def test_content_status_requires_login(client: AsyncClient):
+    response = await client.get("/users/content-status")
+
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_content_status_returns_only_my_hidden_topics_and_comments(
+    authenticated_client: AsyncClient,
+    db_session,
+    auth_user,
+):
+    other_user = await create_user(db_session)
+    hidden_at = datetime.now(timezone.utc)
+    hidden_topic = await create_topic(
+        db_session,
+        user_id=auth_user.user_id,
+        title="hidden-topic",
+        description="hidden-topic-description",
+        is_hidden=True,
+        hidden_at=hidden_at,
+    )
+    visible_topic = await create_topic(
+        db_session,
+        user_id=auth_user.user_id,
+        title="visible-topic",
+    )
+    other_hidden_topic = await create_topic(
+        db_session,
+        user_id=other_user.user_id,
+        title="other-hidden-topic",
+        is_hidden=True,
+        hidden_at=hidden_at,
+    )
+    hidden_comment = await create_comment(
+        db_session,
+        user_id=auth_user.user_id,
+        topic_id=visible_topic.topic_id,
+        content="hidden-comment",
+        is_hidden=True,
+        hidden_at=hidden_at + timedelta(minutes=1),
+    )
+    await create_comment(
+        db_session,
+        user_id=auth_user.user_id,
+        topic_id=visible_topic.topic_id,
+        content="visible-comment",
+    )
+    await create_comment(
+        db_session,
+        user_id=other_user.user_id,
+        topic_id=other_hidden_topic.topic_id,
+        content="other-hidden-comment",
+        is_hidden=True,
+        hidden_at=hidden_at,
+    )
+    await db_session.commit()
+
+    response = await authenticated_client.get("/users/content-status")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert [item["type"] for item in payload] == ["comment", "topic"]
+    assert [item["item_id"] for item in payload] == [
+        hidden_comment.comment_id,
+        hidden_topic.topic_id,
+    ]
+    assert payload[0]["title"] == "visible-topic"
+    assert payload[0]["content"] == "hidden-comment"
+    assert payload[1]["title"] == "hidden-topic"
+    assert payload[1]["content"] == "hidden-topic-description"

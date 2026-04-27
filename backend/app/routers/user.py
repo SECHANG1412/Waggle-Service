@@ -11,6 +11,7 @@ from app.db.schemas.users import (
     UserUpdate,
     UserStats,
     UserActivity,
+    UserHiddenContent,
 )
 from app.core.auth import (
     clear_auth_cookies,
@@ -51,6 +52,12 @@ async def get_my_activity(
     user_id: int = Depends(get_user_id), db: AsyncSession = Depends(get_db)
 ):
     return await UserService.get_activity(db, user_id)
+
+@router.get("/content-status", response_model=list[UserHiddenContent])
+async def get_my_content_status(
+    user_id: int = Depends(get_user_id), db: AsyncSession = Depends(get_db)
+):
+    return await UserService.get_hidden_content(db, user_id)
 
 @router.post("/signup", response_model=UserRead)
 async def signup(user: UserCreate, db: AsyncSession = Depends(get_db)):

@@ -50,6 +50,15 @@ class TopicCrud:
             .limit(limit)
         )
         return result.scalars().all()
+
+    @staticmethod
+    async def get_hidden_by_user_id(db: AsyncSession, user_id: int) -> list[Topic]:
+        result = await db.execute(
+            select(Topic)
+            .where(Topic.user_id == user_id, Topic.is_hidden.is_(True))
+            .order_by(desc(Topic.hidden_at), desc(Topic.topic_id))
+        )
+        return list(result.scalars().all())
     
     @staticmethod
     async def get_all_with_filters(
