@@ -18,7 +18,7 @@ async def test_inquiry_status_update_creates_admin_action_log(
     set_auth_cookies(client, admin.user_id)
 
     response = await client.patch(
-        f"/admin-api/inquiries/{inquiry.inquiry_id}/status",
+        f"/manage-api/inquiries/{inquiry.inquiry_id}/status",
         json={"status": "resolved", "reason": "문의 처리 완료"},
     )
 
@@ -47,7 +47,7 @@ async def test_blank_reason_does_not_create_admin_action_log(
     set_auth_cookies(client, admin.user_id)
 
     response = await client.patch(
-        f"/admin-api/inquiries/{inquiry.inquiry_id}/status",
+        f"/manage-api/inquiries/{inquiry.inquiry_id}/status",
         json={"status": "resolved", "reason": "   "},
     )
 

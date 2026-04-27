@@ -37,7 +37,7 @@ async def _create_log(
 
 @pytest.mark.asyncio
 async def test_admin_logs_requires_login(client: AsyncClient):
-    response = await client.get("/admin-api/logs")
+    response = await client.get("/manage-api/logs")
 
     assert response.status_code == 401
 
@@ -52,7 +52,7 @@ async def test_admin_logs_rejects_regular_user(
     await db_session.commit()
     set_auth_cookies(client, user.user_id)
 
-    response = await client.get("/admin-api/logs")
+    response = await client.get("/manage-api/logs")
 
     assert response.status_code == 403
 
@@ -70,7 +70,7 @@ async def test_admin_can_list_logs(client: AsyncClient, db_session, set_auth_coo
     )
     await db_session.commit()
 
-    response = await client.get("/admin-api/logs")
+    response = await client.get("/manage-api/logs")
 
     assert response.status_code == 200
     payload = response.json()
@@ -117,7 +117,7 @@ async def test_admin_logs_filters_by_action_target_type_and_admin_user(
     await db_session.commit()
 
     response = await client.get(
-        "/admin-api/logs",
+        "/manage-api/logs",
         params={
             "action": "HIDE_COMMENT",
             "target_type": "Comment",
@@ -138,6 +138,6 @@ async def test_admin_logs_limit_validation(
 ):
     await _set_admin_cookies(client, db_session, set_auth_cookies)
 
-    response = await client.get("/admin-api/logs", params={"limit": 0})
+    response = await client.get("/manage-api/logs", params={"limit": 0})
 
     assert response.status_code == 422

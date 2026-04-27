@@ -16,7 +16,7 @@ async def _set_admin_cookies(client: AsyncClient, db_session, set_auth_cookies):
 
 @pytest.mark.asyncio
 async def test_admin_inquiry_list_requires_login(client: AsyncClient):
-    response = await client.get("/admin-api/inquiries")
+    response = await client.get("/manage-api/inquiries")
 
     assert response.status_code == 401
 
@@ -31,7 +31,7 @@ async def test_admin_inquiry_list_rejects_regular_user(
     await db_session.commit()
     set_auth_cookies(client, user.user_id)
 
-    response = await client.get("/admin-api/inquiries")
+    response = await client.get("/manage-api/inquiries")
 
     assert response.status_code == 403
 
@@ -42,7 +42,7 @@ async def test_admin_can_list_inquiries(client: AsyncClient, db_session, set_aut
     await create_inquiry(db_session, email="second@example.com", title="second")
     await _set_admin_cookies(client, db_session, set_auth_cookies)
 
-    response = await client.get("/admin-api/inquiries")
+    response = await client.get("/manage-api/inquiries")
 
     assert response.status_code == 200
     payload = response.json()
@@ -55,7 +55,7 @@ async def test_admin_can_get_inquiry_detail(client: AsyncClient, db_session, set
     inquiry = await create_inquiry(db_session, title="detail")
     await _set_admin_cookies(client, db_session, set_auth_cookies)
 
-    response = await client.get(f"/admin-api/inquiries/{inquiry.inquiry_id}")
+    response = await client.get(f"/manage-api/inquiries/{inquiry.inquiry_id}")
 
     assert response.status_code == 200
     assert response.json()["inquiry_id"] == inquiry.inquiry_id
@@ -70,7 +70,7 @@ async def test_admin_inquiry_detail_returns_404_for_missing_inquiry(
 ):
     await _set_admin_cookies(client, db_session, set_auth_cookies)
 
-    response = await client.get("/admin-api/inquiries/999999")
+    response = await client.get("/manage-api/inquiries/999999")
 
     assert response.status_code == 404
 
@@ -81,7 +81,7 @@ async def test_admin_can_update_inquiry_status(client: AsyncClient, db_session, 
     admin = await _set_admin_cookies(client, db_session, set_auth_cookies)
 
     response = await client.patch(
-        f"/admin-api/inquiries/{inquiry.inquiry_id}/status",
+        f"/manage-api/inquiries/{inquiry.inquiry_id}/status",
         json={"status": "in_progress", "reason": "checking issue"},
     )
 
@@ -113,7 +113,7 @@ async def test_update_inquiry_status_requires_reason(
     await _set_admin_cookies(client, db_session, set_auth_cookies)
 
     response = await client.patch(
-        f"/admin-api/inquiries/{inquiry.inquiry_id}/status",
+        f"/manage-api/inquiries/{inquiry.inquiry_id}/status",
         json={"status": "resolved", "reason": ""},
     )
 
@@ -130,7 +130,7 @@ async def test_update_inquiry_status_rejects_invalid_status(
     await _set_admin_cookies(client, db_session, set_auth_cookies)
 
     response = await client.patch(
-        f"/admin-api/inquiries/{inquiry.inquiry_id}/status",
+        f"/manage-api/inquiries/{inquiry.inquiry_id}/status",
         json={"status": "closed", "reason": "invalid status"},
     )
 

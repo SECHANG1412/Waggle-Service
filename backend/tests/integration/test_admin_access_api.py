@@ -7,7 +7,7 @@ from tests.factories import create_user
 
 @pytest.mark.asyncio
 async def test_admin_api_returns_401_without_login(client: AsyncClient):
-    response = await client.get("/admin-api/me")
+    response = await client.get("/manage-api/me")
 
     assert response.status_code == 401
 
@@ -22,7 +22,7 @@ async def test_admin_api_returns_403_for_regular_user(
     await db_session.commit()
     set_auth_cookies(client, user.user_id)
 
-    response = await client.get("/admin-api/me")
+    response = await client.get("/manage-api/me")
 
     assert response.status_code == 403
 
@@ -37,7 +37,7 @@ async def test_admin_api_allows_admin_user(
     await db_session.commit()
     set_auth_cookies(client, admin.user_id)
 
-    response = await client.get("/admin-api/me")
+    response = await client.get("/manage-api/me")
 
     assert response.status_code == 200
     assert response.json() == {"user_id": admin.user_id, "is_admin": True}

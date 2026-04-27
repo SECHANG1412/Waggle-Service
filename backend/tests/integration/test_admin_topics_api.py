@@ -15,7 +15,7 @@ async def _set_admin_cookies(client: AsyncClient, db_session, set_auth_cookies):
 
 @pytest.mark.asyncio
 async def test_admin_topic_list_requires_login(client: AsyncClient):
-    response = await client.get("/admin-api/topics")
+    response = await client.get("/manage-api/topics")
 
     assert response.status_code == 401
 
@@ -30,7 +30,7 @@ async def test_admin_topic_list_rejects_regular_user(
     await db_session.commit()
     set_auth_cookies(client, user.user_id)
 
-    response = await client.get("/admin-api/topics")
+    response = await client.get("/manage-api/topics")
 
     assert response.status_code == 403
 
@@ -51,7 +51,7 @@ async def test_admin_can_list_topics_including_hidden(
     )
     await _set_admin_cookies(client, db_session, set_auth_cookies)
 
-    response = await client.get("/admin-api/topics")
+    response = await client.get("/manage-api/topics")
 
     assert response.status_code == 200
     payload = response.json()
@@ -69,7 +69,7 @@ async def test_admin_can_hide_topic_and_record_audit_log(
     admin = await _set_admin_cookies(client, db_session, set_auth_cookies)
 
     response = await client.patch(
-        f"/admin-api/topics/{topic.topic_id}/hide",
+        f"/manage-api/topics/{topic.topic_id}/hide",
         json={"reason": "inappropriate content"},
     )
 
@@ -111,7 +111,7 @@ async def test_admin_can_unhide_topic_and_record_audit_log(
     await db_session.commit()
 
     response = await client.patch(
-        f"/admin-api/topics/{topic.topic_id}/unhide",
+        f"/manage-api/topics/{topic.topic_id}/unhide",
         json={"reason": "appeal accepted"},
     )
 
@@ -147,7 +147,7 @@ async def test_hide_topic_requires_reason(
     await _set_admin_cookies(client, db_session, set_auth_cookies)
 
     response = await client.patch(
-        f"/admin-api/topics/{topic.topic_id}/hide",
+        f"/manage-api/topics/{topic.topic_id}/hide",
         json={"reason": "   "},
     )
 
@@ -166,7 +166,7 @@ async def test_hide_missing_topic_returns_404(
     await _set_admin_cookies(client, db_session, set_auth_cookies)
 
     response = await client.patch(
-        "/admin-api/topics/999999/hide",
+        "/manage-api/topics/999999/hide",
         json={"reason": "missing topic"},
     )
 
