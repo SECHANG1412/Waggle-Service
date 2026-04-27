@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { BsBookmark, BsBookmarkFill } from 'react-icons/bs';
-import { FaHeart, FaCommentDots } from 'react-icons/fa';
 import ProgressBar from './ProgressBar';
 import OptionButton from './OptionButton';
 import VoteInfo from './VoteInfo';
@@ -19,6 +18,7 @@ const TopicCard = ({ topic, onVote, onPinToggle }) => {
   }, [topic.created_at]);
 
   const commentCount = topic.comment_count ?? topic.comments_count ?? 0;
+  const pinLabel = topic.is_pinned ? '토픽 고정 해제' : '토픽 고정';
 
   return (
     <Link to={`/topic/${topic.topic_id}`} className="block">
@@ -31,11 +31,11 @@ const TopicCard = ({ topic, onVote, onPinToggle }) => {
               </span>
             )}
             <span className="rounded-full border border-slate-200 px-2 py-0.5 text-[10px] font-semibold text-slate-800 bg-white">
-              {topic.category || '카테고리'}
+              {topic.category || '기타'}
             </span>
             {topic.has_voted && (
               <span className="rounded-full border border-slate-200 px-2 py-0.5 text-[10px] font-semibold text-slate-600 bg-slate-50">
-                참여 완료
+                투표 완료
               </span>
             )}
           </div>
@@ -46,8 +46,8 @@ const TopicCard = ({ topic, onVote, onPinToggle }) => {
                 onPinToggle(topic.topic_id, topic.is_pinned);
               }}
               className="p-2 rounded-full border border-slate-200 text-slate-500 transition hover:border-slate-400 hover:text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-300"
-              aria-label="토픽 고정"
-              title="토픽고정하기"
+              aria-label={pinLabel}
+              title={pinLabel}
             >
               {topic.is_pinned ? <BsBookmarkFill className="w-4 h-4" /> : <BsBookmark className="w-4 h-4" />}
             </button>
