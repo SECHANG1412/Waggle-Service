@@ -1,7 +1,9 @@
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import select
 
 from app.db.crud import InquiryCrud
+from app.db.models import AdminActionLog
 from tests.factories import create_inquiry, create_user
 
 
@@ -76,7 +78,7 @@ async def test_admin_inquiry_detail_returns_404_for_missing_inquiry(
 @pytest.mark.asyncio
 async def test_admin_can_update_inquiry_status(client: AsyncClient, db_session, set_auth_cookies):
     inquiry = await create_inquiry(db_session)
-    await _set_admin_cookies(client, db_session, set_auth_cookies)
+    admin = await _set_admin_cookies(client, db_session, set_auth_cookies)
 
     response = await client.patch(
         f"/admin-api/inquiries/{inquiry.inquiry_id}/status",
@@ -89,6 +91,16 @@ async def test_admin_can_update_inquiry_status(client: AsyncClient, db_session, 
     db_inquiry = await InquiryCrud.get_by_id(db_session, inquiry.inquiry_id)
     await db_session.refresh(db_inquiry)
     assert db_inquiry.status == "in_progress"
+
+    result = await db_session.execute(select(AdminActionLog))
+    log = result.scalar_one()
+    assert log.admin_user_id == admin.user_id
+    assert log.action == "UPDATE_INQUIRY_STATUS"
+    assert log.target_type == "Inquiry"
+    assert log.target_id == inquiry.inquiry_id
+    assert log.before_value == {"status": "pending"}
+    assert log.after_value == {"status": "in_progress"}
+    assert log.reason == "checking issue"
 
 
 @pytest.mark.asyncio

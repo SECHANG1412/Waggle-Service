@@ -5,3 +5,4 @@ from .comment import CommentService
 from .reply import ReplyService
 from .like import LikeService
 from .inquiry import InquiryService
+from .admin_action_log import AdminActionLogService

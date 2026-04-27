@@ -35,7 +35,9 @@ async def get_inquiry(
 async def update_inquiry_status(
     inquiry_id: int,
     update: InquiryStatusUpdate,
-    _admin_user_id: int = Depends(require_admin_user_id),
+    admin_user_id: int = Depends(require_admin_user_id),
     db: AsyncSession = Depends(get_db),
 ):
-    return await InquiryService.update_status_for_admin(db, inquiry_id, update)
+    return await InquiryService.update_status_for_admin(
+        db, inquiry_id, update, admin_user_id
+    )

@@ -11,6 +11,7 @@ from app.admin.views import (
     CommentLikeAdmin,
     ReplyLikeAdmin,
     InquiryAdmin,
+    AdminActionLogAdmin,
 )
 
 
@@ -25,3 +26,4 @@ def setup_admin(app: FastAPI, engine: AsyncEngine):
     admin.add_view(CommentLikeAdmin)
     admin.add_view(ReplyLikeAdmin)
     admin.add_view(InquiryAdmin)
+    admin.add_view(AdminActionLogAdmin)

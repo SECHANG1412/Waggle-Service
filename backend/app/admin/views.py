@@ -9,6 +9,7 @@ from app.db.models import (
     CommentLike,
     ReplyLike,
     Inquiry,
+    AdminActionLog,
 )
 
 
@@ -110,3 +111,18 @@ class InquiryAdmin(ModelView, model=Inquiry):
     name = "Inquiry"
     name_plural = "Inquiries"
     icon = "fa-solid fa-envelope"
+
+
+class AdminActionLogAdmin(ModelView, model=AdminActionLog):
+    column_list = [
+        AdminActionLog.log_id,
+        AdminActionLog.admin_user_id,
+        AdminActionLog.action,
+        AdminActionLog.target_type,
+        AdminActionLog.target_id,
+        AdminActionLog.reason,
+        AdminActionLog.created_at,
+    ]
+    name = "Admin Action Log"
+    name_plural = "Admin Action Logs"
+    icon = "fa-solid fa-clipboard-list"
