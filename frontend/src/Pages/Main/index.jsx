@@ -5,6 +5,7 @@ import Pagination from './layout/Pagination';
 import Grid from './layout/Grid';
 import { useVote } from "../../hooks/useVote";
 import { useAuth } from "../../hooks/auth-context";
+import { showLoginRequiredAlert } from '../../utils/alertUtils';
 
 const SORT_MAP = {
   recent: 'created_at',
@@ -95,7 +96,10 @@ const Main = () => {
     );
 
   const onPinToggle = async (topic_id, is_pinned) => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      await showLoginRequiredAlert('토픽을 고정하려면 로그인해 주세요.');
+      return;
+    }
     setTopics((prev) => {
       const updated = prev.map((t) =>
         t.topic_id === topic_id ? { ...t, is_pinned: !is_pinned } : t
