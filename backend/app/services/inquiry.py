@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.crud import InquiryCrud
+from app.db.crud import InquiryCrud, UserCrud
 from app.db.models import Inquiry
 from app.db.schemas.inquiries import InquiryCreate, InquiryStatusUpdate
 from app.services.admin_action_log import AdminActionLogService
@@ -9,9 +9,16 @@ from app.services.admin_action_log import AdminActionLogService
 
 class InquiryService:
     @staticmethod
-    async def create(db: AsyncSession, inquiry_data: InquiryCreate) -> Inquiry:
+    async def create(
+        db: AsyncSession,
+        inquiry_data: InquiryCreate,
+        user_id: int,
+    ) -> Inquiry:
+        user = await UserCrud.get_by_id(db, user_id)
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
         try:
-            inquiry = await InquiryCrud.create(db, inquiry_data)
+            inquiry = await InquiryCrud.create(db, inquiry_data, user)
             await db.commit()
             await db.refresh(inquiry)
             return inquiry

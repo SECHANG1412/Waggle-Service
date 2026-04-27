@@ -141,6 +141,7 @@ async def create_reply(
 async def create_inquiry(
     db: AsyncSession,
     *,
+    user_id: int | None = None,
     name: str = "tester",
     email: str = "tester@example.com",
     title: str = "inquiry-title",
@@ -148,6 +149,7 @@ async def create_inquiry(
     status: str = "pending",
 ) -> Inquiry:
     inquiry = Inquiry(
+        user_id=user_id,
         name=name,
         email=email,
         title=title,

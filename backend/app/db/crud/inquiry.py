@@ -1,15 +1,25 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import desc, select
 
-from app.db.models import Inquiry
+from app.db.models import Inquiry, User
 from app.db.schemas.inquiries import InquiryStatus
 from app.db.schemas.inquiries import InquiryCreate
 
 
 class InquiryCrud:
     @staticmethod
-    async def create(db: AsyncSession, inquiry_data: InquiryCreate) -> Inquiry:
-        inquiry = Inquiry(**inquiry_data.model_dump(), status="pending")
+    async def create(
+        db: AsyncSession,
+        inquiry_data: InquiryCreate,
+        user: User,
+    ) -> Inquiry:
+        inquiry = Inquiry(
+            **inquiry_data.model_dump(),
+            user_id=user.user_id,
+            name=user.username,
+            email=user.email,
+            status="pending",
+        )
         db.add(inquiry)
         await db.flush()
         return inquiry

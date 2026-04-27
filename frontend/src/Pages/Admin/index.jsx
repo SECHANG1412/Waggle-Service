@@ -187,7 +187,7 @@ const Admin = () => {
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
             to="/manage/inquiries"
-            className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+            className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
           >
             문의 관리
           </Link>
