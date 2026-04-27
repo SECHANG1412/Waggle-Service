@@ -1,0 +1,125 @@
+import pytest
+from httpx import AsyncClient
+
+from app.db.crud import InquiryCrud
+from tests.factories import create_inquiry, create_user
+
+
+async def _set_admin_cookies(client: AsyncClient, db_session, set_auth_cookies):
+    admin = await create_user(db_session, is_admin=True)
+    await db_session.commit()
+    set_auth_cookies(client, admin.user_id)
+    return admin
+
+
+@pytest.mark.asyncio
+async def test_admin_inquiry_list_requires_login(client: AsyncClient):
+    response = await client.get("/admin-api/inquiries")
+
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_admin_inquiry_list_rejects_regular_user(
+    client: AsyncClient,
+    db_session,
+    set_auth_cookies,
+):
+    user = await create_user(db_session)
+    await db_session.commit()
+    set_auth_cookies(client, user.user_id)
+
+    response = await client.get("/admin-api/inquiries")
+
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_admin_can_list_inquiries(client: AsyncClient, db_session, set_auth_cookies):
+    await create_inquiry(db_session, email="first@example.com", title="first")
+    await create_inquiry(db_session, email="second@example.com", title="second")
+    await _set_admin_cookies(client, db_session, set_auth_cookies)
+
+    response = await client.get("/admin-api/inquiries")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload) == 2
+    assert {item["title"] for item in payload} == {"first", "second"}
+
+
+@pytest.mark.asyncio
+async def test_admin_can_get_inquiry_detail(client: AsyncClient, db_session, set_auth_cookies):
+    inquiry = await create_inquiry(db_session, title="detail")
+    await _set_admin_cookies(client, db_session, set_auth_cookies)
+
+    response = await client.get(f"/admin-api/inquiries/{inquiry.inquiry_id}")
+
+    assert response.status_code == 200
+    assert response.json()["inquiry_id"] == inquiry.inquiry_id
+    assert response.json()["title"] == "detail"
+
+
+@pytest.mark.asyncio
+async def test_admin_inquiry_detail_returns_404_for_missing_inquiry(
+    client: AsyncClient,
+    db_session,
+    set_auth_cookies,
+):
+    await _set_admin_cookies(client, db_session, set_auth_cookies)
+
+    response = await client.get("/admin-api/inquiries/999999")
+
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_admin_can_update_inquiry_status(client: AsyncClient, db_session, set_auth_cookies):
+    inquiry = await create_inquiry(db_session)
+    await _set_admin_cookies(client, db_session, set_auth_cookies)
+
+    response = await client.patch(
+        f"/admin-api/inquiries/{inquiry.inquiry_id}/status",
+        json={"status": "in_progress", "reason": "checking issue"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "in_progress"
+
+    db_inquiry = await InquiryCrud.get_by_id(db_session, inquiry.inquiry_id)
+    await db_session.refresh(db_inquiry)
+    assert db_inquiry.status == "in_progress"
+
+
+@pytest.mark.asyncio
+async def test_update_inquiry_status_requires_reason(
+    client: AsyncClient,
+    db_session,
+    set_auth_cookies,
+):
+    inquiry = await create_inquiry(db_session)
+    await _set_admin_cookies(client, db_session, set_auth_cookies)
+
+    response = await client.patch(
+        f"/admin-api/inquiries/{inquiry.inquiry_id}/status",
+        json={"status": "resolved", "reason": ""},
+    )
+
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_update_inquiry_status_rejects_invalid_status(
+    client: AsyncClient,
+    db_session,
+    set_auth_cookies,
+):
+    inquiry = await create_inquiry(db_session)
+    await _set_admin_cookies(client, db_session, set_auth_cookies)
+
+    response = await client.patch(
+        f"/admin-api/inquiries/{inquiry.inquiry_id}/status",
+        json={"status": "closed", "reason": "invalid status"},
+    )
+
+    assert response.status_code == 422

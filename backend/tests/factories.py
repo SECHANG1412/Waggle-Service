@@ -6,7 +6,7 @@ from typing import Iterable
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Comment, Reply, Topic, TopicLike, User, Vote
+from app.db.models import Comment, Inquiry, Reply, Topic, TopicLike, User, Vote
 
 _seq = count(1)
 
@@ -124,3 +124,24 @@ async def create_reply(
     db.add(reply)
     await db.flush()
     return reply
+
+
+async def create_inquiry(
+    db: AsyncSession,
+    *,
+    name: str = "tester",
+    email: str = "tester@example.com",
+    title: str = "inquiry-title",
+    content: str = "inquiry-content",
+    status: str = "pending",
+) -> Inquiry:
+    inquiry = Inquiry(
+        name=name,
+        email=email,
+        title=title,
+        content=content,
+        status=status,
+    )
+    db.add(inquiry)
+    await db.flush()
+    return inquiry
