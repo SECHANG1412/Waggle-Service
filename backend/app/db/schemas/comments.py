@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from app.db.schemas.replys import ReplyRead
 
 
@@ -30,3 +30,21 @@ class CommentRead(CommentInDB):
     replies: list[ReplyRead] = Field(default_factory=list)
     like_count: int = 0
     has_liked: bool = False
+
+
+class CommentAdminRead(CommentInDB):
+    is_hidden: bool = False
+    hidden_at: datetime | None = None
+    hidden_by: int | None = None
+
+
+class CommentModerationUpdate(BaseModel):
+    reason: str = Field(..., min_length=1, max_length=500)
+
+    @field_validator("reason")
+    @classmethod
+    def reason_must_not_be_blank(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("reason must not be blank.")
+        return stripped

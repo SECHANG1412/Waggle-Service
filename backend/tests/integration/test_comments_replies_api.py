@@ -55,6 +55,36 @@ async def test_comment_list_missing_topic_returns_404(authenticated_client):
 
 
 @pytest.mark.asyncio
+async def test_comment_list_excludes_hidden_comments(
+    authenticated_client,
+    db_session,
+    auth_user,
+):
+    topic = await create_topic(db_session, user_id=auth_user.user_id, title="hidden-comment-topic")
+    public_comment = await create_comment(
+        db_session,
+        user_id=auth_user.user_id,
+        topic_id=topic.topic_id,
+        content="visible",
+    )
+    hidden_comment = await create_comment(
+        db_session,
+        user_id=auth_user.user_id,
+        topic_id=topic.topic_id,
+        content="hidden",
+        is_hidden=True,
+    )
+    await db_session.commit()
+
+    response = await authenticated_client.get(f"/comments/by-topic/{topic.topic_id}")
+
+    assert response.status_code == 200
+    comment_ids = [item["comment_id"] for item in response.json()]
+    assert public_comment.comment_id in comment_ids
+    assert hidden_comment.comment_id not in comment_ids
+
+
+@pytest.mark.asyncio
 async def test_comment_delete_soft_and_hard_delete_behaviors(
     authenticated_client,
     db_session,

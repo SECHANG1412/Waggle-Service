@@ -47,6 +47,8 @@ class CommentAdmin(ModelView, model=Comment):
         Comment.topic_id,
         Comment.user_id,
         Comment.content,
+        Comment.is_hidden,
+        Comment.hidden_by,
         Comment.created_at,
     ]
     name = "Comment"

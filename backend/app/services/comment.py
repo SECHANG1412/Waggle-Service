@@ -3,8 +3,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.crud import CommentCrud, LikeCrud, ReplyCrud, TopicCrud, UserCrud
 from app.db.models import Comment
-from app.db.schemas.comments import CommentCreate, CommentRead, CommentUpdate
+from app.db.schemas.comments import (
+    CommentCreate,
+    CommentModerationUpdate,
+    CommentRead,
+    CommentUpdate,
+)
 from app.db.schemas.replys import ReplyRead
+from app.services.admin_action_log import AdminActionLogService
 from app.services.reply import ReplyService
 
 
@@ -106,6 +112,84 @@ class CommentService:
             )
             for comment in comments
         ]
+
+    @staticmethod
+    async def get_all_for_admin(db: AsyncSession) -> list[Comment]:
+        return await CommentCrud.get_all_for_admin(db)
+
+    @staticmethod
+    async def hide_for_admin(
+        db: AsyncSession,
+        comment_id: int,
+        update: CommentModerationUpdate,
+        admin_user_id: int,
+    ) -> Comment:
+        comment = await CommentCrud.get_by_id(db, comment_id)
+        if not comment:
+            raise HTTPException(status_code=404, detail="Comment not found")
+
+        before_value = {
+            "is_hidden": comment.is_hidden,
+            "hidden_by": comment.hidden_by,
+        }
+        try:
+            updated = await CommentCrud.hide(db, comment, admin_user_id)
+            await AdminActionLogService.record(
+                db,
+                admin_user_id=admin_user_id,
+                action="HIDE_COMMENT",
+                target_type="Comment",
+                target_id=comment_id,
+                before_value=before_value,
+                after_value={
+                    "is_hidden": True,
+                    "hidden_by": admin_user_id,
+                },
+                reason=update.reason,
+            )
+            await db.commit()
+            await db.refresh(updated)
+            return updated
+        except Exception:
+            await db.rollback()
+            raise
+
+    @staticmethod
+    async def unhide_for_admin(
+        db: AsyncSession,
+        comment_id: int,
+        update: CommentModerationUpdate,
+        admin_user_id: int,
+    ) -> Comment:
+        comment = await CommentCrud.get_by_id(db, comment_id)
+        if not comment:
+            raise HTTPException(status_code=404, detail="Comment not found")
+
+        before_value = {
+            "is_hidden": comment.is_hidden,
+            "hidden_by": comment.hidden_by,
+        }
+        try:
+            updated = await CommentCrud.unhide(db, comment)
+            await AdminActionLogService.record(
+                db,
+                admin_user_id=admin_user_id,
+                action="UNHIDE_COMMENT",
+                target_type="Comment",
+                target_id=comment_id,
+                before_value=before_value,
+                after_value={
+                    "is_hidden": False,
+                    "hidden_by": None,
+                },
+                reason=update.reason,
+            )
+            await db.commit()
+            await db.refresh(updated)
+            return updated
+        except Exception:
+            await db.rollback()
+            raise
 
     @staticmethod
     async def _build_comment_read(
