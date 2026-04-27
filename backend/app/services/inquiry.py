@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.crud import InquiryCrud
 from app.db.models import Inquiry
 from app.db.schemas.inquiries import InquiryCreate, InquiryStatusUpdate
+from app.services.admin_action_log import AdminActionLogService
 
 
 class InquiryService:
@@ -34,10 +35,22 @@ class InquiryService:
         db: AsyncSession,
         inquiry_id: int,
         update: InquiryStatusUpdate,
+        admin_user_id: int,
     ) -> Inquiry:
         inquiry = await InquiryService.get_by_id_for_admin(db, inquiry_id)
+        before_status = inquiry.status
         try:
             updated = await InquiryCrud.update_status(db, inquiry, update.status)
+            await AdminActionLogService.record(
+                db,
+                admin_user_id=admin_user_id,
+                action="UPDATE_INQUIRY_STATUS",
+                target_type="Inquiry",
+                target_id=inquiry_id,
+                before_value={"status": before_status},
+                after_value={"status": update.status},
+                reason=update.reason,
+            )
             await db.commit()
             await db.refresh(updated)
             return updated
