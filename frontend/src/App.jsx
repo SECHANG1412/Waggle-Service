@@ -6,7 +6,9 @@ import { AUTH_MESSAGES } from './constants/messages';
 import { useAuth } from './hooks/auth-context';
 import { AuthProvider } from './hooks/useAuth';
 import Admin from './Pages/Admin';
+import AdminComments from './Pages/Admin/Comments';
 import AdminInquiries from './Pages/Admin/Inquiries';
+import AdminTopics from './Pages/Admin/Topics';
 import Contact from './Pages/Contact';
 import CreateTopic from './Pages/CreateTopic';
 import Login from './Pages/Login';
@@ -29,7 +31,7 @@ const ProtectedRoute = ({ children }) => {
   if (isAuthLoading) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center px-4 text-sm text-slate-500">
-        인증 상태를 확인하는 중입니다.
+        로그인 상태를 확인하고 있습니다.
       </div>
     );
   }
@@ -169,6 +171,8 @@ const router = createBrowserRouter([
             children: [
               { index: true, element: <Admin /> },
               { path: 'inquiries', element: <AdminInquiries /> },
+              { path: 'topics', element: <AdminTopics /> },
+              { path: 'comments', element: <AdminComments /> },
             ],
           },
           {
