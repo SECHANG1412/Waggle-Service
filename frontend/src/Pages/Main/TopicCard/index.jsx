@@ -21,8 +21,7 @@ const TopicCard = ({ topic, onVote, onPinToggle }) => {
   const pinLabel = topic.is_pinned ? '토픽 고정 해제' : '토픽 고정';
 
   return (
-    <Link to={`/topic/${topic.topic_id}`} className="block">
-      <div className="relative flex flex-col h-full rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-md">
+    <article className="relative flex flex-col h-full rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-md">
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-600">
             {topic.is_pinned && (
@@ -41,8 +40,7 @@ const TopicCard = ({ topic, onVote, onPinToggle }) => {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={(e) => {
-                e.preventDefault();
+              onClick={() => {
                 onPinToggle(topic.topic_id, topic.is_pinned);
               }}
               className="p-2 rounded-full border border-slate-200 text-slate-500 transition hover:border-slate-400 hover:text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-300"
@@ -54,7 +52,15 @@ const TopicCard = ({ topic, onVote, onPinToggle }) => {
           </div>
         </div>
 
-        <h3 className="mt-2 text-xl font-semibold text-slate-800 leading-tight tracking-tight line-clamp-2">{topic.title}</h3>
+        <h3 className="mt-2 text-xl font-semibold leading-tight tracking-tight">
+          <Link
+            to={`/topic/${topic.topic_id}`}
+            className="block line-clamp-2 text-slate-800 transition hover:text-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
+            aria-label={`${topic.title} 상세 보기`}
+          >
+            {topic.title}
+          </Link>
+        </h3>
 
         <div className="mt-3">
           <ProgressBar voteResults={topic.vote_results} totalVote={topic.total_vote} />
@@ -66,8 +72,14 @@ const TopicCard = ({ topic, onVote, onPinToggle }) => {
         </div>
 
         <VoteInfo createdAt={formattedDate} likeCount={topic.like_count} totalVote={topic.total_vote} commentCount={commentCount} />
-      </div>
-    </Link>
+        <Link
+          to={`/topic/${topic.topic_id}`}
+          className="mt-3 inline-flex w-fit text-sm font-semibold text-blue-600 transition hover:text-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
+          aria-label={`${topic.title} 상세 페이지로 이동`}
+        >
+          상세 보기
+        </Link>
+      </article>
   );
 };
 

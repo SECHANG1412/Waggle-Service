@@ -15,8 +15,7 @@ const OptionButton = ({ option, index, topic, onVote }) => {
   return (
     <button
       disabled={topic.has_voted}
-      onClick={(e) => {
-        e.preventDefault();
+      onClick={() => {
         if (!topic.has_voted) onVote(topic.topic_id, index);
       }}
       style={styles}
