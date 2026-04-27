@@ -1,0 +1,73 @@
+import pytest
+from httpx import AsyncClient
+
+from app.db.crud import UserCrud
+from tests.factories import create_user
+
+
+@pytest.mark.asyncio
+async def test_admin_api_returns_401_without_login(client: AsyncClient):
+    response = await client.get("/admin-api/me")
+
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_admin_api_returns_403_for_regular_user(
+    client: AsyncClient,
+    db_session,
+    set_auth_cookies,
+):
+    user = await create_user(db_session)
+    await db_session.commit()
+    set_auth_cookies(client, user.user_id)
+
+    response = await client.get("/admin-api/me")
+
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_admin_api_allows_admin_user(
+    client: AsyncClient,
+    db_session,
+    set_auth_cookies,
+):
+    admin = await create_user(db_session, is_admin=True)
+    await db_session.commit()
+    set_auth_cookies(client, admin.user_id)
+
+    response = await client.get("/admin-api/me")
+
+    assert response.status_code == 200
+    assert response.json() == {"user_id": admin.user_id, "is_admin": True}
+
+
+@pytest.mark.asyncio
+async def test_signup_creates_regular_user(client: AsyncClient, db_session, monkeypatch):
+    async def fake_hash_password(password: str) -> str:
+        return f"hashed::{password}"
+
+    monkeypatch.setattr("app.services.user.get_password_hash", fake_hash_password)
+    monkeypatch.setattr(
+        "app.services.user.UserService._validate_email",
+        staticmethod(lambda email: email),
+    )
+
+    response = await client.post(
+        "/users/signup",
+        json={
+            "email": "new-user@example.com",
+            "username": "new-user",
+            "password": "password123",
+            "is_admin": True,
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["is_admin"] is False
+
+    db_user = await UserCrud.get_by_email(db_session, "new-user@example.com")
+    assert db_user is not None
+    assert db_user.is_admin is False

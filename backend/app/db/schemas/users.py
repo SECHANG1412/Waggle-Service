@@ -29,6 +29,7 @@ class UserInDB(BaseModel):
     email: str
     username: str
     password: str
+    is_admin: bool = False
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
@@ -38,6 +39,7 @@ class UserRead(BaseModel):
     user_id: int
     email: str
     username: str
+    is_admin: bool = False
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

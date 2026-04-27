@@ -21,12 +21,14 @@ async def create_user(
     username: str | None = None,
     email: str | None = None,
     password: str = "hashed-password",
+    is_admin: bool = False,
 ) -> User:
     idx = _next_seq()
     user = User(
         username=username or f"user{idx}",
         email=email or f"user{idx}@example.com",
         password=password,
+        is_admin=is_admin,
     )
     db.add(user)
     await db.flush()

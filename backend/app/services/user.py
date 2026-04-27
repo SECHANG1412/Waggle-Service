@@ -139,5 +139,6 @@ class UserService:
             user_id=user.user_id,
             username=user.username,
             email=user.email,
+            is_admin=user.is_admin,
             created_at=user.created_at,
         )
