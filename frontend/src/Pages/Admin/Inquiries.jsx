@@ -60,7 +60,7 @@ const AdminInquiries = () => {
     setIsListLoading(true);
     setMessage(null);
     try {
-      const response = await api.get('/admin-api/inquiries');
+      const response = await api.get('/manage-api/inquiries');
       setInquiries(response.data);
       if (response.data.length > 0) {
         setSelectedId((current) => current ?? response.data[0].inquiry_id);
@@ -81,7 +81,7 @@ const AdminInquiries = () => {
     setIsDetailLoading(true);
     setMessage(null);
     try {
-      const response = await api.get(`/admin-api/inquiries/${inquiryId}`);
+      const response = await api.get(`/manage-api/inquiries/${inquiryId}`);
       setSelectedInquiry(response.data);
       setNextStatus(response.data.status);
       setReason('');
@@ -113,7 +113,7 @@ const AdminInquiries = () => {
     setMessage(null);
     try {
       const response = await api.patch(
-        `/admin-api/inquiries/${selectedInquiry.inquiry_id}/status`,
+        `/manage-api/inquiries/${selectedInquiry.inquiry_id}/status`,
         {
           status: nextStatus,
           reason: trimmedReason,
@@ -141,7 +141,7 @@ const AdminInquiries = () => {
     <section className="mx-auto max-w-6xl px-4 py-10">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <Link to="/admin" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
+          <Link to="/manage" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
             관리자 홈
           </Link>
           <h1 className="mt-3 text-3xl font-bold text-slate-900">문의 관리</h1>

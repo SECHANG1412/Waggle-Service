@@ -113,7 +113,7 @@ const ContentModerationPage = ({
     <section className="mx-auto max-w-6xl px-4 py-10">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <Link to="/admin" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
+          <Link to="/manage" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
             관리자 홈
           </Link>
           <h1 className="mt-3 text-3xl font-bold text-slate-900">{title}</h1>

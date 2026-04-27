@@ -69,7 +69,7 @@ const AdminLogs = () => {
     setIsLoading(true);
     setMessage(null);
     try {
-      const response = await api.get('/admin-api/logs', { params });
+      const response = await api.get('/manage-api/logs', { params });
       setLogs(response.data);
     } catch {
       setMessage({ type: 'error', text: '감사 로그를 불러오지 못했습니다.' });
@@ -93,7 +93,7 @@ const AdminLogs = () => {
   return (
     <section className="mx-auto max-w-6xl px-4 py-10">
       <div className="mb-6">
-        <Link to="/admin" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
+        <Link to="/manage" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
           관리자 홈
         </Link>
         <h1 className="mt-3 text-3xl font-bold text-slate-900">감사 로그</h1>

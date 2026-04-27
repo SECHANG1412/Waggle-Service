@@ -9,7 +9,7 @@ from app.db.schemas.inquiries import InquiryRead, InquiryStatusUpdate
 from app.db.schemas.topics import TopicAdminRead, TopicModerationUpdate
 from app.services import AdminActionLogService, CommentService, InquiryService, TopicService
 
-router = APIRouter(prefix="/admin-api", tags=["Admin"])
+router = APIRouter(prefix="/manage-api", tags=["Admin"])
 
 
 @router.get("/me")

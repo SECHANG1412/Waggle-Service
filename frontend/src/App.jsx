@@ -70,7 +70,7 @@ const AdminRoute = () => {
       setStatus('checking');
 
       try {
-        await api.get('/admin-api/me');
+        await api.get('/manage-api/me');
         if (mounted) setStatus('allowed');
       } catch (error) {
         if (!mounted) return;
@@ -167,7 +167,7 @@ const router = createBrowserRouter([
           { index: true, element: <Main /> },
           { path: 'contact', element: <Contact /> },
           {
-            path: 'admin',
+            path: 'manage',
             element: <AdminRoute />,
             children: [
               { index: true, element: <Admin /> },

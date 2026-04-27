@@ -48,10 +48,10 @@ const Admin = () => {
     try {
       const [inquiriesResponse, topicsResponse, commentsResponse, logsResponse] =
         await Promise.all([
-          api.get('/admin-api/inquiries'),
-          api.get('/admin-api/topics'),
-          api.get('/admin-api/comments'),
-          api.get('/admin-api/logs', { params: { limit: 5 } }),
+          api.get('/manage-api/inquiries'),
+          api.get('/manage-api/topics'),
+          api.get('/manage-api/comments'),
+          api.get('/manage-api/logs', { params: { limit: 5 } }),
         ]);
 
       setInquiries(inquiriesResponse.data);
@@ -107,17 +107,17 @@ const Admin = () => {
       {message && <p className="mb-4 text-sm font-semibold text-red-600">{message.text}</p>}
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="처리 대기 문의" value={stats.pendingInquiries} to="/admin/inquiries" />
-        <StatCard label="처리 중 문의" value={stats.inProgressInquiries} to="/admin/inquiries" />
-        <StatCard label="숨김 토픽" value={stats.hiddenTopics} to="/admin/topics" />
-        <StatCard label="숨김 댓글" value={stats.hiddenComments} to="/admin/comments" />
+        <StatCard label="처리 대기 문의" value={stats.pendingInquiries} to="/manage/inquiries" />
+        <StatCard label="처리 중 문의" value={stats.inProgressInquiries} to="/manage/inquiries" />
+        <StatCard label="숨김 토픽" value={stats.hiddenTopics} to="/manage/topics" />
+        <StatCard label="숨김 댓글" value={stats.hiddenComments} to="/manage/comments" />
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="rounded-lg border border-slate-200 bg-white">
           <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
             <h2 className="text-base font-semibold text-slate-900">최근 문의</h2>
-            <Link to="/admin/inquiries" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
+            <Link to="/manage/inquiries" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
               전체 보기
             </Link>
           </div>
@@ -150,7 +150,7 @@ const Admin = () => {
         <section className="rounded-lg border border-slate-200 bg-white">
           <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
             <h2 className="text-base font-semibold text-slate-900">최근 관리자 작업</h2>
-            <Link to="/admin/logs" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
+            <Link to="/manage/logs" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
               전체 보기
             </Link>
           </div>
@@ -186,25 +186,25 @@ const Admin = () => {
         <h2 className="text-base font-semibold text-slate-900">바로가기</h2>
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
-            to="/admin/inquiries"
+            to="/manage/inquiries"
             className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
           >
             문의 관리
           </Link>
           <Link
-            to="/admin/topics"
+            to="/manage/topics"
             className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
           >
             토픽 관리
           </Link>
           <Link
-            to="/admin/comments"
+            to="/manage/comments"
             className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
           >
             댓글 관리
           </Link>
           <Link
-            to="/admin/logs"
+            to="/manage/logs"
             className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
           >
             감사 로그
