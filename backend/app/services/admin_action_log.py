@@ -27,3 +27,20 @@ class AdminActionLogService:
             after_value=after_value,
             reason=reason,
         )
+
+    @staticmethod
+    async def get_all_for_admin(
+        db: AsyncSession,
+        *,
+        action: str | None = None,
+        target_type: str | None = None,
+        admin_user_id: int | None = None,
+        limit: int = 100,
+    ) -> list[AdminActionLog]:
+        return await AdminActionLogCrud.get_all_for_admin(
+            db,
+            action=action,
+            target_type=target_type,
+            admin_user_id=admin_user_id,
+            limit=limit,
+        )

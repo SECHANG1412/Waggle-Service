@@ -8,6 +8,7 @@ import { AuthProvider } from './hooks/useAuth';
 import Admin from './Pages/Admin';
 import AdminComments from './Pages/Admin/Comments';
 import AdminInquiries from './Pages/Admin/Inquiries';
+import AdminLogs from './Pages/Admin/Logs';
 import AdminTopics from './Pages/Admin/Topics';
 import Contact from './Pages/Contact';
 import CreateTopic from './Pages/CreateTopic';
@@ -173,6 +174,7 @@ const router = createBrowserRouter([
               { path: 'inquiries', element: <AdminInquiries /> },
               { path: 'topics', element: <AdminTopics /> },
               { path: 'comments', element: <AdminComments /> },
+              { path: 'logs', element: <AdminLogs /> },
             ],
           },
           {
