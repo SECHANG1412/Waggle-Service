@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -56,3 +57,12 @@ class UserActivity(BaseModel):
     type: str
     title: str
     created_at: datetime
+
+
+class UserHiddenContent(BaseModel):
+    type: Literal["topic", "comment"]
+    item_id: int
+    topic_id: int
+    title: str
+    content: str | None = None
+    hidden_at: datetime | None = None

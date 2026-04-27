@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import desc, func, select
-from app.db.models import Comment
+from app.db.models import Comment, Topic
 from app.db.schemas.comments import CommentCreate, CommentUpdate
 
 
@@ -79,6 +79,16 @@ class CommentCrud:
     async def get_all_for_admin(db: AsyncSession) -> list[Comment]:
         result = await db.execute(select(Comment).order_by(desc(Comment.created_at)))
         return list(result.scalars().all())
+
+    @staticmethod
+    async def get_hidden_by_user_id(db: AsyncSession, user_id: int) -> list[tuple[Comment, str]]:
+        result = await db.execute(
+            select(Comment, Topic.title)
+            .join(Topic, Topic.topic_id == Comment.topic_id)
+            .where(Comment.user_id == user_id, Comment.is_hidden.is_(True))
+            .order_by(desc(Comment.hidden_at), desc(Comment.comment_id))
+        )
+        return list(result.all())
 
     @staticmethod
     async def hide(

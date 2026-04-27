@@ -1,7 +1,9 @@
+from datetime import datetime
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
 from email_validator import validate_email, EmailNotValidError
-from app.db.crud import UserCrud, TopicCrud, VoteCrud, LikeCrud
+from app.db.crud import CommentCrud, LikeCrud, TopicCrud, UserCrud, VoteCrud
 from app.db.models import User
 from app.db.schemas.users import (
     UserLogin,
@@ -10,6 +12,7 @@ from app.db.schemas.users import (
     UserUpdate,
     UserStats,
     UserActivity,
+    UserHiddenContent,
 )
 from app.core.jwt_handler import (
     create_access_token,
@@ -132,6 +135,41 @@ class UserService:
             )
             for topic in topics
         ]
+
+    @staticmethod
+    async def get_hidden_content(db: AsyncSession, user_id: int) -> list[UserHiddenContent]:
+        hidden_topics = await TopicCrud.get_hidden_by_user_id(db, user_id)
+        hidden_comments = await CommentCrud.get_hidden_by_user_id(db, user_id)
+
+        items = [
+            UserHiddenContent(
+                type="topic",
+                item_id=topic.topic_id,
+                topic_id=topic.topic_id,
+                title=topic.title,
+                content=topic.description,
+                hidden_at=topic.hidden_at,
+            )
+            for topic in hidden_topics
+        ]
+
+        items.extend(
+            UserHiddenContent(
+                type="comment",
+                item_id=comment.comment_id,
+                topic_id=comment.topic_id,
+                title=topic_title,
+                content=comment.content,
+                hidden_at=comment.hidden_at,
+            )
+            for comment, topic_title in hidden_comments
+        )
+
+        return sorted(
+            items,
+            key=lambda item: item.hidden_at or datetime.min,
+            reverse=True,
+        )
 
     @staticmethod
     async def _build_user_read(db: AsyncSession, user: User) -> UserRead:
