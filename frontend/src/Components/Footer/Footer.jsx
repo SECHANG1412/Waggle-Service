@@ -10,8 +10,6 @@ const Footer = () => {
 
   return (
     <footer className="border-t border-gray-200 bg-white text-gray-700">
-      <div className="mx-auto max-w-5xl px-4 py-7">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-[1.2fr_1fr_1fr] md:items-start">
           <div>
             <h3 className="mb-3 text-base font-semibold text-gray-900">Waggle</h3>
             <p className="max-w-xs text-sm leading-6 text-gray-600">
@@ -21,7 +19,6 @@ const Footer = () => {
 
           <nav aria-label="Footer quick links">
             <h3 className="mb-3 text-base font-semibold text-gray-900">Quick Links</h3>
-            <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-600">
               {quickLinks.map(({ label, url }) => (
                 <li key={label}>
                   <Link to={url} className="hover:text-gray-900">
@@ -36,10 +33,6 @@ const Footer = () => {
             <h3 className="mb-3 text-base font-semibold text-gray-900">Email</h3>
             <p className="text-sm text-gray-600">waggle0123@gmail.com</p>
           </div>
-        </div>
-
-        <div className="mt-7 border-t border-gray-200 pt-4 text-center">
-          <p className="text-xs text-gray-500">&copy; 2026 Waggle. All rights reserved.</p>
         </div>
       </div>
     </footer>
