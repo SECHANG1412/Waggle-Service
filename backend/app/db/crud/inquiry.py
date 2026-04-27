@@ -1,9 +1,8 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import desc, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Inquiry, User
-from app.db.schemas.inquiries import InquiryStatus
-from app.db.schemas.inquiries import InquiryCreate
+from app.db.schemas.inquiries import InquiryCreate, InquiryStatus
 
 
 class InquiryCrud:
@@ -27,6 +26,15 @@ class InquiryCrud:
     @staticmethod
     async def get_all(db: AsyncSession) -> list[Inquiry]:
         result = await db.execute(select(Inquiry).order_by(desc(Inquiry.created_at)))
+        return list(result.scalars().all())
+
+    @staticmethod
+    async def get_all_by_user_id(db: AsyncSession, user_id: int) -> list[Inquiry]:
+        result = await db.execute(
+            select(Inquiry)
+            .where(Inquiry.user_id == user_id)
+            .order_by(desc(Inquiry.created_at), desc(Inquiry.inquiry_id))
+        )
         return list(result.scalars().all())
 
     @staticmethod

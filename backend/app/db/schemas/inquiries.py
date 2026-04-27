@@ -26,6 +26,10 @@ class InquiryRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class MyInquiryRead(InquiryRead):
+    latest_reason: str | None = None
+
+
 class InquiryStatusUpdate(BaseModel):
     status: InquiryStatus
     reason: str = Field(..., min_length=1, max_length=500)

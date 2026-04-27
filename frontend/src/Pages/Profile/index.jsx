@@ -6,6 +6,12 @@ import { handleAuthError, showErrorAlert, showSuccessAlert } from '../../utils/a
 import api from '../../utils/api';
 import { formatDateOnly } from '../../utils/date';
 
+const INQUIRY_STATUS_LABELS = {
+  pending: '접수됨',
+  in_progress: '처리 중',
+  resolved: '처리 완료',
+};
+
 const Profile = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -14,10 +20,12 @@ const Profile = () => {
   const [form, setForm] = useState({ name: '', email: '' });
   const [stats, setStats] = useState({ topics: 0, votes: 0, likes: 0 });
   const [activities, setActivities] = useState([]);
+  const [inquiries, setInquiries] = useState([]);
   const [avatarUrl, setAvatarUrl] = useState(localStorage.getItem('avatar_url') || '');
   const [loading, setLoading] = useState(true);
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingActivity, setLoadingActivity] = useState(true);
+  const [loadingInquiries, setLoadingInquiries] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [error, setError] = useState('');
@@ -29,6 +37,7 @@ const Profile = () => {
         setLoading(false);
         setLoadingStats(false);
         setLoadingActivity(false);
+        setLoadingInquiries(false);
         return;
       }
       try {
@@ -96,9 +105,29 @@ const Profile = () => {
       }
     };
 
+    const fetchInquiries = async () => {
+      if (!isAuthenticated) {
+        setLoadingInquiries(false);
+        return;
+      }
+      try {
+        setLoadingInquiries(true);
+        const res = await api.get('/inquiries/me');
+        setInquiries(res.data || []);
+      } catch (err) {
+        setInquiries([]);
+        if (!(await handleAuthError(err))) {
+          showErrorAlert(err, '문의 내역을 불러오지 못했습니다.');
+        }
+      } finally {
+        setLoadingInquiries(false);
+      }
+    };
+
     fetchProfile();
     fetchStats();
     fetchActivity();
+    fetchInquiries();
   }, [isAuthenticated]);
 
   const onChange = (e) => {
@@ -313,6 +342,8 @@ const Profile = () => {
             )}
           </div>
         </div>
+
+        <InquiryHistorySection inquiries={inquiries} loading={loadingInquiries} />
       </div>
     </div>
   );
@@ -347,5 +378,57 @@ const ActivityRow = ({ title, date, onView }) => (
     </div>
   </div>
 );
+
+const InquiryHistorySection = ({ inquiries, loading }) => (
+  <section className="p-6 rounded-xl border border-slate-200 bg-white shadow-md space-y-4">
+    <div>
+      <h3 className="text-lg font-semibold text-slate-900">내 문의 내역</h3>
+      <p className="mt-1 text-sm text-slate-500">
+        접수한 문의의 처리 상태와 관리자 처리 사유를 확인할 수 있습니다.
+      </p>
+    </div>
+
+    {loading ? (
+      <p className="text-sm text-slate-500">문의 내역을 불러오는 중입니다.</p>
+    ) : inquiries.length === 0 ? (
+      <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-500">
+        아직 접수한 문의가 없습니다.
+      </div>
+    ) : (
+      <div className="space-y-3">
+        {inquiries.map((inquiry) => (
+          <InquiryHistoryItem key={inquiry.inquiry_id} inquiry={inquiry} />
+        ))}
+      </div>
+    )}
+  </section>
+);
+
+const InquiryHistoryItem = ({ inquiry }) => {
+  const statusLabel = INQUIRY_STATUS_LABELS[inquiry.status] || inquiry.status;
+
+  return (
+    <article className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <span className="inline-flex rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700">
+            {statusLabel}
+          </span>
+          <h4 className="mt-2 text-base font-semibold text-slate-900">{inquiry.title}</h4>
+        </div>
+        <span className="text-xs text-slate-500">{formatDateOnly(inquiry.created_at)}</span>
+      </div>
+
+      <p className="mt-3 text-sm leading-relaxed text-slate-600 line-clamp-2">{inquiry.content}</p>
+
+      {inquiry.latest_reason && (
+        <div className="mt-3 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+          <span className="font-semibold text-slate-900">처리 사유: </span>
+          {inquiry.latest_reason}
+        </div>
+      )}
+    </article>
+  );
+};
 
 export default Profile;

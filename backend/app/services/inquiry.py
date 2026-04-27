@@ -1,9 +1,9 @@
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.crud import InquiryCrud, UserCrud
+from app.db.crud import AdminActionLogCrud, InquiryCrud, UserCrud
 from app.db.models import Inquiry
-from app.db.schemas.inquiries import InquiryCreate, InquiryStatusUpdate
+from app.db.schemas.inquiries import InquiryCreate, InquiryStatusUpdate, MyInquiryRead
 from app.services.admin_action_log import AdminActionLogService
 
 
@@ -29,6 +29,24 @@ class InquiryService:
     @staticmethod
     async def get_all_for_admin(db: AsyncSession) -> list[Inquiry]:
         return await InquiryCrud.get_all(db)
+
+    @staticmethod
+    async def get_all_by_user(db: AsyncSession, user_id: int) -> list[MyInquiryRead]:
+        inquiries = await InquiryCrud.get_all_by_user_id(db, user_id)
+        inquiry_ids = [inquiry.inquiry_id for inquiry in inquiries]
+        latest_reasons = await AdminActionLogCrud.get_latest_reasons_by_targets(
+            db,
+            action="UPDATE_INQUIRY_STATUS",
+            target_type="Inquiry",
+            target_ids=inquiry_ids,
+        )
+
+        return [
+            MyInquiryRead.model_validate(inquiry).model_copy(
+                update={"latest_reason": latest_reasons.get(inquiry.inquiry_id)}
+            )
+            for inquiry in inquiries
+        ]
 
     @staticmethod
     async def get_by_id_for_admin(db: AsyncSession, inquiry_id: int) -> Inquiry:
