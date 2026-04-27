@@ -106,6 +106,7 @@ class ReplyLikeAdmin(ModelView, model=ReplyLike):
 class InquiryAdmin(ModelView, model=Inquiry):
     column_list = [
         Inquiry.inquiry_id,
+        Inquiry.user_id,
         Inquiry.name,
         Inquiry.email,
         Inquiry.title,

@@ -8,14 +8,17 @@ InquiryStatus = Literal["pending", "in_progress", "resolved"]
 
 
 class InquiryCreate(BaseModel):
-    name: str = Field(..., min_length=1, max_length=50)
-    email: EmailStr
     title: str = Field(..., min_length=1, max_length=150)
     content: str = Field(..., min_length=1, max_length=2000)
 
 
-class InquiryRead(InquiryCreate):
+class InquiryRead(BaseModel):
     inquiry_id: int
+    user_id: int | None = None
+    name: str
+    email: EmailStr
+    title: str
+    content: str
     status: InquiryStatus = "pending"
     created_at: datetime
     updated_at: datetime

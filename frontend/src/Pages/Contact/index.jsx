@@ -1,15 +1,15 @@
 import React, { useCallback, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/auth-context';
 import api from '../../utils/api';
 
 const initialForm = {
-  name: '',
-  email: '',
   title: '',
   content: '',
 };
 
 const Contact = () => {
+  const { isAuthenticated, isAuthLoading, user } = useAuth();
   const [formData, setFormData] = useState(initialForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
@@ -27,13 +27,11 @@ const Contact = () => {
 
       try {
         await api.post('/inquiries', {
-          name: formData.name.trim(),
-          email: formData.email.trim(),
           title: formData.title.trim(),
           content: formData.content.trim(),
         });
         setFormData(initialForm);
-        setMessage({ type: 'success', text: '문의가 접수되었습니다. 확인 후 서비스 운영에 반영하겠습니다.' });
+        setMessage({ type: 'success', text: '문의가 접수되었습니다. 관리자 확인 후 처리 상태가 반영됩니다.' });
       } catch {
         setMessage({ type: 'error', text: '문의를 접수하지 못했습니다. 입력 내용을 확인한 뒤 다시 시도해 주세요.' });
       } finally {
@@ -42,6 +40,18 @@ const Contact = () => {
     },
     [formData]
   );
+
+  if (isAuthLoading) {
+    return (
+      <section className="mx-auto max-w-3xl px-4 py-10">
+        <p className="text-sm text-slate-500">로그인 상태를 확인하고 있습니다.</p>
+      </section>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
   const isSuccess = message?.type === 'success';
 
@@ -53,38 +63,16 @@ const Contact = () => {
         </Link>
         <h1 className="mt-4 text-3xl font-bold text-slate-900">문의하기</h1>
         <p className="mt-3 text-sm leading-6 text-slate-600">
-          서비스 이용 중 불편한 점이나 개선 의견을 남겨 주세요. 남겨주신 문의는 운영자가 확인할 수 있도록 저장됩니다.
+          서비스 이용 중 불편한 점이나 개선 의견을 남겨 주세요. 문의는 현재 로그인한 계정으로 접수됩니다.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="grid gap-5 md:grid-cols-2">
-          <label className="block">
-            <span className="text-sm font-semibold text-slate-700">이름</span>
-            <input
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              maxLength={50}
-              className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="이름을 입력해 주세요"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-sm font-semibold text-slate-700">이메일</span>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              maxLength={100}
-              className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="reply@example.com"
-            />
-          </label>
+        <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+          <p className="text-sm font-semibold text-slate-700">문의 작성자</p>
+          <p className="mt-1 text-sm text-slate-600">
+            {user?.username || '사용자'} / {user?.email || '-'}
+          </p>
         </div>
 
         <label className="block">

@@ -12,7 +12,7 @@ const MobileAuthButtons = ({ isAuthenticated, isAdmin, setIsOpen, onLogoutClick 
               onClick={() => setIsOpen(false)}
               className="block w-full rounded-md px-3 py-2 text-left text-base font-semibold text-blue-700 transition-all duration-200 hover:bg-blue-50"
             >
-              Admin
+              관리자 페이지
             </Link>
           )}
           <Link

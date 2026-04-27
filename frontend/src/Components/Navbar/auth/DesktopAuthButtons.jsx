@@ -57,7 +57,7 @@ const DesktopAuthButtons = ({ userName, isAuthenticated, isAdmin, isOpen, setIsO
                     className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
                     onClick={() => setIsOpen(false)}
                   >
-                    <span>Admin</span>
+                    <span>관리자 페이지</span>
                   </Link>
                 )}
                 <Link
