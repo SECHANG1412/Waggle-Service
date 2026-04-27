@@ -12,6 +12,14 @@ const INQUIRY_STATUS_LABELS = {
   resolved: '처리 완료',
 };
 
+const CONTENT_STATUS_LABELS = {
+  topic: '토픽',
+  comment: '댓글',
+};
+
+const CONTENT_STATUS_NOTICE =
+  '운영 정책에 따라 숨김 처리되었습니다. 이의가 있다면 문의를 남겨 주세요.';
+
 const Profile = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -21,11 +29,13 @@ const Profile = () => {
   const [stats, setStats] = useState({ topics: 0, votes: 0, likes: 0 });
   const [activities, setActivities] = useState([]);
   const [inquiries, setInquiries] = useState([]);
+  const [contentStatus, setContentStatus] = useState([]);
   const [avatarUrl, setAvatarUrl] = useState(localStorage.getItem('avatar_url') || '');
   const [loading, setLoading] = useState(true);
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingActivity, setLoadingActivity] = useState(true);
   const [loadingInquiries, setLoadingInquiries] = useState(true);
+  const [loadingContentStatus, setLoadingContentStatus] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [error, setError] = useState('');
@@ -38,6 +48,7 @@ const Profile = () => {
         setLoadingStats(false);
         setLoadingActivity(false);
         setLoadingInquiries(false);
+        setLoadingContentStatus(false);
         return;
       }
       try {
@@ -124,10 +135,30 @@ const Profile = () => {
       }
     };
 
+    const fetchContentStatus = async () => {
+      if (!isAuthenticated) {
+        setLoadingContentStatus(false);
+        return;
+      }
+      try {
+        setLoadingContentStatus(true);
+        const res = await api.get('/users/content-status');
+        setContentStatus(res.data || []);
+      } catch (err) {
+        setContentStatus([]);
+        if (!(await handleAuthError(err))) {
+          showErrorAlert(err, '콘텐츠 상태를 불러오지 못했습니다.');
+        }
+      } finally {
+        setLoadingContentStatus(false);
+      }
+    };
+
     fetchProfile();
     fetchStats();
     fetchActivity();
     fetchInquiries();
+    fetchContentStatus();
   }, [isAuthenticated]);
 
   const onChange = (e) => {
@@ -344,6 +375,11 @@ const Profile = () => {
         </div>
 
         <InquiryHistorySection inquiries={inquiries} loading={loadingInquiries} />
+        <ContentStatusSection
+          items={contentStatus}
+          loading={loadingContentStatus}
+          onContact={() => navigate('/contact')}
+        />
       </div>
     </div>
   );
@@ -427,6 +463,68 @@ const InquiryHistoryItem = ({ inquiry }) => {
           {inquiry.latest_reason}
         </div>
       )}
+    </article>
+  );
+};
+
+const ContentStatusSection = ({ items, loading, onContact }) => (
+  <section className="p-6 rounded-xl border border-slate-200 bg-white shadow-md space-y-4">
+    <div>
+      <h3 className="text-lg font-semibold text-slate-900">내 콘텐츠 상태</h3>
+      <p className="mt-1 text-sm text-slate-500">
+        숨김 처리된 내 토픽과 댓글을 확인할 수 있습니다.
+      </p>
+    </div>
+
+    {loading ? (
+      <p className="text-sm text-slate-500">콘텐츠 상태를 불러오는 중입니다.</p>
+    ) : items.length === 0 ? (
+      <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-500">
+        숨김 처리된 콘텐츠가 없습니다.
+      </div>
+    ) : (
+      <div className="space-y-3">
+        {items.map((item) => (
+          <ContentStatusItem key={`${item.type}-${item.item_id}`} item={item} onContact={onContact} />
+        ))}
+      </div>
+    )}
+  </section>
+);
+
+const ContentStatusItem = ({ item, onContact }) => {
+  const typeLabel = CONTENT_STATUS_LABELS[item.type] || item.type;
+
+  return (
+    <article className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <span className="inline-flex rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
+            숨김 처리
+          </span>
+          <h4 className="mt-2 text-base font-semibold text-slate-900">
+            {typeLabel}: {item.title}
+          </h4>
+        </div>
+        <span className="text-xs text-slate-500">
+          {item.hidden_at ? formatDateOnly(item.hidden_at) : '-'}
+        </span>
+      </div>
+
+      {item.content && (
+        <p className="mt-3 text-sm leading-relaxed text-slate-600 line-clamp-2">{item.content}</p>
+      )}
+
+      <div className="mt-3 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+        <p>{CONTENT_STATUS_NOTICE}</p>
+        <button
+          type="button"
+          onClick={onContact}
+          className="mt-2 text-sm font-semibold text-slate-800 underline-offset-4 hover:underline"
+        >
+          문의 남기기
+        </button>
+      </div>
     </article>
   );
 };
