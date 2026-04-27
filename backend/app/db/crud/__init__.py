@@ -5,3 +5,4 @@ from .comment import CommentCrud
 from .reply import ReplyCrud
 from .like import LikeCrud
 from .pinned_topic import PinnedTopicCrud
+from .inquiry import InquiryCrud
