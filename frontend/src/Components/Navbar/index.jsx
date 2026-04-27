@@ -17,6 +17,7 @@ const Navbar = () => {
   const search = searchParams.get('search') || '';
   const [searchInput, setSearchInput] = useState(search);
   const category = searchParams.get('category') || '';
+  const isAdmin = Boolean(user?.is_admin);
 
   const onLogoutClick = () => {
     logout();
@@ -69,6 +70,7 @@ const Navbar = () => {
             <DesktopAuthButtons
               userName={user?.username || 'User'}
               isAuthenticated={isAuthenticated}
+              isAdmin={isAdmin}
               isOpen={isDesktopMenuOpen}
               setIsOpen={setIsDesktopMenuOpen}
               onLogoutClick={onLogoutClick}
@@ -89,6 +91,7 @@ const Navbar = () => {
         isOpen={isMobileMenuOpen}
         setIsOpen={setIsMobileMenuOpen}
         isAuthenticated={isAuthenticated}
+        isAdmin={isAdmin}
         onLogoutClick={onLogoutClick}
         searchValue={searchInput}
         onSearchInputChange={(e) => setSearchInput(e.target.value)}
