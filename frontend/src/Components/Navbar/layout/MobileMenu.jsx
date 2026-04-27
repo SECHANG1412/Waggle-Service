@@ -7,6 +7,7 @@ const MobileMenu = ({
   isOpen,
   setIsOpen,
   isAuthenticated,
+  isAdmin,
   onLogoutClick,
   searchValue,
   onSearchInputChange,
@@ -40,6 +41,7 @@ const MobileMenu = ({
 
         <MobileAuthButtons
           isAuthenticated={isAuthenticated}
+          isAdmin={isAdmin}
           setIsOpen={setIsOpen}
           onLogoutClick={onLogoutClick}
         />
