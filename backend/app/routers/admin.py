@@ -4,7 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.auth import require_admin_user_id
 from app.db.database import get_db
 from app.db.schemas.inquiries import InquiryRead, InquiryStatusUpdate
-from app.services import InquiryService
+from app.db.schemas.topics import TopicAdminRead, TopicModerationUpdate
+from app.services import InquiryService, TopicService
 
 router = APIRouter(prefix="/admin-api", tags=["Admin"])
 
@@ -41,3 +42,31 @@ async def update_inquiry_status(
     return await InquiryService.update_status_for_admin(
         db, inquiry_id, update, admin_user_id
     )
+
+
+@router.get("/topics", response_model=list[TopicAdminRead])
+async def list_topics_for_admin(
+    _admin_user_id: int = Depends(require_admin_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    return await TopicService.get_all_for_admin(db)
+
+
+@router.patch("/topics/{topic_id}/hide", response_model=TopicAdminRead)
+async def hide_topic(
+    topic_id: int,
+    update: TopicModerationUpdate,
+    admin_user_id: int = Depends(require_admin_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    return await TopicService.hide_for_admin(db, topic_id, update, admin_user_id)
+
+
+@router.patch("/topics/{topic_id}/unhide", response_model=TopicAdminRead)
+async def unhide_topic(
+    topic_id: int,
+    update: TopicModerationUpdate,
+    admin_user_id: int = Depends(require_admin_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    return await TopicService.unhide_for_admin(db, topic_id, update, admin_user_id)

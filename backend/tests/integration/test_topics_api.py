@@ -67,6 +67,52 @@ async def test_topic_detail_success_and_not_found(authenticated_client, db_sessi
 
 
 @pytest.mark.asyncio
+async def test_topics_list_excludes_hidden_topics(
+    authenticated_client,
+    db_session,
+    auth_user,
+):
+    public_topic = await create_topic(
+        db_session,
+        user_id=auth_user.user_id,
+        title="public-topic",
+    )
+    hidden_topic = await create_topic(
+        db_session,
+        user_id=auth_user.user_id,
+        title="hidden-topic",
+        is_hidden=True,
+    )
+    await db_session.commit()
+
+    response = await authenticated_client.get("/topics", params={"limit": 10, "offset": 0})
+
+    assert response.status_code == 200
+    topic_ids = [item["topic_id"] for item in response.json()]
+    assert public_topic.topic_id in topic_ids
+    assert hidden_topic.topic_id not in topic_ids
+
+
+@pytest.mark.asyncio
+async def test_hidden_topic_detail_returns_404(
+    authenticated_client,
+    db_session,
+    auth_user,
+):
+    hidden_topic = await create_topic(
+        db_session,
+        user_id=auth_user.user_id,
+        title="hidden-detail",
+        is_hidden=True,
+    )
+    await db_session.commit()
+
+    response = await authenticated_client.get(f"/topics/{hidden_topic.topic_id}")
+
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
 async def test_topic_pin_success_and_missing_topic_returns_404(
     authenticated_client,
     db_session,
