@@ -32,6 +32,8 @@ class TopicAdmin(ModelView, model=Topic):
         Topic.title,
         Topic.category,
         Topic.user_id,
+        Topic.is_hidden,
+        Topic.hidden_by,
         Topic.created_at,
     ]
     name = "Topic"

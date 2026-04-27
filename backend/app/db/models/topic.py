@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import datetime
 from typing import List, Optional
-from sqlalchemy import ForeignKey, String, TIMESTAMP, func, JSON, Index
+from sqlalchemy import Boolean, ForeignKey, String, TIMESTAMP, false, func, JSON, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 
@@ -19,11 +19,20 @@ class Topic(Base):
     vote_options: Mapped[dict] = mapped_column(JSON, nullable=False)
     category: Mapped[str] = mapped_column(String(255), nullable=False, default="자유")
     user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)
+    is_hidden: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=false()
+    )
+    hidden_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMP, nullable=True)
+    hidden_by: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("users.user_id"), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, server_default=func.now(), nullable=False
     )
 
-    user: Mapped["User"] = relationship("User", back_populates="topics")
+    user: Mapped["User"] = relationship(
+        "User", back_populates="topics", foreign_keys=[user_id]
+    )
     votes: Mapped[List["Vote"]] = relationship(
         "Vote", back_populates="topic", cascade="all, delete-orphan"
     )

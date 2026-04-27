@@ -44,6 +44,9 @@ async def create_topic(
     category: str = "general",
     vote_options: Iterable[str] | None = None,
     created_at: datetime | None = None,
+    is_hidden: bool = False,
+    hidden_at: datetime | None = None,
+    hidden_by: int | None = None,
 ) -> Topic:
     idx = _next_seq()
     topic = Topic(
@@ -52,6 +55,9 @@ async def create_topic(
         description=description,
         category=category,
         vote_options=list(vote_options or ["A", "B"]),
+        is_hidden=is_hidden,
+        hidden_at=hidden_at,
+        hidden_by=hidden_by,
     )
     if created_at:
         topic.created_at = created_at.astimezone(timezone.utc)

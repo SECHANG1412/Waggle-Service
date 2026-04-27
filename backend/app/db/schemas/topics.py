@@ -35,3 +35,21 @@ class TopicRead(TopicInDB):
     has_liked: bool = False
     is_pinned: bool = False
     comment_count: int = 0
+
+
+class TopicAdminRead(TopicInDB):
+    is_hidden: bool = False
+    hidden_at: datetime | None = None
+    hidden_by: int | None = None
+
+
+class TopicModerationUpdate(BaseModel):
+    reason: str = Field(..., min_length=1, max_length=500)
+
+    @field_validator("reason")
+    @classmethod
+    def reason_must_not_be_blank(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("reason must not be blank.")
+        return stripped
