@@ -58,6 +58,13 @@ a {
   scrollbar-width: none;
 }
 
+.vote-trend-chart .recharts-wrapper:focus,
+.vote-trend-chart .recharts-wrapper:focus-visible,
+.vote-trend-chart .recharts-surface:focus,
+.vote-trend-chart .recharts-surface:focus-visible {
+  outline: none;
+}
+
 /* Remap emerald utility usages to the primary blue palette for consistency */
 .bg-emerald-50 { background-color: #F8FBFF !important; }
 .bg-emerald-100 { background-color: #E8F1FF !important; }

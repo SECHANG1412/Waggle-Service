@@ -55,7 +55,8 @@ const ChartCanvas = ({ data, metric, options, colors, timeFrame }) => {
   };
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
+    <div className="vote-trend-chart h-full w-full">
+      <ResponsiveContainer width="100%" height="100%">
       <LineChart data={data} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis
@@ -85,7 +86,8 @@ const ChartCanvas = ({ data, metric, options, colors, timeFrame }) => {
           />
         ))}
       </LineChart>
-    </ResponsiveContainer>
+      </ResponsiveContainer>
+    </div>
   );
 };
 
