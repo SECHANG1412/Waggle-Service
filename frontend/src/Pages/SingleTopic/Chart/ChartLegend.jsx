@@ -4,7 +4,7 @@ const ChartLegend = ({ options, colors }) => {
   if (!options?.length || !colors?.length) return null;
 
   return (
-    <div className="mt-3 grid grid-cols-1 gap-2 text-xs text-slate-600 sm:grid-cols-2">
+    <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-600">
       {options.map((option, index) => (
         <div key={`${option}-${index}`} className="flex min-w-0 items-center gap-2">
           <span
