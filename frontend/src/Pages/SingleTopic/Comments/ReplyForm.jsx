@@ -16,10 +16,10 @@ const ReplyForm = ({ onSubmit, onCancel, lockedPrefix = '' }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mt-3 mb-2">
-      <div className="flex items-center gap-3">
+    <form onSubmit={handleSubmit} className="mb-2 mt-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
         {prefix ? (
-          <span className="px-2 py-1 text-blue-600 font-semibold text-sm bg-blue-50 border border-blue-100 rounded">
+          <span className="w-fit rounded border border-blue-100 bg-blue-50 px-2 py-1 text-sm font-semibold text-blue-600">
             {prefix}
           </span>
         ) : null}
@@ -28,13 +28,13 @@ const ReplyForm = ({ onSubmit, onCancel, lockedPrefix = '' }) => {
           value={body}
           onChange={(e) => setBody(e.target.value)}
           placeholder="답글을 입력하세요."
-          className="flex-1 h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+          className="h-11 min-w-0 flex-1 rounded-lg border border-gray-300 px-3 text-sm focus:ring-2 focus:ring-blue-500"
         />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-end gap-2">
           <button
             type="submit"
             disabled={!body.trim()}
-            className={`p-2 rounded-lg ${
+            className={`flex h-11 w-11 items-center justify-center rounded-lg ${
               body.trim()
                 ? 'bg-blue-600 text-white hover:bg-blue-700'
                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'
@@ -45,7 +45,7 @@ const ReplyForm = ({ onSubmit, onCancel, lockedPrefix = '' }) => {
           <button
             type="button"
             onClick={onCancel}
-            className="p-2 rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200"
+            className="flex h-11 w-11 items-center justify-center rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200"
           >
             <FiX className="w-4 h-4" />
           </button>

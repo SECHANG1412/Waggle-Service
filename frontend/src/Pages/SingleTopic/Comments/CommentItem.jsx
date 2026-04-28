@@ -15,7 +15,7 @@ const CommentItem = ({ item, isReply = false, actions, refresh, depth = 0 }) => 
 
   // Indent only one level for all replies to avoid cascading indentation.
   const depthLevel = Math.min(depth, 1);
-  const indentStyle = depthLevel === 0 ? {} : { marginLeft: '1.5rem' };
+  const indentClass = depthLevel === 0 ? '' : 'ml-3 sm:ml-6';
   const containerSpacingClass = depthLevel === 0 ? 'mb-6' : 'mt-2';
 
   const onEdit = async () => {
@@ -53,12 +53,9 @@ const CommentItem = ({ item, isReply = false, actions, refresh, depth = 0 }) => 
 
   return (
     <div className={`${containerSpacingClass}`}>
-      <div
-        className={`bg-white p-4 rounded-lg border ${item.is_deleted ? 'border-gray-100 bg-gray-50' : 'border-gray-200'}`}
-        style={indentStyle}
-      >
-        <div className="flex items-start space-x-3">
-          <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center border border-blue-100">
+      <div className={`rounded-lg border bg-white p-3 sm:p-4 ${indentClass} ${item.is_deleted ? 'border-gray-100 bg-gray-50' : 'border-gray-200'}`}>
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-blue-100 bg-blue-50">
             <span className="text-blue-700 font-medium">{item.username.charAt(0).toUpperCase()}</span>
           </div>
           <div className="flex-1 min-w-0">
@@ -102,7 +99,7 @@ const CommentItem = ({ item, isReply = false, actions, refresh, depth = 0 }) => 
         </div>
       </div>
       {replying && !item.is_deleted && (
-        <div className={`mt-2 ${isReply ? '' : 'ml-6'}`}>
+        <div className={`mt-2 ${isReply ? '' : 'ml-3 sm:ml-6'}`}>
           <ReplyForm onSubmit={onReplySubmit} onCancel={() => setReplying(false)} lockedPrefix={`@${item.username}`} />
         </div>
       )}

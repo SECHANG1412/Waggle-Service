@@ -11,10 +11,10 @@ const CommentActions = ({
   hideOwnerActions = false,
 }) => {
   return (
-    <div className="mt-2 flex flex-wrap items-center gap-1 sm:gap-2 text-sm text-gray-500">
+    <div className="mt-2 flex flex-wrap items-center gap-1.5 text-sm text-gray-500 sm:gap-2">
       <button
         onClick={onLikeClick}
-        className={`inline-flex h-9 items-center gap-1 rounded-md px-2 transition-colors ${
+        className={`inline-flex h-11 items-center gap-1 rounded-md px-2.5 transition-colors ${
           hasLiked ? 'text-blue-600 hover:text-blue-700' : 'text-gray-400 hover:text-blue-500'
         }`}
         aria-label="좋아요"
@@ -26,7 +26,7 @@ const CommentActions = ({
 
       <button
         onClick={onReplyClick}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-400 transition-colors hover:text-blue-500"
+        className="inline-flex h-11 w-11 items-center justify-center rounded-md text-gray-400 transition-colors hover:text-blue-500"
         aria-label="답글"
         title="답글"
       >
@@ -37,7 +37,7 @@ const CommentActions = ({
         <>
           <button
             onClick={onEditClick}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-400 transition-colors hover:text-blue-500"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-md text-gray-400 transition-colors hover:text-blue-500"
             aria-label="수정"
             title="수정"
           >
@@ -45,7 +45,7 @@ const CommentActions = ({
           </button>
           <button
             onClick={onDeleteClick}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-400 transition-colors hover:text-red-500"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-md text-gray-400 transition-colors hover:text-red-500"
             aria-label="삭제"
             title="삭제"
           >
