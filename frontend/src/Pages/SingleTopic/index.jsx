@@ -7,7 +7,6 @@ import { useLike } from '../../hooks/useLike';
 import { useTopic } from '../../hooks/useTopic';
 import { useVote } from '../../hooks/useVote';
 import { useConfirm } from '../../hooks/confirm-context';
-import { showConfirmDialog } from '../../utils/alertUtils';
 import Chart from './Chart';
 import Comments from './Comments';
 import Header from './layout/Header';
@@ -81,15 +80,15 @@ const SingleTopic = () => {
   };
 
   const onDelete = async () => {
-    const confirm = await showConfirmDialog(
-      TOPIC_MESSAGES.deleteConfirmTitle,
-      TOPIC_MESSAGES.deleteConfirmText,
-      COMMON_MESSAGES.delete,
-      COMMON_MESSAGES.cancel,
-      '#EF4444',
-      '#9CA3AF'
-    );
-    if (!confirm.isConfirmed) return;
+    const confirmed = await confirm({
+      title: TOPIC_MESSAGES.deleteConfirmTitle,
+      description: TOPIC_MESSAGES.deleteConfirmText,
+      confirmText: COMMON_MESSAGES.delete,
+      cancelText: COMMON_MESSAGES.cancel,
+      variant: 'danger',
+    });
+    if (!confirmed) return;
+
     const success = await deleteTopic(id);
     if (success) {
       navigate('/');

@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { COMMENT_MESSAGES, COMMON_MESSAGES, REPLY_MESSAGES } from '../../../constants/messages';
 import { useAuth } from '../../../hooks/auth-context';
+import { useConfirm } from '../../../hooks/confirm-context';
 import { useComment } from '../../../hooks/useComment';
 import { useLike } from '../../../hooks/useLike';
 import { useReply } from '../../../hooks/useReply';
-import { showConfirmDialog, showLoginRequiredAlert } from '../../../utils/alertUtils';
+import { showLoginRequiredAlert } from '../../../utils/alertUtils';
 import CommentItem from './CommentItem';
 import PaginationControls from './PaginationControls';
 
@@ -13,6 +14,7 @@ const Comments = ({ topicId }) => {
   const { createReply, updateReply, deleteReply } = useReply();
   const { toggleCommentLike, toggleReplyLike } = useLike();
   const { isAuthenticated, isAuthLoading } = useAuth();
+  const { confirm } = useConfirm();
 
   const [comments, setComments] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -54,19 +56,18 @@ const Comments = ({ topicId }) => {
   };
 
   const onDeleteComment = async (commentId) => {
-    const confirm = await showConfirmDialog(
-      COMMENT_MESSAGES.deleteConfirmTitle,
-      COMMENT_MESSAGES.deleteConfirmText,
-      COMMON_MESSAGES.delete,
-      COMMON_MESSAGES.cancel,
-      '#EF4444',
-      '#9CA3AF'
-    );
+    const confirmed = await confirm({
+      title: COMMENT_MESSAGES.deleteConfirmTitle,
+      description: COMMENT_MESSAGES.deleteConfirmText,
+      confirmText: COMMON_MESSAGES.delete,
+      cancelText: COMMON_MESSAGES.cancel,
+      variant: 'danger',
+    });
 
-    if (confirm.isConfirmed) {
-      const success = await deleteComment(commentId);
-      if (success) fetchComment();
-    }
+    if (!confirmed) return;
+
+    const success = await deleteComment(commentId);
+    if (success) fetchComment();
   };
 
   const guardedAction = async (action, message) => {
