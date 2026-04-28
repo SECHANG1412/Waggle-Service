@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 
 const Pagination = ({ currentPage, total, perPage, onPageChange }) => {
   const totalPages = Math.ceil(total / perPage);
-  const delta = 2;
+  const delta = 1;
 
   const pages = useMemo(() => {
     if (totalPages <= 1) return [];
@@ -27,17 +27,24 @@ const Pagination = ({ currentPage, total, perPage, onPageChange }) => {
   if (totalPages <= 1) return null;
 
   return (
-    <div className="mt-8 flex justify-center gap-2 flex-wrap">
+    <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="min-h-11 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-300"
+      >
+        이전
+      </button>
       {pages.map((page, index) =>
         page === '...' ? (
-          <span key={index} className="px-3 py-2 text-slate-400">
+          <span key={index} className="flex min-h-11 min-w-8 items-center justify-center px-1 text-slate-400">
             ...
           </span>
         ) : (
           <button
             key={index}
             onClick={() => onPageChange(page)}
-            className={`px-3 py-2 border rounded-lg text-sm font-semibold transition cursor-pointer ${
+            className={`min-h-11 min-w-11 cursor-pointer rounded-lg border px-3 py-2 text-sm font-semibold transition ${
               page === currentPage
                 ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
                 : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:text-slate-900'
@@ -47,6 +54,13 @@ const Pagination = ({ currentPage, total, perPage, onPageChange }) => {
           </button>
         )
       )}
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="min-h-11 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-300"
+      >
+        다음
+      </button>
     </div>
   );
 };
