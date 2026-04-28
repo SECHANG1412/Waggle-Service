@@ -1,6 +1,6 @@
 import Swal from 'sweetalert2';
 import { AUTH_MESSAGES, COMMON_MESSAGES } from '../constants/messages';
-import { FEEDBACK_TOAST_EVENT } from './toastEvents';
+import { AUTH_FEEDBACK_EVENT, FEEDBACK_TOAST_EVENT } from './toastEvents';
 
 const showFeedbackToast = ({ type = 'success', title, message }) => {
   if (typeof window === 'undefined') return;
@@ -16,14 +16,28 @@ const showFeedbackToast = ({ type = 'success', title, message }) => {
   );
 };
 
+const showAuthFeedback = ({ title, message }) => {
+  if (typeof window === 'undefined') return Promise.resolve();
+
+  return new Promise((resolve) => {
+    window.dispatchEvent(
+      new CustomEvent(AUTH_FEEDBACK_EVENT, {
+        detail: {
+          title,
+          message,
+          confirmText: COMMON_MESSAGES.confirm,
+          resolve,
+        },
+      })
+    );
+  });
+};
+
 export const handleAuthError = async (error) => {
   if (error?.response?.status === 401) {
-    await Swal.fire({
+    await showAuthFeedback({
       title: AUTH_MESSAGES.loginRequiredTitle,
-      text: AUTH_MESSAGES.loginRequiredText,
-      icon: 'warning',
-      confirmButtonText: COMMON_MESSAGES.confirm,
-      confirmButtonColor: '#34D399',
+      message: AUTH_MESSAGES.loginRequiredText,
     });
     return true;
   }
@@ -33,12 +47,9 @@ export const handleAuthError = async (error) => {
 export const showLoginRequiredAlert = async (
   message = AUTH_MESSAGES.loginRequiredFeature
 ) => {
-  await Swal.fire({
+  await showAuthFeedback({
     title: AUTH_MESSAGES.loginRequiredTitle,
-    text: message,
-    icon: 'warning',
-    confirmButtonText: COMMON_MESSAGES.confirm,
-    confirmButtonColor: '#34D399',
+    message,
   });
 };
 

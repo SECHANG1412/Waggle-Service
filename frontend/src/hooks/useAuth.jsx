@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AUTH_MESSAGES } from '../constants/messages';
 import api from '../utils/api';
-import { showErrorAlert } from '../utils/alertUtils';
+import { showLoginRequiredAlert } from '../utils/alertUtils';
 import { AuthContext } from './auth-context';
 
 const EXPIRED_TOKEN_DETAILS = new Set(['access_token_expired', 'refresh_token_expired']);
@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
         const detail = error.response.data?.detail;
 
         if (EXPIRED_TOKEN_DETAILS.has(detail)) {
-          showErrorAlert(error, AUTH_MESSAGES.sessionExpired);
+          await showLoginRequiredAlert(AUTH_MESSAGES.sessionExpired);
           navigate('/login');
         }
       }
