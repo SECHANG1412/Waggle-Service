@@ -45,7 +45,7 @@ const Chart = ({ topicId, voteOptions }) => {
   return (
     <div className="relative mb-6 rounded-lg bg-gray-100 p-3 shadow-inner sm:p-5">
       <ChartHeader chartMetric={chartMetric} setChartMetric={setChartMetric} loading={loading} />
-      <div className="overflow-hidden">
+      <div className="overflow-hidden rounded-md">
         {loading ? (
           <div className="flex h-[250px] items-center justify-center text-sm text-slate-500">
             차트 데이터를 불러오는 중입니다.

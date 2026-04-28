@@ -3,7 +3,7 @@ import { FaCheckCircle } from 'react-icons/fa';
 
 const VoteButtons = ({ voteOptions, voteResults, totalVotes, hasVoted, useVoteIndex, onVote, colors }) => {
   return (
-    <div className="space-y-3 my-6">
+    <div className="my-6 space-y-3">
       {voteOptions.map((option, idx) => {
         const selected = useVoteIndex === idx;
         const bgColor = hasVoted ? (selected ? colors[idx] : '#E5E7EB') : 'white';
@@ -16,15 +16,15 @@ const VoteButtons = ({ voteOptions, voteResults, totalVotes, hasVoted, useVoteIn
             key={idx}
             onClick={() => onVote(idx)}
             disabled={hasVoted}
-            className={`w-full py-4 px-6 flex items-center justify-between rounded-lg text-base font-semibold transition-all duration-200 border-2 ${
+            className={`flex min-h-14 w-full items-center justify-between gap-3 rounded-lg border-2 px-4 py-4 text-left text-base font-semibold transition-all duration-200 sm:px-6 ${
               hasVoted ? (selected ? 'text-white' : 'bg-gray-200 text-gray-500 cursor-not-allowed') : ''
             }`}
             style={{ backgroundColor: bgColor, borderColor: borderColor }}
           >
-            <span>{option}</span>
+            <span className="min-w-0 flex-1 break-words leading-snug">{option}</span>
 
             {hasVoted && (
-              <div className="flex items-center gap-4">
+              <div className="flex shrink-0 items-center gap-2 sm:gap-4">
                 <span className={textColor}>{voteResults[idx]}</span>
                 <span className={textColor}>{percent}%</span>
                 {selected && <FaCheckCircle className="w-5 h-5" />}

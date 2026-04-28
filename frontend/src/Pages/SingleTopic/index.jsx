@@ -122,7 +122,7 @@ const SingleTopic = () => {
   if (!topic) return null;
 
   return (
-    <div className="max-w-5xl mx-auto bg-white shadow-lg rounded-2xl p-4 sm:p-6 lg:p-8 border border-gray-200">
+    <div className="mx-auto max-w-5xl rounded-2xl border border-gray-200 bg-white p-4 shadow-lg sm:p-6 lg:p-8">
       <Header
         title={topic.title}
         liked={topic.has_liked}
@@ -132,14 +132,14 @@ const SingleTopic = () => {
           authUser?.user_id === topic.user_id ? (
             <button
               onClick={onDelete}
-              className="px-3 py-2 text-sm bg-red-50 text-red-600 rounded-lg hover:bg-red-100 border border-red-100"
+              className="min-h-11 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-600 hover:bg-red-100"
             >
               {COMMON_MESSAGES.delete}
             </button>
           ) : null
         }
       />
-      <p className="text-gray-700 mb-6 leading-relaxed">{topic.description}</p>
+      <p className="mb-6 break-words leading-relaxed text-gray-700">{topic.description}</p>
       <Chart topicId={topic.topic_id} voteOptions={topic.vote_options} />
       <InfoBar createdAt={topic.created_at} totalVotes={topic.total_vote} />
       <VoteButtons
@@ -157,4 +157,3 @@ const SingleTopic = () => {
 };
 
 export default SingleTopic;
-
