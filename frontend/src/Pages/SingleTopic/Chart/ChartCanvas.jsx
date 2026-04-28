@@ -8,8 +8,8 @@ const ChartCanvas = ({ data, metric, options, colors, timeFrame }) => {
   };
 
   return (
-    <ResponsiveContainer width="100%" height={250}>
-      <LineChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 4 }}>
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart data={data} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis
           dataKey="label"

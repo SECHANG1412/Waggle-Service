@@ -43,19 +43,19 @@ const Chart = ({ topicId, voteOptions }) => {
   };
 
   return (
-    <div className="relative mb-6 rounded-lg bg-gray-100 p-3 shadow-inner sm:p-5">
+    <section className="relative mb-6 rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:p-5">
       <ChartHeader chartMetric={chartMetric} setChartMetric={setChartMetric} loading={loading} />
       <div className="overflow-hidden rounded-md">
         {loading ? (
-          <div className="flex h-[250px] items-center justify-center text-sm text-slate-500">
+          <div className="flex h-[220px] items-center justify-center text-sm text-slate-500 sm:h-[280px]">
             차트 데이터를 불러오는 중입니다.
           </div>
         ) : voteData.length === 0 && hasLoaded ? (
-          <div className="flex h-[250px] items-center justify-center text-sm text-slate-500">
+          <div className="flex h-[220px] items-center justify-center text-sm text-slate-500 sm:h-[280px]">
             표시할 투표 데이터가 없습니다.
           </div>
         ) : (
-          <div className="w-full">
+          <div className="h-[220px] w-full sm:h-[280px]">
             <ChartCanvas
               data={voteData}
               metric={chartMetric}
@@ -72,7 +72,7 @@ const Chart = ({ topicId, voteOptions }) => {
         loading={loading}
         options={timeFrames}
       />
-    </div>
+    </section>
   );
 };
 
