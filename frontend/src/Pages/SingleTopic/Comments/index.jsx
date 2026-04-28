@@ -128,15 +128,9 @@ const Comments = ({ topicId }) => {
         </div>
       </form>
       <div className="space-y-6 mt-6">
-        {currentComments.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-center text-sm text-gray-500">
-            아직 댓글이 없습니다. 첫 댓글을 남겨보세요.
-          </div>
-        ) : (
-          currentComments.map((comment) => (
-            <CommentItem key={comment.comment_id} item={comment} actions={onCommentActions} refresh={fetchComment} />
-          ))
-        )}
+        {currentComments.map((comment) => (
+          <CommentItem key={comment.comment_id} item={comment} actions={onCommentActions} refresh={fetchComment} />
+        ))}
       </div>
       {totalPages > 1 && (
         <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
