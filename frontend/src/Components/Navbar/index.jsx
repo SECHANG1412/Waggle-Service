@@ -36,10 +36,13 @@ const Navbar = () => {
 
   const onSearchSubmit = () => {
     const updated = new URLSearchParams(searchParams);
-    if (searchInput) {
-      updated.set('search', searchInput);
+    const normalizedSearch = searchInput.trim();
+    if (normalizedSearch) {
+      updated.set('search', normalizedSearch);
+      setSearchInput(normalizedSearch);
     } else {
       updated.delete('search');
+      setSearchInput('');
     }
     updated.set('page', '1');
     setSearchParams(updated);

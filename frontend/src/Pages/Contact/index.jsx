@@ -119,9 +119,19 @@ const Contact = () => {
         </label>
 
         {message && (
-          <p className={`text-sm font-medium ${isSuccess ? 'text-green-700' : 'text-red-600'}`}>
-            {message.text}
-          </p>
+          <div className="space-y-2">
+            <p className={`text-sm font-medium ${isSuccess ? 'text-green-700' : 'text-red-600'}`}>
+              {message.text}
+            </p>
+            {isSuccess && (
+              <Link
+                to="/profile"
+                className="inline-flex text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+              >
+                내 문의 내역 보러가기
+              </Link>
+            )}
+          </div>
         )}
 
         <button

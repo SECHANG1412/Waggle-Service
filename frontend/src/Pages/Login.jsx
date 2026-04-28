@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/auth-context';
 import SocialAuthButtons from '../Components/Auth/SocialAuthButtons';
@@ -14,6 +14,12 @@ const Login = () => {
   const handleChange = useCallback((e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }, []);
+
+  useEffect(() => {
+    if (signupSuccess) {
+      window.history.replaceState({}, document.title);
+    }
+  }, [signupSuccess]);
 
   const handleSubmit = useCallback(
     async (e) => {
