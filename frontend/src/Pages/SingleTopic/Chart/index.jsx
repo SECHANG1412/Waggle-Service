@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useVote } from '../../../hooks/useVote';
 import ChartHeader from './ChartHeader';
 import ChartCanvas from './ChartCanvas';
+import ChartLegend from './ChartLegend';
 import { voteColors } from '../../../constants/voteColors';
 import TimeFrameButtons from './TimeFrameButtons';
 
@@ -14,6 +15,7 @@ const Chart = ({ topicId, voteOptions }) => {
   const [loading, SetLoading] = useState(false);
   const [voteData, setVoteData] = useState([]);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const colors = voteColors[voteOptions.length] || [];
 
   const fetchTopicVotes = useCallback(
     async (frame) => {
@@ -60,12 +62,13 @@ const Chart = ({ topicId, voteOptions }) => {
               data={voteData}
               metric={chartMetric}
               options={voteOptions}
-              colors={voteColors[voteOptions.length]}
+              colors={colors}
               timeFrame={selectedTimeFrame}
             />
           </div>
         )}
       </div>
+      <ChartLegend options={voteOptions} colors={colors} />
       <TimeFrameButtons
         selected={selectedTimeFrame}
         onChange={onTimeFrameChage}
