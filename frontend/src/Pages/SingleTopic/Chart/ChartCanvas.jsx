@@ -1,10 +1,24 @@
 import React from 'react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { formatDateTime } from '../../../utils/date';
+
+const formatTooltipTimestamp = (timestamp) => {
+  const formatted = formatDateTime(timestamp, 'ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  return formatted || timestamp;
+};
 
 const CustomTooltip = ({ active, payload, metric, options }) => {
   if (!active || !payload?.length) return null;
 
-  const timestamp = payload[0]?.payload?.timestamp || payload[0]?.payload?.label || '';
+  const rawTimestamp = payload[0]?.payload?.timestamp || payload[0]?.payload?.label || '';
+  const timestamp = formatTooltipTimestamp(rawTimestamp);
 
   return (
     <div className="max-w-[260px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs shadow-lg">
