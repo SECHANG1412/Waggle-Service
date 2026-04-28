@@ -1,1 +1,1 @@
-export const SUCCESS_TOAST_EVENT = 'waggle:success-toast';
+export const FEEDBACK_TOAST_EVENT = 'waggle:feedback-toast';

@@ -1,6 +1,20 @@
 import Swal from 'sweetalert2';
 import { AUTH_MESSAGES, COMMON_MESSAGES } from '../constants/messages';
-import { SUCCESS_TOAST_EVENT } from './toastEvents';
+import { FEEDBACK_TOAST_EVENT } from './toastEvents';
+
+const showFeedbackToast = ({ type = 'success', title, message }) => {
+  if (typeof window === 'undefined') return;
+
+  window.dispatchEvent(
+    new CustomEvent(FEEDBACK_TOAST_EVENT, {
+      detail: {
+        type,
+        title,
+        message,
+      },
+    })
+  );
+};
 
 export const handleAuthError = async (error) => {
   if (error?.response?.status === 401) {
@@ -32,34 +46,30 @@ export const showErrorAlert = (
   error,
   defaultMessage = COMMON_MESSAGES.defaultError
 ) => {
-  Swal.fire({
-    icon: 'error',
+  showFeedbackToast({
+    type: 'error',
     title: COMMON_MESSAGES.defaultError,
-    text: error?.response?.data?.error || error?.response?.data?.detail || defaultMessage,
-    confirmButtonColor: '#EF4444',
+    message:
+      error?.response?.data?.error ||
+      error?.response?.data?.detail ||
+      defaultMessage,
   });
 };
 
 export const showWarningAlert = (title, text) => {
-  Swal.fire({
-    icon: 'warning',
+  showFeedbackToast({
+    type: 'warning',
     title,
-    text,
-    confirmButtonColor: '#EF4444',
+    message: text,
   });
 };
 
 export const showSuccessAlert = (message) => {
-  if (typeof window === 'undefined') return;
-
-  window.dispatchEvent(
-    new CustomEvent(SUCCESS_TOAST_EVENT, {
-      detail: {
-        title: COMMON_MESSAGES.success,
-        message,
-      },
-    })
-  );
+  showFeedbackToast({
+    type: 'success',
+    title: COMMON_MESSAGES.success,
+    message,
+  });
 };
 
 export const showConfirmDialog = async (
