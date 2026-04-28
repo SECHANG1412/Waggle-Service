@@ -216,55 +216,55 @@ const Profile = () => {
   }
 
   return (
-    <div className="bg-slate-100 min-h-screen py-12 px-4">
-      <div className="max-w-5xl mx-auto space-y-6">
-        <div className="flex items-center gap-4 rounded-xl bg-white border border-slate-200 p-6 shadow-md">
-          <div className="h-16 w-16 rounded-full bg-gradient-to-br from-slate-300 to-slate-100 text-slate-800 flex items-center justify-center text-2xl font-bold border border-slate-300 shadow-sm">
+    <div className="min-h-screen bg-slate-100 px-3 py-6 sm:px-4 sm:py-12">
+      <div className="mx-auto max-w-5xl space-y-4 sm:space-y-6">
+        <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-md sm:gap-4 sm:p-6">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-gradient-to-br from-slate-300 to-slate-100 text-xl font-bold text-slate-800 shadow-sm sm:h-16 sm:w-16 sm:text-2xl">
             {avatarUrl ? (
               <img
                 src={avatarUrl}
                 alt="avatar"
-                className="h-full w-full rounded-full object-cover border border-slate-200"
+                className="h-full w-full rounded-full border border-slate-200 object-cover"
               />
             ) : (
               user?.name?.[0]?.toUpperCase() || 'U'
             )}
           </div>
-          <div className="flex-1">
-            <h1 className="text-2xl font-semibold text-slate-900">{user?.name}</h1>
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-xl font-semibold text-slate-900 sm:text-2xl">{user?.name}</h1>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
           <StatCard label="작성한 토픽" value={loadingStats ? '...' : stats.topics} />
           <StatCard label="투표 횟수" value={loadingStats ? '...' : stats.votes} />
           <StatCard label="받은 좋아요" value={loadingStats ? '...' : stats.likes} />
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-md space-y-4">
-            <div className="flex items-center justify-between">
+        <div className="grid gap-4 md:grid-cols-2 md:gap-6">
+          <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 shadow-md sm:p-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <h3 className="text-lg font-semibold text-slate-900">계정 정보</h3>
               {editMode ? (
                 <div className="flex gap-2">
                   <button
                     onClick={onSave}
                     disabled={saving}
-                    className="h-10 px-4 inline-flex items-center justify-center bg-slate-900 text-white rounded-lg hover:bg-slate-800 disabled:opacity-60 transition shadow-sm text-sm"
+                    className="inline-flex h-10 flex-1 items-center justify-center rounded-lg bg-slate-900 px-4 text-sm text-white shadow-sm transition hover:bg-slate-800 disabled:opacity-60 sm:flex-none"
                   >
                     {saving ? '저장 중...' : '저장'}
                   </button>
                   <button
                     onClick={onCancel}
                     disabled={saving}
-                    className="h-10 px-4 inline-flex items-center justify-center bg-white text-slate-700 rounded-lg border border-slate-200 hover:border-slate-300 hover:text-slate-900 transition text-sm"
+                    className="inline-flex h-10 flex-1 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-700 transition hover:border-slate-300 hover:text-slate-900 sm:flex-none"
                   >
                     취소
                   </button>
                 </div>
               ) : (
                 <button
-                  className="h-10 px-4 inline-flex items-center justify-center bg-white text-slate-700 rounded-lg border border-slate-300 hover:border-slate-400 hover:text-slate-900 transition text-sm shadow-sm"
+                  className="inline-flex h-10 w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm text-slate-700 shadow-sm transition hover:border-slate-400 hover:text-slate-900 sm:w-auto"
                   onClick={() => setEditMode(true)}
                 >
                   프로필 수정
@@ -278,13 +278,13 @@ const Profile = () => {
                     name="name"
                     value={form.name}
                     onChange={onChange}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-400 focus:outline-none shadow-inner"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 shadow-inner focus:outline-none focus:ring-2 focus:ring-slate-400"
                   />
                 ) : (
                   <input
                     value={user?.name || ''}
                     disabled
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-800"
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800"
                   />
                 )}
               </Field>
@@ -292,19 +292,19 @@ const Profile = () => {
                 <input
                   value={user?.email || ''}
                   disabled
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-800"
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800"
                 />
               </Field>
               <Field label="가입일">
                 <input
                   value={user?.joinedAt || ''}
                   disabled
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-800"
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800"
                 />
               </Field>
               <Field label="프로필 이미지" alignTop>
-                <div className="flex items-center gap-4">
-                  <div className="h-14 w-14 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden border border-slate-300 shadow-inner">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-300 bg-slate-200 shadow-inner">
                     {avatarUrl ? (
                       <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
                     ) : (
@@ -313,7 +313,7 @@ const Profile = () => {
                       </span>
                     )}
                   </div>
-                  <label className="px-3 py-2 text-sm bg-white text-slate-700 rounded-lg border border-slate-200 hover:border-slate-300 hover:text-slate-900 cursor-pointer">
+                  <label className="min-h-10 cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-2 text-center text-sm text-slate-700 hover:border-slate-300 hover:text-slate-900">
                     이미지 선택
                     <input
                       type="file"
@@ -338,7 +338,7 @@ const Profile = () => {
                         setAvatarUrl('');
                         localStorage.removeItem('avatar_url');
                       }}
-                      className="text-sm text-red-500 hover:underline"
+                      className="text-left text-sm text-red-500 hover:underline sm:text-center"
                     >
                       제거
                     </button>
@@ -348,7 +348,7 @@ const Profile = () => {
             </div>
           </div>
 
-          <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-md space-y-3">
+          <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-md sm:p-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-slate-900">최근 활동</h3>
             </div>
@@ -386,22 +386,22 @@ const Profile = () => {
 };
 
 const StatCard = ({ label, value }) => (
-  <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-md">
-    <p className="text-sm text-slate-600 font-semibold">{label}</p>
-    <p className="text-2xl font-bold text-slate-900 mt-1">{value}</p>
+  <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-md">
+    <p className="text-sm font-semibold text-slate-600">{label}</p>
+    <p className="mt-1 text-2xl font-bold text-slate-900">{value}</p>
   </div>
 );
 
 const Field = ({ label, children }) => (
   <div className="flex flex-col gap-1 py-2">
-    <span className="text-sm text-slate-700 font-medium">{label}</span>
+    <span className="text-sm font-medium text-slate-700">{label}</span>
     <div className="text-sm text-slate-800">{children}</div>
   </div>
 );
 
 const ActivityRow = ({ title, date, onView }) => (
   <div className="flex flex-col gap-2 border-b last:border-0 py-3">
-    <p className="text-sm font-medium text-slate-800 leading-relaxed line-clamp-2">{title}</p>
+    <p className="line-clamp-2 text-sm font-medium leading-relaxed text-slate-800">{title}</p>
     <div className="flex items-center justify-between text-xs text-slate-500">
       <span>{date}</span>
       <button
@@ -416,7 +416,7 @@ const ActivityRow = ({ title, date, onView }) => (
 );
 
 const InquiryHistorySection = ({ inquiries, loading }) => (
-  <section className="p-6 rounded-xl border border-slate-200 bg-white shadow-md space-y-4">
+  <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 shadow-md sm:p-6">
     <div>
       <h3 className="text-lg font-semibold text-slate-900">내 문의 내역</h3>
       <p className="mt-1 text-sm text-slate-500">
@@ -444,18 +444,18 @@ const InquiryHistoryItem = ({ inquiry }) => {
   const statusLabel = INQUIRY_STATUS_LABELS[inquiry.status] || inquiry.status;
 
   return (
-    <article className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+    <article className="rounded-lg border border-slate-200 bg-slate-50 p-3 sm:p-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="inline-flex rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700">
             {statusLabel}
           </span>
-          <h4 className="mt-2 text-base font-semibold text-slate-900">{inquiry.title}</h4>
+          <h4 className="mt-2 break-words text-base font-semibold text-slate-900">{inquiry.title}</h4>
         </div>
         <span className="text-xs text-slate-500">{formatDateOnly(inquiry.created_at)}</span>
       </div>
 
-      <p className="mt-3 text-sm leading-relaxed text-slate-600 line-clamp-2">{inquiry.content}</p>
+      <p className="mt-3 line-clamp-2 break-words text-sm leading-relaxed text-slate-600">{inquiry.content}</p>
 
       {inquiry.latest_reason && (
         <div className="mt-3 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
@@ -468,7 +468,7 @@ const InquiryHistoryItem = ({ inquiry }) => {
 };
 
 const ContentStatusSection = ({ items, loading, onContact }) => (
-  <section className="p-6 rounded-xl border border-slate-200 bg-white shadow-md space-y-4">
+  <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 shadow-md sm:p-6">
     <div>
       <h3 className="text-lg font-semibold text-slate-900">내 콘텐츠 상태</h3>
       <p className="mt-1 text-sm text-slate-500">
@@ -496,13 +496,13 @@ const ContentStatusItem = ({ item, onContact }) => {
   const typeLabel = CONTENT_STATUS_LABELS[item.type] || item.type;
 
   return (
-    <article className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+    <article className="rounded-lg border border-slate-200 bg-slate-50 p-3 sm:p-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="inline-flex rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
             숨김 처리
           </span>
-          <h4 className="mt-2 text-base font-semibold text-slate-900">
+          <h4 className="mt-2 break-words text-base font-semibold text-slate-900">
             {typeLabel}: {item.title}
           </h4>
         </div>
@@ -512,7 +512,7 @@ const ContentStatusItem = ({ item, onContact }) => {
       </div>
 
       {item.content && (
-        <p className="mt-3 text-sm leading-relaxed text-slate-600 line-clamp-2">{item.content}</p>
+        <p className="mt-3 line-clamp-2 break-words text-sm leading-relaxed text-slate-600">{item.content}</p>
       )}
 
       <div className="mt-3 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
