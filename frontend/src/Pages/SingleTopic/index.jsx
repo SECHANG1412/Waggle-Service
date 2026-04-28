@@ -69,9 +69,11 @@ const SingleTopic = () => {
   const onVote = async (index) => {
     if (topic?.has_voted) return;
     const confirmed = await confirm({
-      title: '이 선택으로 투표할까요?',
-      description: '투표 후에는 선택을 변경할 수 없습니다.',
+      title: '선택한 항목으로 투표할까요?',
+      description: '투표 후에는 선택을 변경할 수 없어요.',
       confirmText: '투표하기',
+      cancelText: '취소',
+      actionOrder: 'confirm-first',
     });
     if (!confirmed) return;
 
@@ -155,3 +157,4 @@ const SingleTopic = () => {
 };
 
 export default SingleTopic;
+
