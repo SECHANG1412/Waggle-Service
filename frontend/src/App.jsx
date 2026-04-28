@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createBrowserRouter, Link, Navigate, Outlet, RouterProvider, useLocation } from 'react-router-dom';
 import ConfirmProvider from './Components/Common/ConfirmProvider';
+import ToastProvider from './Components/Common/ToastProvider';
 import Footer from './Components/Footer/Footer';
 import Navbar from './Components/Navbar';
 import { AUTH_MESSAGES } from './constants/messages';
@@ -171,9 +172,11 @@ const AuthLayout = () => (
 
 const AppRoot = () => (
   <AuthProvider>
-    <ConfirmProvider>
-      <Outlet />
-    </ConfirmProvider>
+    <ToastProvider>
+      <ConfirmProvider>
+        <Outlet />
+      </ConfirmProvider>
+    </ToastProvider>
   </AuthProvider>
 );
 

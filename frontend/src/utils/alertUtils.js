@@ -1,5 +1,6 @@
 import Swal from 'sweetalert2';
 import { AUTH_MESSAGES, COMMON_MESSAGES } from '../constants/messages';
+import { SUCCESS_TOAST_EVENT } from './toastEvents';
 
 export const handleAuthError = async (error) => {
   if (error?.response?.status === 401) {
@@ -49,12 +50,16 @@ export const showWarningAlert = (title, text) => {
 };
 
 export const showSuccessAlert = (message) => {
-  Swal.fire({
-    icon: 'success',
-    title: COMMON_MESSAGES.success,
-    text: message,
-    confirmButtonColor: '#34D399',
-  });
+  if (typeof window === 'undefined') return;
+
+  window.dispatchEvent(
+    new CustomEvent(SUCCESS_TOAST_EVENT, {
+      detail: {
+        title: COMMON_MESSAGES.success,
+        message,
+      },
+    })
+  );
 };
 
 export const showConfirmDialog = async (
