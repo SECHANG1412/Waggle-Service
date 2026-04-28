@@ -71,3 +71,35 @@ async def test_signup_creates_regular_user(client: AsyncClient, db_session, monk
     db_user = await UserCrud.get_by_email(db_session, "new-user@example.com")
     assert db_user is not None
     assert db_user.is_admin is False
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {
+            "email": "not-an-email",
+            "username": "valid-user",
+            "password": "password123",
+        },
+        {
+            "email": "valid@example.com",
+            "username": " ",
+            "password": "password123",
+        },
+        {
+            "email": "valid@example.com",
+            "username": "valid-user",
+            "password": "12345",
+        },
+        {
+            "email": "valid@example.com",
+            "username": "valid-user",
+            "password": "   ",
+        },
+    ],
+)
+async def test_signup_rejects_invalid_input(client: AsyncClient, payload):
+    response = await client.post("/users/signup", json=payload)
+
+    assert response.status_code == 422
