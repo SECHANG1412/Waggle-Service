@@ -1,12 +1,13 @@
 import { COMMON_MESSAGES, REPLY_MESSAGES } from '../constants/messages';
+import { useConfirm } from './confirm-context';
 import api from '../utils/api';
 import {
   handleAuthError,
-  showConfirmDialog,
   showErrorAlert,
 } from '../utils/alertUtils';
 
 export const useReply = () => {
+  const { confirm } = useConfirm();
   const isSuccess = (status) => status >= 200 && status < 300;
 
   const createReply = async (commentId, content, parentReplyId = null) => {
@@ -28,15 +29,14 @@ export const useReply = () => {
 
   const deleteReply = async (replyId) => {
     try {
-      const confirm = await showConfirmDialog(
-        REPLY_MESSAGES.deleteConfirmTitle,
-        REPLY_MESSAGES.deleteConfirmText,
-        COMMON_MESSAGES.delete,
-        COMMON_MESSAGES.cancel,
-        '#EF4444',
-        '#9CA3AF'
-      );
-      if (!confirm.isConfirmed) return false;
+      const confirmed = await confirm({
+        title: REPLY_MESSAGES.deleteConfirmTitle,
+        description: REPLY_MESSAGES.deleteConfirmText,
+        confirmText: COMMON_MESSAGES.delete,
+        cancelText: COMMON_MESSAGES.cancel,
+        variant: 'danger',
+      });
+      if (!confirmed) return false;
 
       const response = await api.delete(`/replies/${replyId}`);
 
