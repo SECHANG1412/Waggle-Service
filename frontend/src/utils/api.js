@@ -49,8 +49,15 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     const isRefreshRequest = originalRequest?.url?.includes('/users/refresh');
+    const shouldSkipAuthRefresh = originalRequest?.skipAuthRefresh;
 
-    if (error.response?.status === 401 && !isRefreshRequest && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      originalRequest &&
+      !isRefreshRequest &&
+      !shouldSkipAuthRefresh &&
+      !originalRequest._retry
+    ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           refreshQueue.push({ resolve, reject });
@@ -68,7 +75,9 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        await showLoginRequiredAlert(AUTH_MESSAGES.sessionExpired);
+        if (!originalRequest?.suppressAuthAlert) {
+          await showLoginRequiredAlert(AUTH_MESSAGES.sessionExpired);
+        }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

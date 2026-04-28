@@ -51,7 +51,16 @@ const Contact = () => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />;
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{
+          from: `${location.pathname}${location.search}`,
+          authRequired: true,
+        }}
+      />
+    );
   }
 
   const isSuccess = message?.type === 'success';
