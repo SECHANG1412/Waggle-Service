@@ -58,10 +58,19 @@ a {
   scrollbar-width: none;
 }
 
+.vote-trend-chart,
+.vote-trend-chart * {
+  -webkit-tap-highlight-color: transparent;
+}
+
 .vote-trend-chart .recharts-wrapper:focus,
 .vote-trend-chart .recharts-wrapper:focus-visible,
 .vote-trend-chart .recharts-surface:focus,
-.vote-trend-chart .recharts-surface:focus-visible {
+.vote-trend-chart .recharts-surface:focus-visible,
+.vote-trend-chart svg:focus,
+.vote-trend-chart svg:focus-visible,
+.vote-trend-chart svg *:focus,
+.vote-trend-chart svg *:focus-visible {
   outline: none;
 }
 
