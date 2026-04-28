@@ -6,7 +6,8 @@ import { useAuth } from '../../hooks/auth-context';
 import { useLike } from '../../hooks/useLike';
 import { useTopic } from '../../hooks/useTopic';
 import { useVote } from '../../hooks/useVote';
-import { showConfirmDialog, showVoteConfirmDialog } from '../../utils/alertUtils';
+import { useConfirm } from '../../hooks/confirm-context';
+import { showConfirmDialog } from '../../utils/alertUtils';
 import Chart from './Chart';
 import Comments from './Comments';
 import Header from './layout/Header';
@@ -20,6 +21,7 @@ const SingleTopic = () => {
   const { toggleTopicLike } = useLike();
   const { submitVote } = useVote();
   const { user: authUser } = useAuth();
+  const { confirm } = useConfirm();
 
   const [topic, setTopic] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -67,8 +69,12 @@ const SingleTopic = () => {
 
   const onVote = async (index) => {
     if (topic?.has_voted) return;
-    const confirm = await showVoteConfirmDialog();
-    if (!confirm.isConfirmed) return;
+    const confirmed = await confirm({
+      title: '이 선택으로 투표할까요?',
+      description: '투표 후에는 선택을 변경할 수 없습니다.',
+      confirmText: '투표하기',
+    });
+    if (!confirmed) return;
 
     const success = await submitVote({ topicId: id, voteIndex: index });
     if (success) await fetchTopic();
