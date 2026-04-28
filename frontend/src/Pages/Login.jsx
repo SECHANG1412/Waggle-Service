@@ -10,6 +10,11 @@ const Login = () => {
   const navigate = useNavigate();
   const baseUrl = useMemo(() => import.meta.env.VITE_API_URL || '', []);
   const signupSuccess = Boolean(location.state?.signupSuccess);
+  const rawReturnTo = location.state?.from;
+  const returnTo =
+    typeof rawReturnTo === 'string' && rawReturnTo.startsWith('/') && !rawReturnTo.startsWith('//')
+      ? rawReturnTo
+      : '/';
 
   const handleChange = useCallback((e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -26,10 +31,10 @@ const Login = () => {
       e.preventDefault();
       const success = await login(formData.email, formData.password);
       if (success) {
-        navigate('/');
+        navigate(returnTo, { replace: true });
       }
     },
-    [formData.email, formData.password, login, navigate]
+    [formData.email, formData.password, login, navigate, returnTo]
   );
 
   return (
