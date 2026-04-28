@@ -10,7 +10,7 @@ const MobileAuthButtons = ({ isAuthenticated, isAdmin, setIsOpen, onLogoutClick 
             <Link
               to="/manage"
               onClick={() => setIsOpen(false)}
-              className="block w-full rounded-md px-3 py-2 text-left text-base font-semibold text-blue-700 transition-all duration-200 hover:bg-blue-50"
+              className="block min-h-11 w-full rounded-md px-3 py-2.5 text-left text-base font-semibold text-blue-700 transition-all duration-200 hover:bg-blue-50"
             >
               관리자 페이지
             </Link>
@@ -18,7 +18,7 @@ const MobileAuthButtons = ({ isAuthenticated, isAdmin, setIsOpen, onLogoutClick 
           <Link
             to="/profile"
             onClick={() => setIsOpen(false)}
-            className="block w-full rounded-md px-3 py-2 text-left text-base font-semibold text-gray-800 transition-all duration-200 hover:bg-gray-100"
+            className="block min-h-11 w-full rounded-md px-3 py-2.5 text-left text-base font-semibold text-gray-800 transition-all duration-200 hover:bg-gray-100"
           >
             프로필
           </Link>
@@ -27,7 +27,7 @@ const MobileAuthButtons = ({ isAuthenticated, isAdmin, setIsOpen, onLogoutClick 
               setIsOpen(false);
               onLogoutClick();
             }}
-            className="block w-full rounded-md px-3 py-2 text-left text-base font-semibold text-gray-800 transition-all duration-200 hover:bg-gray-100"
+            className="block min-h-11 w-full rounded-md px-3 py-2.5 text-left text-base font-semibold text-gray-800 transition-all duration-200 hover:bg-gray-100"
           >
             로그아웃
           </button>
@@ -37,14 +37,14 @@ const MobileAuthButtons = ({ isAuthenticated, isAdmin, setIsOpen, onLogoutClick 
           <Link
             to="/login"
             onClick={() => setIsOpen(false)}
-            className="block w-full rounded-md px-3 py-2 text-left text-base font-semibold text-gray-800 transition-all duration-200 hover:bg-gray-100"
+            className="block min-h-11 w-full rounded-md px-3 py-2.5 text-left text-base font-semibold text-gray-800 transition-all duration-200 hover:bg-gray-100"
           >
             로그인
           </Link>
           <Link
             to="/signup"
             onClick={() => setIsOpen(false)}
-            className="block w-full cursor-pointer rounded-md bg-blue-600 px-3 py-2 text-left text-base font-semibold text-white transition-all duration-200 hover:bg-blue-700"
+            className="block min-h-11 w-full cursor-pointer rounded-md bg-blue-600 px-3 py-2.5 text-left text-base font-semibold text-white transition-all duration-200 hover:bg-blue-700"
           >
             회원가입
           </Link>
