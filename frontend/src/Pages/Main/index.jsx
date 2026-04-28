@@ -5,7 +5,8 @@ import Pagination from './layout/Pagination';
 import Grid from './layout/Grid';
 import { useVote } from "../../hooks/useVote";
 import { useAuth } from "../../hooks/auth-context";
-import { showLoginRequiredAlert, showVoteConfirmDialog } from '../../utils/alertUtils';
+import { useConfirm } from '../../hooks/confirm-context';
+import { showLoginRequiredAlert } from '../../utils/alertUtils';
 
 const SORT_MAP = {
   recent: 'created_at',
@@ -16,6 +17,7 @@ const Main = () => {
   const { loading, fetchTopics, countAllTopics, pinTopic, unpinTopic } = useTopic();
   const { submitVote } = useVote();
   const { isAuthenticated } = useAuth();
+  const { confirm } = useConfirm();
   const [topics, setTopics] = useState([]);
   const [totalTopics, setTotalTopics] = useState(0);
 
@@ -67,8 +69,12 @@ const Main = () => {
   };
 
   const onVote = async (topic_id, index) => {
-    const confirm = await showVoteConfirmDialog();
-    if (!confirm.isConfirmed) return;
+    const confirmed = await confirm({
+      title: '이 선택으로 투표할까요?',
+      description: '투표 후에는 선택을 변경할 수 없습니다.',
+      confirmText: '투표하기',
+    });
+    if (!confirmed) return;
 
     const res = await submitVote({ topicId: topic_id, voteIndex: index });
     if (!res) return;

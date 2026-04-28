@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createBrowserRouter, Link, Navigate, Outlet, RouterProvider, useLocation } from 'react-router-dom';
+import ConfirmProvider from './Components/Common/ConfirmProvider';
 import Footer from './Components/Footer/Footer';
 import Navbar from './Components/Navbar';
 import { AUTH_MESSAGES } from './constants/messages';
@@ -170,7 +171,9 @@ const AuthLayout = () => (
 
 const AppRoot = () => (
   <AuthProvider>
-    <Outlet />
+    <ConfirmProvider>
+      <Outlet />
+    </ConfirmProvider>
   </AuthProvider>
 );
 

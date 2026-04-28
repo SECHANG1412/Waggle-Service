@@ -76,14 +76,3 @@ export const showConfirmDialog = async (
     cancelButtonText,
   });
 };
-
-export const showVoteConfirmDialog = async () => {
-  return await showConfirmDialog(
-    '이 선택으로 투표할까요?',
-    '투표 후에는 선택을 변경할 수 없습니다.',
-    '투표하기',
-    COMMON_MESSAGES.cancel,
-    '#2563EB',
-    '#9CA3AF'
-  );
-};
