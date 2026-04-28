@@ -1,4 +1,3 @@
-import Swal from 'sweetalert2';
 import { AUTH_MESSAGES, COMMON_MESSAGES } from '../constants/messages';
 import { AUTH_FEEDBACK_EVENT, FEEDBACK_TOAST_EVENT } from './toastEvents';
 
@@ -80,25 +79,5 @@ export const showSuccessAlert = (message) => {
     type: 'success',
     title: COMMON_MESSAGES.success,
     message,
-  });
-};
-
-export const showConfirmDialog = async (
-  title,
-  text,
-  confirmButtonText = COMMON_MESSAGES.confirm,
-  cancelButtonText = COMMON_MESSAGES.cancel,
-  confirmButtonColor = '#d33',
-  cancelButtonColor = '#3085d6'
-) => {
-  return await Swal.fire({
-    title,
-    text,
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor,
-    cancelButtonColor,
-    confirmButtonText,
-    cancelButtonText,
   });
 };
