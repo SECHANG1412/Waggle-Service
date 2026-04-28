@@ -6,7 +6,7 @@ import { useAuth } from '../../hooks/auth-context';
 import { useLike } from '../../hooks/useLike';
 import { useTopic } from '../../hooks/useTopic';
 import { useVote } from '../../hooks/useVote';
-import { showConfirmDialog } from '../../utils/alertUtils';
+import { showConfirmDialog, showVoteConfirmDialog } from '../../utils/alertUtils';
 import Chart from './Chart';
 import Comments from './Comments';
 import Header from './layout/Header';
@@ -67,6 +67,9 @@ const SingleTopic = () => {
 
   const onVote = async (index) => {
     if (topic?.has_voted) return;
+    const confirm = await showVoteConfirmDialog();
+    if (!confirm.isConfirmed) return;
+
     const success = await submitVote({ topicId: id, voteIndex: index });
     if (success) await fetchTopic();
   };
