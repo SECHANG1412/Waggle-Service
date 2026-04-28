@@ -51,10 +51,10 @@ const Navbar = () => {
 
   return (
     <nav className="sticky top-0 z-30 border-b border-gray-200 bg-white shadow-sm">
-      <div className="container mx-auto px-4 lg:px-6 py-2">
+      <div className="container mx-auto px-4 py-2 lg:px-6">
         <div className="flex items-center gap-3">
           <Logo />
-          <div className="w-full lg:w-1/2">
+          <div className="hidden w-full lg:block lg:w-1/2">
             <SearchMenu
               searchValue={searchInput}
               onSearchInputChange={(e) => setSearchInput(e.target.value)}
@@ -85,6 +85,14 @@ const Navbar = () => {
           </div>
         </div>
 
+        <div className="mt-3 lg:hidden">
+          <SearchMenu
+            searchValue={searchInput}
+            onSearchInputChange={(e) => setSearchInput(e.target.value)}
+            onSearchSubmit={onSearchSubmit}
+          />
+        </div>
+
         <div className="mt-3">
           <Categories activeCategory={category} onClick={onCategoryClick} />
         </div>
@@ -96,9 +104,6 @@ const Navbar = () => {
         isAuthenticated={isAuthenticated}
         isAdmin={isAdmin}
         onLogoutClick={onLogoutClick}
-        searchValue={searchInput}
-        onSearchInputChange={(e) => setSearchInput(e.target.value)}
-        onSearchSubmit={onSearchSubmit}
       />
     </nav>
   );

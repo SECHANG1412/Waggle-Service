@@ -30,7 +30,7 @@ const DesktopAuthButtons = ({ userName, isAuthenticated, isAdmin, isOpen, setIsO
   }, [isOpen, setIsOpen]);
 
   return (
-    <div className="hidden md:flex items-center">
+    <div className="hidden lg:flex items-center">
       {isAuthenticated ? (
         <div className="relative ml-4" ref={containerRef}>
           <button

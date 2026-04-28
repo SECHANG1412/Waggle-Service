@@ -1,8 +1,8 @@
 const MobileToggleButton = ({ isOpen, toggle }) => (
-  <div className="md:hidden">
+  <div className="lg:hidden">
     <button
       onClick={toggle}
-      className="inline-flex items-center justify-center rounded-md p-2 text-gray-800 hover:bg-gray-100"
+      className="inline-flex h-11 w-11 items-center justify-center rounded-md text-gray-800 hover:bg-gray-100"
       aria-label="모바일 메뉴 열기"
       aria-expanded={isOpen}
     >
