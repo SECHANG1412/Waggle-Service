@@ -1,13 +1,15 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class UserBase(BaseModel):
-    email: str
-    username: str
-    password: str
+    email: EmailStr
+    username: str = Field(..., min_length=2, max_length=50)
+    password: str = Field(..., min_length=6, max_length=128)
+
+    model_config = ConfigDict(str_strip_whitespace=True)
 
 
 class UserCreate(UserBase):
