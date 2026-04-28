@@ -2,7 +2,7 @@
 
 Waggle은 투표와 댓글을 중심으로 의견을 나누는 커뮤니티 서비스입니다.
 
-React/Vite 프론트엔드와 FastAPI 백엔드, MySQL 기반으로 구현했으며, 단순 CRUD 구현을 넘어 성능 개선, 인증 보안 보강, CI/CD 자동화, 관리자 운영 시스템까지 단계적으로 확장했습니다.
+React/Vite 프론트엔드와 FastAPI 백엔드, MySQL 기반으로 구현했으며, 단순 CRUD를 넘어 성능 개선, 인증 보안 보강, CI/CD 자동화, 관리자 운영 시스템, 운영 관점의 UX 개선까지 단계적으로 확장했습니다.
 
 ## 핵심 요약
 
@@ -10,6 +10,7 @@ React/Vite 프론트엔드와 FastAPI 백엔드, MySQL 기반으로 구현했으
 - 쿠키 인증 기반 상태 변경 요청에 CSRF 검증을 적용하고, OAuth callback의 `state` 검증을 강화
 - GitHub Actions 기반 CI/CD를 구성해 PR 검증부터 EC2 배포, migration, frontend build, nginx reload, health check까지 자동화
 - 문의 접수부터 관리자 문의 처리, 토픽/댓글 숨김, 감사 로그 조회까지 이어지는 관리자 운영 시스템 구현
+- 모바일 화면, 토픽 카드 클릭 영역, 투표 트렌드 그래프, Dialog/Toast 피드백 등 실제 사용 흐름 중심의 UI/UX 보강
 - Prometheus, Grafana, CloudWatch, k6를 활용해 부하테스트와 운영 지표를 교차 확인
 
 ## 주요 기능
@@ -20,10 +21,13 @@ React/Vite 프론트엔드와 FastAPI 백엔드, MySQL 기반으로 구현했으
 - Google, Naver, Kakao OAuth 로그인
 - 토픽 생성, 목록 조회, 상세 조회, 삭제
 - 투표 및 투표 결과 조회
+- 투표 트렌드 그래프 조회
 - 댓글, 답글 작성 및 조회
 - 좋아요, 토픽 고정
 - 검색, 카테고리 필터, 정렬
 - 문의 접수
+- 프로필에서 내 문의 내역과 숨김 콘텐츠 상태 확인
+- 모바일 반응형 화면 지원
 
 ### 관리자 운영 기능
 
@@ -56,7 +60,7 @@ React/Vite 프론트엔드와 FastAPI 백엔드, MySQL 기반으로 구현했으
 
 ### 1. `/topics` API 성능 개선
 
-`/topics` 목록 조회는 단순 게시글 목록 조회처럼 보였지만, 실제 응답 생성 과정에서 topic별 댓글 수, 투표 결과, 좋아요 수 등을 반복 조회하고 있었습니다.
+`/topics` 목록 조회는 단순 게시글 목록 조회처럼 보였지만, 실제 응답 생성 과정에서는 topic별 댓글 수, 투표 결과, 좋아요 수 등을 반복 조회하고 있었습니다.
 
 목록 크기가 커질수록 DB 쿼리 수와 응답 생성 비용이 함께 증가하는 구조였기 때문에, topic별 개별 조회를 목록에 포함된 `topic_id` 기준 일괄 집계로 전환했습니다.
 
@@ -139,6 +143,22 @@ EC2 접속 정보와 SSH private key는 GitHub Secrets로 관리해 workflow에 
 
 관리자 조치에는 `before_value`, `after_value`, `reason`을 함께 저장해 누가, 언제, 무엇을, 왜 변경했는지 추적할 수 있도록 했습니다.
 
+### 5. 사용자 경험 및 모바일 UI 보강
+
+기능 구현 이후 실제 사용 흐름에서 어색한 부분을 정리했습니다.
+
+적용한 개선:
+
+- SweetAlert2 제거 후 프로젝트 톤에 맞는 custom Dialog/Toast로 교체
+- 투표/삭제 확인 Dialog의 버튼 순서와 위험 작업 스타일 정리
+- 불필요한 로그인 필요 안내 남발 제거
+- 토픽 카드 전체 클릭 시 상세 페이지로 이동하도록 개선
+- 모바일 Navbar, 토픽 카드, 상세 화면, 댓글/답글, 프로필, 페이지네이션, 관리자 화면 최소 대응
+- 투표 트렌드 그래프의 모바일 레이아웃, 범례, tooltip, 터치 하이라이트 정리
+- 푸터 문구, 링크, 문의 이메일 정리
+
+이 작업은 기능 추가보다 사용자가 실제로 서비스를 사용할 때 겪는 마찰을 줄이는 데 초점을 맞췄습니다.
+
 ## 기술 스택
 
 ### Frontend
@@ -191,6 +211,8 @@ EC2 접속 정보와 SSH private key는 GitHub Secrets로 관리해 workflow에 
   - Prometheus
   - Grafana
   - CloudWatch / CloudWatch Agent
+
+운영 환경에서는 Nginx가 외부 요청을 받고, 내부적으로 FastAPI backend에 프록시합니다. 외부 사용자는 80/443 포트로만 접근하며, backend 8000 포트와 frontend 개발용 3000 포트는 운영 보안그룹에서 외부 공개 대상이 아닙니다.
 
 ## 프로젝트 구조
 
