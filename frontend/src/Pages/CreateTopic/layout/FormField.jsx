@@ -3,7 +3,7 @@ import React from 'react';
 const FormField = ({ label, name, value, onChange, placeholder, required = true, type = 'text' }) => {
   return (
     <div>
-      <label className="block text-sm font-semibold text-slate-700 mb-2">
+      <label className="mb-2 block text-sm font-semibold text-slate-700">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       {type === 'textarea' ? (
@@ -12,7 +12,7 @@ const FormField = ({ label, name, value, onChange, placeholder, required = true,
           value={value}
           onChange={onChange}
           required={required}
-          className="w-full px-3.5 py-3 border border-slate-200 rounded-lg bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-slate-300 focus:outline-none h-24"
+          className="h-24 w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-3 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300"
           placeholder={placeholder}
         />
       ) : (
@@ -22,7 +22,7 @@ const FormField = ({ label, name, value, onChange, placeholder, required = true,
           value={value}
           onChange={onChange}
           required={required}
-          className="w-full px-3.5 py-3 border border-slate-200 rounded-lg bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-slate-300 focus:outline-none"
+          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-3 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300"
           placeholder={placeholder}
         />
       )}
