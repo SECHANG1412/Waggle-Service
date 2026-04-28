@@ -27,10 +27,10 @@ const formatDate = (value) => {
 const StatCard = ({ label, value, to }) => (
   <Link
     to={to}
-    className="rounded-lg border border-slate-200 bg-white p-5 transition hover:border-blue-300 hover:bg-blue-50"
+    className="rounded-lg border border-slate-200 bg-white p-4 transition hover:border-blue-300 hover:bg-blue-50 sm:p-5"
   >
-    <p className="text-sm font-semibold text-slate-600">{label}</p>
-    <p className="mt-3 text-3xl font-bold text-slate-900">{value}</p>
+    <p className="break-words text-sm font-semibold text-slate-600">{label}</p>
+    <p className="mt-2 text-2xl font-bold text-slate-900 sm:mt-3 sm:text-3xl">{value}</p>
   </Link>
 );
 
@@ -85,11 +85,11 @@ const Admin = () => {
   }, [inquiries]);
 
   return (
-    <section className="mx-auto max-w-6xl px-4 py-10">
+    <section className="mx-auto max-w-6xl px-3 py-6 sm:px-4 sm:py-10">
       <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-semibold text-blue-600">관리자</p>
-          <h1 className="mt-3 text-3xl font-bold text-slate-900">운영 대시보드</h1>
+          <h1 className="mt-3 break-words text-2xl font-bold text-slate-900 sm:text-3xl">운영 대시보드</h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
             문의 처리 현황, 숨김 콘텐츠, 최근 관리자 작업 이력을 한눈에 확인합니다.
           </p>
@@ -98,7 +98,7 @@ const Admin = () => {
           type="button"
           onClick={loadDashboard}
           disabled={isLoading}
-          className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100"
+          className="min-h-11 rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100"
         >
           {isLoading ? '불러오는 중' : '새로고침'}
         </button>
@@ -115,7 +115,7 @@ const Admin = () => {
 
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="rounded-lg border border-slate-200 bg-white">
-          <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+          <div className="flex flex-col gap-2 border-b border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-base font-semibold text-slate-900">최근 문의</h2>
             <Link to="/manage/inquiries" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
               전체 보기
@@ -131,8 +131,8 @@ const Admin = () => {
               {recentInquiries.map((inquiry) => (
                 <li key={inquiry.inquiry_id} className="px-4 py-4">
                   <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-900">{inquiry.title}</p>
+                    <div className="min-w-0">
+                      <p className="break-words text-sm font-semibold text-slate-900">{inquiry.title}</p>
                       <p className="mt-1 text-xs text-slate-500">
                         {inquiry.name} · {formatDate(inquiry.created_at)}
                       </p>
@@ -148,7 +148,7 @@ const Admin = () => {
         </section>
 
         <section className="rounded-lg border border-slate-200 bg-white">
-          <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+          <div className="flex flex-col gap-2 border-b border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-base font-semibold text-slate-900">최근 관리자 작업</h2>
             <Link to="/manage/logs" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
               전체 보기
@@ -171,7 +171,7 @@ const Admin = () => {
                       {log.target_type} #{log.target_id}
                     </span>
                   </div>
-                  <p className="mt-2 text-sm leading-6 text-slate-700">{log.reason}</p>
+                  <p className="mt-2 break-words text-sm leading-6 text-slate-700">{log.reason}</p>
                   <p className="mt-1 text-xs text-slate-500">
                     관리자 ID {log.admin_user_id} · {formatDate(log.created_at)}
                   </p>
@@ -182,30 +182,30 @@ const Admin = () => {
         </section>
       </div>
 
-      <section className="mt-5 rounded-lg border border-slate-200 bg-white p-5">
+      <section className="mt-5 rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
         <h2 className="text-base font-semibold text-slate-900">바로가기</h2>
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
             to="/manage/inquiries"
-            className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            className="min-h-11 rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
           >
             문의 관리
           </Link>
           <Link
             to="/manage/topics"
-            className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            className="min-h-11 rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
           >
             토픽 관리
           </Link>
           <Link
             to="/manage/comments"
-            className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            className="min-h-11 rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
           >
             댓글 관리
           </Link>
           <Link
             to="/manage/logs"
-            className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            className="min-h-11 rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
           >
             감사 로그
           </Link>

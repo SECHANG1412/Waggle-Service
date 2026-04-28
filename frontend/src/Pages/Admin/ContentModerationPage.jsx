@@ -110,13 +110,13 @@ const ContentModerationPage = ({
   const messageColor = message?.type === 'success' ? 'text-emerald-700' : 'text-red-600';
 
   return (
-    <section className="mx-auto max-w-6xl px-4 py-10">
+    <section className="mx-auto max-w-6xl px-3 py-6 sm:px-4 sm:py-10">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <Link to="/manage" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
             관리자 홈
           </Link>
-          <h1 className="mt-3 text-3xl font-bold text-slate-900">{title}</h1>
+          <h1 className="mt-3 break-words text-2xl font-bold text-slate-900 sm:text-3xl">{title}</h1>
           <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
         </div>
 
@@ -125,7 +125,7 @@ const ContentModerationPage = ({
           <select
             value={filter}
             onChange={(event) => setFilter(event.target.value)}
-            className="mt-2 block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+            className="mt-2 block min-h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
           >
             {FILTER_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -150,16 +150,16 @@ const ContentModerationPage = ({
               const isActionLoading = actionItemId === itemId;
               const reason = reasonById[itemId] || '';
               return (
-                <li key={itemId} className="p-4">
+                <li key={itemId} className="p-3 sm:p-4">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="min-w-0 flex-1">
                       <div className="mb-2 flex flex-wrap items-center gap-2">
-                        <h2 className="text-base font-semibold text-slate-900">
+                        <h2 className="break-words text-base font-semibold text-slate-900">
                           {getItemTitle(item)}
                         </h2>
                         <VisibilityBadge isHidden={item.is_hidden} />
                       </div>
-                      <p className="line-clamp-3 text-sm leading-6 text-slate-600">
+                      <p className="line-clamp-3 break-words text-sm leading-6 text-slate-600">
                         {getItemDescription(item)}
                       </p>
                       <dl className="mt-3 grid gap-1 text-xs text-slate-500 sm:grid-cols-2">
@@ -195,7 +195,7 @@ const ContentModerationPage = ({
                         type="button"
                         disabled={isActionLoading || !reason.trim()}
                         onClick={() => handleModeration(item, !item.is_hidden)}
-                        className={`mt-3 w-full rounded-md px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-300 ${
+                        className={`mt-3 min-h-11 w-full rounded-md px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-300 ${
                           item.is_hidden
                             ? 'bg-blue-600 hover:bg-blue-700'
                             : 'bg-red-600 hover:bg-red-700'
