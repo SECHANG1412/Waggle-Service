@@ -2,10 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AUTH_MESSAGES } from '../constants/messages';
 import api from '../utils/api';
-import { showLoginRequiredAlert } from '../utils/alertUtils';
 import { AuthContext } from './auth-context';
-
-const EXPIRED_TOKEN_DETAILS = new Set(['access_token_expired', 'refresh_token_expired']);
 
 export const AuthProvider = ({ children }) => {
   const [error, setError] = useState('');
@@ -16,26 +13,21 @@ export const AuthProvider = ({ children }) => {
 
   const verifyJWT = useCallback(async () => {
     try {
-      const response = await api.get('/users/me');
+      const response = await api.get('/users/me', {
+        skipAuthRefresh: true,
+        suppressAuthAlert: true,
+      });
       setIsAuthenticated(true);
       setUser(response.data);
       setIsAuthLoading(false);
       return true;
-    } catch (error) {
-      if (error.response?.status === 401) {
-        const detail = error.response.data?.detail;
-
-        if (EXPIRED_TOKEN_DETAILS.has(detail)) {
-          await showLoginRequiredAlert(AUTH_MESSAGES.sessionExpired);
-          navigate('/login');
-        }
-      }
+    } catch {
       setIsAuthenticated(false);
       setUser(null);
       setIsAuthLoading(false);
       return false;
     }
-  }, [navigate]);
+  }, []);
 
   const login = async (email, password) => {
     setError('');

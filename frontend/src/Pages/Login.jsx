@@ -10,6 +10,7 @@ const Login = () => {
   const navigate = useNavigate();
   const baseUrl = useMemo(() => import.meta.env.VITE_API_URL || '', []);
   const signupSuccess = Boolean(location.state?.signupSuccess);
+  const authRequired = Boolean(location.state?.authRequired);
   const rawReturnTo = location.state?.from;
   const returnTo =
     typeof rawReturnTo === 'string' && rawReturnTo.startsWith('/') && !rawReturnTo.startsWith('//')
@@ -21,10 +22,10 @@ const Login = () => {
   }, []);
 
   useEffect(() => {
-    if (signupSuccess) {
+    if (signupSuccess || authRequired) {
       window.history.replaceState({}, document.title);
     }
-  }, [signupSuccess]);
+  }, [authRequired, signupSuccess]);
 
   const handleSubmit = useCallback(
     async (e) => {
@@ -84,6 +85,12 @@ const Login = () => {
             {signupSuccess && (
               <p className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
                 회원가입이 완료되었습니다. 로그인해 주세요.
+              </p>
+            )}
+
+            {authRequired && (
+              <p className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700">
+                이 페이지는 로그인 후 사용할 수 있어요.
               </p>
             )}
 

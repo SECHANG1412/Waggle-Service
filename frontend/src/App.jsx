@@ -5,7 +5,6 @@ import ConfirmProvider from './Components/Common/ConfirmProvider';
 import ToastProvider from './Components/Common/ToastProvider';
 import Footer from './Components/Footer/Footer';
 import Navbar from './Components/Navbar';
-import { AUTH_MESSAGES } from './constants/messages';
 import { useAuth } from './hooks/auth-context';
 import { AuthProvider } from './hooks/useAuth';
 import Admin from './Pages/Admin';
@@ -21,17 +20,10 @@ import Profile from './Pages/Profile';
 import Signup from './Pages/Signup';
 import SingleTopic from './Pages/SingleTopic';
 import api from './utils/api';
-import { showLoginRequiredAlert } from './utils/alertUtils';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isAuthLoading } = useAuth();
   const location = useLocation();
-
-  useEffect(() => {
-    if (!isAuthLoading && !isAuthenticated) {
-      showLoginRequiredAlert(AUTH_MESSAGES.loginRequiredAfterLogin);
-    }
-  }, [isAuthenticated, isAuthLoading]);
 
   if (isAuthLoading) {
     return (
@@ -42,7 +34,16 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />;
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{
+          from: `${location.pathname}${location.search}`,
+          authRequired: true,
+        }}
+      />
+    );
   }
   return children;
 };
@@ -107,7 +108,16 @@ const AdminRoute = () => {
   }
 
   if (status === 'login-required') {
-    return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />;
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{
+          from: `${location.pathname}${location.search}`,
+          authRequired: true,
+        }}
+      />
+    );
   }
 
   if (status === 'forbidden') {
