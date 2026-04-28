@@ -23,7 +23,7 @@ const Signup = () => {
       e.preventDefault();
       const success = await signup(formData);
       if (success) {
-        navigate('/login');
+        navigate('/login', { state: { signupSuccess: true } });
       }
     },
     [formData, signup, navigate]

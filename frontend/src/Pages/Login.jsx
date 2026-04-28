@@ -1,13 +1,15 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/auth-context';
 import SocialAuthButtons from '../Components/Auth/SocialAuthButtons';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const { error, login } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
   const baseUrl = useMemo(() => import.meta.env.VITE_API_URL || '', []);
+  const signupSuccess = Boolean(location.state?.signupSuccess);
 
   const handleChange = useCallback((e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -67,6 +69,12 @@ const Login = () => {
                 className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+
+            {signupSuccess && (
+              <p className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+                회원가입이 완료되었습니다. 로그인해 주세요.
+              </p>
+            )}
 
             {error && <p className="text-sm text-red-600">{error}</p>}
 
