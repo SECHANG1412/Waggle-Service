@@ -138,13 +138,13 @@ const AdminInquiries = () => {
   const messageColor = message?.type === 'success' ? 'text-emerald-700' : 'text-red-600';
 
   return (
-    <section className="mx-auto max-w-6xl px-4 py-10">
+    <section className="mx-auto max-w-6xl px-3 py-6 sm:px-4 sm:py-10">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <Link to="/manage" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
             관리자 홈
           </Link>
-          <h1 className="mt-3 text-3xl font-bold text-slate-900">문의 관리</h1>
+          <h1 className="mt-3 break-words text-2xl font-bold text-slate-900 sm:text-3xl">문의 관리</h1>
           <p className="mt-2 text-sm leading-6 text-slate-600">
             접수된 문의를 확인하고 처리 상태와 변경 사유를 기록합니다.
           </p>
@@ -155,7 +155,7 @@ const AdminInquiries = () => {
           <select
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value)}
-            className="mt-2 block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+            className="mt-2 block min-h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
           >
             {STATUS_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -192,8 +192,8 @@ const AdminInquiries = () => {
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-slate-900">{inquiry.title}</p>
+                        <div className="min-w-0">
+                          <p className="break-words text-sm font-semibold text-slate-900">{inquiry.title}</p>
                           <p className="mt-1 text-xs text-slate-500">
                             {inquiry.name} · {inquiry.email}
                           </p>
@@ -223,8 +223,8 @@ const AdminInquiries = () => {
           ) : (
             <div className="space-y-5 p-4">
               <div>
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <h3 className="text-lg font-bold text-slate-900">{selectedInquiry.title}</h3>
+                <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <h3 className="break-words text-lg font-bold text-slate-900">{selectedInquiry.title}</h3>
                   <StatusBadge status={selectedInquiry.status} />
                 </div>
                 <dl className="grid gap-2 text-sm text-slate-600">
@@ -247,7 +247,7 @@ const AdminInquiries = () => {
                 </dl>
               </div>
 
-              <div className="rounded-md bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+              <div className="break-words rounded-md bg-slate-50 p-4 text-sm leading-6 text-slate-700">
                 {selectedInquiry.content}
               </div>
 
@@ -257,7 +257,7 @@ const AdminInquiries = () => {
                   <select
                     value={nextStatus}
                     onChange={(event) => setNextStatus(event.target.value)}
-                    className="mt-2 block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+                    className="mt-2 block min-h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
                   >
                     {STATUS_OPTIONS.filter((option) => option.value !== 'all').map((option) => (
                       <option key={option.value} value={option.value}>
@@ -281,7 +281,7 @@ const AdminInquiries = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting || !reason.trim()}
-                  className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  className="min-h-11 w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
                 >
                   {isSubmitting ? '변경 중' : '상태 변경'}
                 </button>

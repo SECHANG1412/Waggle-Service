@@ -35,10 +35,10 @@ const formatDate = (value) => {
 };
 
 const JsonPreview = ({ label, value }) => (
-  <div>
+  <div className="min-w-0">
     <dt className="mb-1 text-xs font-semibold text-slate-700">{label}</dt>
     <dd>
-      <pre className="max-h-40 overflow-auto rounded-md bg-slate-50 p-3 text-xs leading-5 text-slate-700">
+      <pre className="max-h-40 max-w-full overflow-auto rounded-md bg-slate-50 p-3 text-xs leading-5 text-slate-700">
         {JSON.stringify(value, null, 2)}
       </pre>
     </dd>
@@ -91,25 +91,25 @@ const AdminLogs = () => {
   };
 
   return (
-    <section className="mx-auto max-w-6xl px-4 py-10">
+    <section className="mx-auto max-w-6xl px-3 py-6 sm:px-4 sm:py-10">
       <div className="mb-6">
         <Link to="/manage" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
           관리자 홈
         </Link>
-        <h1 className="mt-3 text-3xl font-bold text-slate-900">감사 로그</h1>
+        <h1 className="mt-3 break-words text-2xl font-bold text-slate-900 sm:text-3xl">감사 로그</h1>
         <p className="mt-2 text-sm leading-6 text-slate-600">
           관리자 조치 이력과 사유, 변경 전후 값을 확인합니다.
         </p>
       </div>
 
       <section className="mb-5 rounded-lg border border-slate-200 bg-white p-4">
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <label className="text-sm font-semibold text-slate-700">
             작업 유형
             <select
               value={filters.action}
               onChange={(event) => updateFilter('action', event.target.value)}
-              className="mt-2 block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+              className="mt-2 block min-h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
             >
               {ACTION_OPTIONS.map((option) => (
                 <option key={option.value || 'all'} value={option.value}>
@@ -124,7 +124,7 @@ const AdminLogs = () => {
             <select
               value={filters.targetType}
               onChange={(event) => updateFilter('targetType', event.target.value)}
-              className="mt-2 block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+              className="mt-2 block min-h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
             >
               {TARGET_TYPE_OPTIONS.map((option) => (
                 <option key={option.value || 'all'} value={option.value}>
@@ -141,7 +141,7 @@ const AdminLogs = () => {
               onChange={(event) => updateFilter('adminUserId', event.target.value)}
               inputMode="numeric"
               placeholder="예: 1"
-              className="mt-2 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+              className="mt-2 block min-h-11 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
             />
           </label>
 
@@ -149,7 +149,7 @@ const AdminLogs = () => {
             <button
               type="button"
               onClick={resetFilters}
-              className="w-full rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              className="min-h-11 w-full rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
             >
               필터 초기화
             </button>
@@ -167,7 +167,7 @@ const AdminLogs = () => {
         ) : (
           <ul className="divide-y divide-slate-100">
             {logs.map((log) => (
-              <li key={log.log_id} className="p-4">
+              <li key={log.log_id} className="p-3 sm:p-4">
                 <div className="mb-4 flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -188,7 +188,7 @@ const AdminLogs = () => {
                 <dl className="grid gap-4 lg:grid-cols-3">
                   <div>
                     <dt className="mb-1 text-xs font-semibold text-slate-700">사유</dt>
-                    <dd className="rounded-md bg-slate-50 p-3 text-sm leading-6 text-slate-700">
+                    <dd className="break-words rounded-md bg-slate-50 p-3 text-sm leading-6 text-slate-700">
                       {log.reason}
                     </dd>
                   </div>
