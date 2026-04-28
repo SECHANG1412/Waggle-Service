@@ -142,6 +142,22 @@ const NavigateButton = ({ to, children }) => (
   </Link>
 );
 
+const NotFound = () => (
+  <div className="mx-auto flex min-h-[50vh] max-w-2xl flex-col justify-center px-4 py-16 text-center">
+    <p className="text-sm font-semibold text-blue-600">404</p>
+    <h1 className="mt-3 text-2xl font-bold text-slate-900">페이지를 찾을 수 없습니다.</h1>
+    <p className="mt-3 text-sm leading-6 text-slate-600">
+      입력한 주소가 잘못되었거나 페이지가 이동되었을 수 있습니다.
+    </p>
+    <Link
+      to="/"
+      className="mx-auto mt-6 inline-flex rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+    >
+      홈으로 돌아가기
+    </Link>
+  </div>
+);
+
 const AuthLayout = () => (
   <div className="flex min-h-screen items-center justify-center bg-[#f2f4f7] px-4 py-10">
     <div className="w-full max-w-5xl">
@@ -189,6 +205,7 @@ const router = createBrowserRouter([
             ],
           },
           { path: 'topic/:id', element: <SingleTopic /> },
+          { path: '*', element: <NotFound /> },
         ],
       },
       {
