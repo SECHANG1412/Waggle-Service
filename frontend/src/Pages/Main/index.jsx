@@ -5,7 +5,7 @@ import Pagination from './layout/Pagination';
 import Grid from './layout/Grid';
 import { useVote } from "../../hooks/useVote";
 import { useAuth } from "../../hooks/auth-context";
-import { showLoginRequiredAlert } from '../../utils/alertUtils';
+import { showLoginRequiredAlert, showVoteConfirmDialog } from '../../utils/alertUtils';
 
 const SORT_MAP = {
   recent: 'created_at',
@@ -67,6 +67,9 @@ const Main = () => {
   };
 
   const onVote = async (topic_id, index) => {
+    const confirm = await showVoteConfirmDialog();
+    if (!confirm.isConfirmed) return;
+
     const res = await submitVote({ topicId: topic_id, voteIndex: index });
     if (!res) return;
 
