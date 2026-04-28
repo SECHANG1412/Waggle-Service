@@ -68,9 +68,10 @@ const ConfirmProvider = ({ children }) => {
     },
   ];
   const orderedButtons =
-    options.actionOrder === 'confirm-first'
+    options.actionOrder === 'confirm-first' || options.variant === 'danger'
       ? [actionButtons[1], actionButtons[0]]
       : actionButtons;
+  const showIcon = options.variant === 'danger';
 
   return (
     <ConfirmContext.Provider value={{ confirm }}>
@@ -80,11 +81,13 @@ const ConfirmProvider = ({ children }) => {
           <Dialog.Overlay className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-[1px]" />
           <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border border-slate-200 bg-white p-5 shadow-xl focus:outline-none sm:p-6">
             <div className="flex gap-4">
-              <span
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold ring-4 ${currentVariant.icon}`}
-              >
-                {options.variant === 'danger' ? '!' : '?'}
-              </span>
+              {showIcon && (
+                <span
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold ring-4 ${currentVariant.icon}`}
+                >
+                  !
+                </span>
+              )}
               <div className="min-w-0">
                 <Dialog.Title className="text-lg font-semibold text-slate-900">
                   {options.title}
