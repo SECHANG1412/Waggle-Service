@@ -19,10 +19,10 @@ const OptionButton = ({ option, index, topic, onVote }) => {
         if (!topic.has_voted) onVote(topic.topic_id, index);
       }}
       style={styles}
-      className="group w-full flex justify-between items-center px-3 py-2 rounded-lg text-sm font-semibold transition cursor-pointer disabled:cursor-not-allowed hover:-translate-y-0.5 hover:shadow-md hover:border-transparent hover:ring-2 hover:ring-blue-100 hover:bg-opacity-90"
+      className="group flex min-h-11 w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-3 text-left text-sm font-semibold transition hover:-translate-y-0.5 hover:border-transparent hover:bg-opacity-90 hover:shadow-md hover:ring-2 hover:ring-blue-100 disabled:cursor-not-allowed"
     >
-      <span className="ml-1">{option}</span>
-      <span className="px-2 py-0.5 rounded-full text-xs bg-white/80 text-gray-700 border border-white/60">
+      <span className="min-w-0 flex-1 break-words leading-snug">{option}</span>
+      <span className="shrink-0 rounded-full border border-white/60 bg-white/80 px-2 py-0.5 text-xs text-gray-700">
         {topic.vote_results[index]}표
       </span>
     </button>
