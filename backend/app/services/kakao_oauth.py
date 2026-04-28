@@ -1,4 +1,3 @@
-import secrets
 from typing import Any, Dict
 from urllib.parse import urlencode
 
@@ -6,10 +5,9 @@ import httpx
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.jwt_handler import get_password_hash
 from app.core.settings import settings
 from app.db.crud import UserCrud
-from app.db.schemas.users import UserCreate
+from app.services.oauth_user import ensure_oauth_user
 
 
 KAKAO_AUTH_URL = "https://kauth.kakao.com/oauth/authorize"
@@ -82,34 +80,19 @@ async def ensure_user_from_kakao(
     if provider_id is None:
         raise KakaoOAuthError(status_code=400, detail="provider_id_required")
 
-    # Fall back to a provider-based placeholder email when Kakao does not return one.
-    effective_email = email or f"kakao_{provider_id}@placeholder.local"
+    if not email:
+        legacy_email = f"kakao_{provider_id}@placeholder.local"
+        existing = await UserCrud.get_by_email(db, legacy_email)
+        if existing:
+            return existing
 
-    existing = await UserCrud.get_by_email(db, effective_email)
-    if existing:
-        return existing
+    effective_email = email or f"kakao_{provider_id}@oauth.kakao.waggle.kr"
 
-    base_username = (nickname or str(provider_id)).strip() or "kakao_user"
-    base_username = base_username[:20]
-    candidate = base_username
-    suffix = 1
-
-    while await UserCrud.get_by_username(db, candidate):
-        candidate = f"{base_username}{suffix}"
-        suffix += 1
-
-    random_password = secrets.token_urlsafe(16)
-    hashed_password = await get_password_hash(random_password)
-
-    user_create = UserCreate(
-        email=effective_email, username=candidate, password=hashed_password
+    return await ensure_oauth_user(
+        db,
+        email=effective_email,
+        username_source=nickname or str(provider_id),
+        fallback_username="kakao_user",
+        create_error=KakaoOAuthError,
+        create_error_detail="Failed to create Kakao user",
     )
-
-    try:
-        db_user = await UserCrud.create(db, user_create)
-        await db.commit()
-        await db.refresh(db_user)
-        return db_user
-    except Exception:
-        await db.rollback()
-        raise KakaoOAuthError(status_code=500, detail="Failed to create Kakao user")
