@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { BsBookmark, BsBookmarkFill } from 'react-icons/bs';
 import ProgressBar from './ProgressBar';
 import OptionButton from './OptionButton';
@@ -7,6 +7,7 @@ import VoteInfo from './VoteInfo';
 import { formatDateTime } from '../../../utils/date';
 
 const TopicCard = ({ topic, onVote, onPinToggle }) => {
+  const navigate = useNavigate();
   const formattedDate = useMemo(() => {
     return formatDateTime(topic.created_at, 'ko-KR', {
       year: 'numeric',
@@ -20,8 +21,36 @@ const TopicCard = ({ topic, onVote, onPinToggle }) => {
   const commentCount = topic.comment_count ?? topic.comments_count ?? 0;
   const pinLabel = topic.is_pinned ? '토픽 고정 해제' : '토픽 고정';
 
+  const detailPath = `/topic/${topic.topic_id}`;
+
+  const isInteractiveElement = (target) =>
+    Boolean(target.closest('a, button, input, select, textarea, [role="button"]'));
+
+  const openDetail = () => {
+    navigate(detailPath);
+  };
+
+  const onCardClick = (event) => {
+    if (isInteractiveElement(event.target)) return;
+    openDetail();
+  };
+
+  const onCardKeyDown = (event) => {
+    if (isInteractiveElement(event.target)) return;
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    openDetail();
+  };
+
   return (
-    <article className="relative flex h-full flex-col rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-md sm:p-4">
+    <article
+      className="relative flex h-full cursor-pointer flex-col rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300 sm:p-4"
+      role="link"
+      tabIndex={0}
+      aria-label={`${topic.title} detail`}
+      onClick={onCardClick}
+      onKeyDown={onCardKeyDown}
+    >
         <div className="flex items-start justify-between gap-2 sm:gap-3">
           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 text-[11px] text-slate-600">
             {topic.is_pinned && (
@@ -54,7 +83,7 @@ const TopicCard = ({ topic, onVote, onPinToggle }) => {
 
         <h3 className="mt-2 text-lg font-semibold leading-tight tracking-tight sm:text-xl">
           <Link
-            to={`/topic/${topic.topic_id}`}
+            to={detailPath}
             className="block line-clamp-2 text-slate-800 transition hover:text-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
             aria-label={`${topic.title} 상세 보기`}
           >

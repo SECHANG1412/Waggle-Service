@@ -15,7 +15,8 @@ const OptionButton = ({ option, index, topic, onVote }) => {
   return (
     <button
       disabled={topic.has_voted}
-      onClick={() => {
+      onClick={(event) => {
+        event.stopPropagation();
         if (!topic.has_voted) onVote(topic.topic_id, index);
       }}
       style={styles}
