@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/auth-context';
 import api from '../../utils/api';
 
@@ -10,6 +10,7 @@ const initialForm = {
 
 const Contact = () => {
   const { isAuthenticated, isAuthLoading, user } = useAuth();
+  const location = useLocation();
   const [formData, setFormData] = useState(initialForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
@@ -50,7 +51,7 @@ const Contact = () => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />;
   }
 
   const isSuccess = message?.type === 'success';

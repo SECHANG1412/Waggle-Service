@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { createBrowserRouter, Link, Navigate, Outlet, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, Link, Navigate, Outlet, RouterProvider, useLocation } from 'react-router-dom';
 import Footer from './Components/Footer/Footer';
 import Navbar from './Components/Navbar';
 import { AUTH_MESSAGES } from './constants/messages';
@@ -22,6 +22,7 @@ import { showLoginRequiredAlert } from './utils/alertUtils';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isAuthLoading } = useAuth();
+  const location = useLocation();
 
   useEffect(() => {
     if (!isAuthLoading && !isAuthenticated) {
@@ -38,7 +39,7 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />;
   }
   return children;
 };
@@ -55,6 +56,7 @@ const RootLayout = () => (
 
 const AdminRoute = () => {
   const { isAuthenticated, isAuthLoading } = useAuth();
+  const location = useLocation();
   const [status, setStatus] = useState('checking');
 
   useEffect(() => {
@@ -102,7 +104,7 @@ const AdminRoute = () => {
   }
 
   if (status === 'login-required') {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />;
   }
 
   if (status === 'forbidden') {
