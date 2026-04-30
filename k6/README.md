@@ -41,3 +41,15 @@ Most scripts target `http://host.docker.internal:8000`, so run them while the ba
 - Keep the same script, target environment, and seed data when comparing before/after performance numbers.
 - Treat these scripts as diagnostic tools, not as complete production traffic simulations.
 - Use k6 summary output together with server-side metrics such as CloudWatch, Prometheus, or Grafana when diagnosing bottlenecks.
+
+## Related Backend Baseline
+
+For read API bottleneck checks, use these k6 scripts together with the backend baseline files:
+
+- `backend/perf_baseline.md`
+- `backend/perf_baseline.txt`
+- `backend/perf_baseline_notes.md`
+
+The backend baseline captures query count, query time, response time, and EXPLAIN output for selected read APIs. k6 is used to verify how those read paths behave under fixed load levels.
+
+Use the same target environment and script when comparing before/after k6 results, and use the backend baseline as supporting evidence for query-level changes.
