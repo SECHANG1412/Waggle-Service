@@ -1,16 +1,41 @@
-# React + Vite
+# Waggle Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React와 Vite 기반으로 구현한 Waggle 프론트엔드입니다.
 
-Currently, two official plugins are available:
+## 주요 역할
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 토픽 목록, 토픽 상세, 투표, 댓글/답글 화면 제공
+- 일반 로그인 및 OAuth 로그인 화면 제공
+- CSRF 토큰을 읽어 상태 변경 요청에 `X-CSRF-Token` 헤더 자동 첨부
+- 관리자 계정 전용 `/manage` 화면 제공
+- 문의 작성, 프로필 문의 내역, 숨김 콘텐츠 상태 확인 화면 제공
+- 모바일 Navbar, 토픽 카드, 댓글, 프로필, 관리자 화면 반응형 대응
 
-## React Compiler
+## 기술 스택
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19
+- Vite 7
+- React Router
+- Axios
+- Tailwind CSS
+- Recharts
+- Radix UI Dialog
+- ESLint
 
-## Expanding the ESLint configuration
+## 실행 방법
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+npm run dev
+```
+
+개발 서버 기본 주소는 `http://localhost:3000`입니다.
+
+## 검증
+
+```bash
+npm run lint
+npm run build
+```
+
+CI에서도 위 검사를 실행해 merge 전에 프론트엔드 정적 검사와 production build 가능 여부를 확인합니다.
