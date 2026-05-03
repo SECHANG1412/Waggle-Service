@@ -55,3 +55,10 @@
 - `/manage`: 관리자 운영 화면
 - Prometheus/Grafana: API metrics 확인
 - CloudWatch: EC2 CPU/Memory 확인
+
+## 관련 운영 문서
+
+- [운영 문서 인덱스](README.md)
+- [배포 마무리 체크리스트](deployment-closeout-checklist.md)
+- [모니터링 체크리스트](monitoring-checklist.md)
+- [문서 관리 기준](document-maintenance.md)
