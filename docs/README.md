@@ -12,6 +12,13 @@ Waggle 운영, 배포, 모니터링 관련 문서를 한곳에서 찾기 위한 
 - [Deployment Closeout Checklist](deployment-closeout-checklist.md)
   - main merge 이후 배포가 끝났을 때 확인할 GitHub Actions, health check, runtime 항목을 정리합니다.
 
+## Admin Operations
+
+- [Admin Account Setup Guide](admin-account-setup.md)
+  - 기존 사용자 계정에 관리자 권한을 부여하는 방법과 접근 권한 확인 기준을 정리합니다.
+- [Admin Operations Guide](admin-operations-guide.md)
+  - 문의 처리, 토픽/댓글 숨김, 감사 로그 확인 등 관리자 운영 흐름을 정리합니다.
+
 ## Monitoring
 
 - [Monitoring Checklist](monitoring-checklist.md)
