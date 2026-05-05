@@ -49,7 +49,9 @@ For read API bottleneck checks, use these k6 scripts together with the backend b
 - `backend/perf_baseline.md`
 - `backend/perf_baseline.txt`
 - `backend/perf_baseline_notes.md`
+- `docs/performance-verification-guide.md`
 
 The backend baseline captures query count, query time, response time, and EXPLAIN output for selected read APIs. k6 is used to verify how those read paths behave under fixed load levels.
 
 Use the same target environment and script when comparing before/after k6 results, and use the backend baseline as supporting evidence for query-level changes.
+Use the performance verification guide when collecting k6, Grafana, and CloudWatch evidence for PRs or portfolio notes.
