@@ -264,5 +264,6 @@ k6 run <script-name>.js
 - Frontend 문서: `frontend/README.md`
 - Backend 테스트 문서: `backend/tests/README.md`
 - k6 부하 테스트 문서: `k6/README.md`
+- 성능 검증 가이드: `docs/performance-verification-guide.md`
 - 성능 기준 메모: `backend/perf_baseline_notes.md`
 - 아키텍처 메모: `docs/architecture-overview.md`

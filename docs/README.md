@@ -28,6 +28,8 @@ Waggle 운영, 배포, 모니터링 관련 문서를 한곳에서 찾기 위한 
 
 - [Monitoring Checklist](monitoring-checklist.md)
   - k6, Prometheus/Grafana, CloudWatch를 함께 볼 때 확인할 지표와 해석 기준을 정리합니다.
+- [Performance Verification Guide](performance-verification-guide.md)
+  - read API 성능 검증 흐름, 성능 캡처 기준, 결과 표현 시 주의할 점을 정리합니다.
 
 ## Documentation
 
