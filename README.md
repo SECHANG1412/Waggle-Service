@@ -258,6 +258,7 @@ k6 run <script-name>.js
 ## 관련 문서
 
 - 운영 문서 인덱스: `docs/README.md`
+- 인증 보안 흐름 문서: `docs/auth-security-flow.md`
 - 관리자 계정 설정 가이드: `docs/admin-account-setup.md`
 - 관리자 운영 가이드: `docs/admin-operations-guide.md`
 - Frontend 문서: `frontend/README.md`

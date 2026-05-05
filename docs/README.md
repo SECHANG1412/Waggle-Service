@@ -7,6 +7,11 @@ Waggle 운영, 배포, 모니터링 관련 문서를 한곳에서 찾기 위한 
 - [Architecture Overview](architecture-overview.md)
   - 요청 흐름, 애플리케이션 구성, 모니터링 구성, CI/CD 흐름을 정리합니다.
 
+## Security
+
+- [Auth Security Flow](auth-security-flow.md)
+  - 쿠키 인증 기반 CSRF 보호, OAuth state 검증, refresh 책임 분리 흐름을 정리합니다.
+
 ## Deployment
 
 - [Deployment Closeout Checklist](deployment-closeout-checklist.md)
