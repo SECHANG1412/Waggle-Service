@@ -5,8 +5,8 @@
 ## Admin Permission Model
 
 - 일반 사용자는 `users.is_admin = false` 상태로 생성됩니다.
-- 관리자 사용자는 `users.is_admin = true` 상태여야 `/manage` 화면과 `/manage-api` 관리자 API를 사용할 수 있습니다.
-- 관리자 권한은 프론트 화면 노출 여부만으로 판단하지 않고, 백엔드 API에서 `is_admin` 값을 기준으로 다시 검증합니다.
+- 관리자 사용자는 `users.is_admin = true` 상태여야 `/manage` 화면과 관리자 API를 사용할 수 있습니다.
+- 관리자 권한은 프론트엔드 화면 노출 여부만으로 판단하지 않고, 백엔드 API에서도 `is_admin` 값을 기준으로 다시 검증합니다.
 
 ## Access Rules
 
@@ -30,7 +30,7 @@ cd backend
 python scripts/promote_admin.py admin@example.com
 ```
 
-스크립트는 대상 이메일에 해당하는 사용자를 찾은 뒤 `is_admin` 값을 `true`로 변경합니다.
+스크립트는 입력한 이메일에 해당하는 사용자를 찾아 `is_admin` 값을 `true`로 변경합니다.
 
 ## Manual Database Check
 
