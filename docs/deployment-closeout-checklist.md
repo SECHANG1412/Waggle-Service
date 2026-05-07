@@ -8,7 +8,7 @@
 - CD workflow가 main merge 이후 정상 실행되었는지 확인합니다.
 - CD 로그에서 다음 단계가 순서대로 완료되었는지 확인합니다.
   - EC2 SSH 접속
-  - 최신 코드 pull
+  - 최신 코드 pull 또는 fast-forward update
   - backend rebuild
   - Alembic migration
   - frontend build
@@ -21,6 +21,7 @@
 - `/health`가 정상 응답하는지 확인합니다.
 - `/health/db`가 DB 연결 성공을 반환하는지 확인합니다.
 - `/topics?page=1&limit=10`이 정상 응답하는지 확인합니다.
+- health check 실패 시에는 실패한 endpoint를 기준으로 애플리케이션, DB, 핵심 API 중 어느 구간의 문제인지 먼저 구분합니다.
 
 ## Runtime
 
@@ -33,3 +34,4 @@
 - 문서나 편집기 설정만 변경된 경우 CD가 실행되지 않는 것이 정상입니다.
 - 배포 실패 시에는 GitHub Actions 로그에서 실패 단계부터 확인합니다.
 - migration 실패가 발생하면 backend 컨테이너 로그와 Alembic revision 상태를 함께 확인합니다.
+- Nginx reload 실패가 발생하면 `nginx -t` 결과와 reverse proxy 설정을 먼저 확인합니다.
