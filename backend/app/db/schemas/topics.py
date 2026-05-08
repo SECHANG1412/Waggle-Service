@@ -27,6 +27,7 @@ class TopicInDB(TopicBase):
 
 
 class TopicRead(TopicInDB):
+    author_name: str | None = None
     has_voted: bool = False
     user_vote_index: int | None = None
     vote_results: list[int] = Field(default_factory=list)

@@ -10,6 +10,22 @@ from tests.factories import create_topic
 
 
 @pytest.mark.asyncio
+async def test_create_topic_includes_author_name(authenticated_client, auth_user):
+    response = await authenticated_client.post(
+        "/topics",
+        json={
+            "title": "created-topic",
+            "description": "desc",
+            "category": "general",
+            "vote_options": ["A", "B"],
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["author_name"] == auth_user.username
+
+
+@pytest.mark.asyncio
 async def test_topics_list_filters_and_sort_by_like_count(authenticated_client, db_session, auth_user):
     t1 = await create_topic(
         db_session,
@@ -52,6 +68,7 @@ async def test_topics_list_filters_and_sort_by_like_count(authenticated_client, 
     assert [item["topic_id"] for item in payload] == [t1.topic_id, t2.topic_id]
     assert all(item["category"] == "sports" for item in payload)
     assert all("topic" in item["title"] for item in payload)
+    assert all(item["author_name"] == auth_user.username for item in payload)
     assert t3.topic_id not in [item["topic_id"] for item in payload]
 
 
@@ -65,6 +82,7 @@ async def test_topic_detail_success_and_not_found(authenticated_client, db_sessi
 
     assert ok.status_code == 200
     assert ok.json()["topic_id"] == topic.topic_id
+    assert ok.json()["author_name"] == auth_user.username
     assert missing.status_code == 404
 
 

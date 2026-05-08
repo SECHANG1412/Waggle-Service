@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import desc, func, or_, select
+from sqlalchemy.orm import selectinload
 from app.db.models import Topic, TopicLike
 from app.db.schemas.topics import TopicCreate
 
@@ -23,7 +24,9 @@ class TopicCrud:
     @staticmethod
     async def get_public_by_id(db: AsyncSession, topic_id: int) -> Topic | None:
         result = await db.execute(
-            select(Topic).where(Topic.topic_id == topic_id, Topic.is_hidden.is_(False))
+            select(Topic)
+            .options(selectinload(Topic.user))
+            .where(Topic.topic_id == topic_id, Topic.is_hidden.is_(False))
         )
         return result.scalar_one_or_none()
     
@@ -75,7 +78,11 @@ class TopicCrud:
             .scalar_subquery()
         )
 
-        base_query = select(Topic).where(Topic.is_hidden.is_(False))
+        base_query = (
+            select(Topic)
+            .options(selectinload(Topic.user))
+            .where(Topic.is_hidden.is_(False))
+        )
 
         if search:
             base_query = base_query.where(
