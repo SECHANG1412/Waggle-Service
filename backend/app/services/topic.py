@@ -7,12 +7,13 @@ from app.services.admin_action_log import AdminActionLogService
 
 class TopicService:
     @staticmethod
-    async def create(db:AsyncSession, user_id: int, topic_data: TopicCreate) -> Topic:
+    async def create(db:AsyncSession, user_id: int, topic_data: TopicCreate) -> TopicRead:
         try:
             db_topic = await TopicCrud.create(db, topic_data, user_id)
             await db.commit()
             await db.refresh(db_topic)
-            return db_topic
+            public_topic = await TopicCrud.get_public_by_id(db, db_topic.topic_id)
+            return await TopicService._build_topic_read(db, public_topic, user_id)
         except Exception:
             await db.rollback()
             raise
@@ -191,6 +192,7 @@ class TopicService:
 
         result = TopicRead(
             **topic.__dict__,
+            author_name=topic.user.username if topic.user else None,
             vote_results=vote_results,
             total_vote=sum(vote_counts.values()),
             like_count=like_count,

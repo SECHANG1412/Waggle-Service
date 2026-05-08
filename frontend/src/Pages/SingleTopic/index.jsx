@@ -125,6 +125,9 @@ const SingleTopic = () => {
     <div className="mx-auto max-w-5xl rounded-2xl border border-gray-200 bg-white p-4 shadow-lg sm:p-6 lg:p-8">
       <Header
         title={topic.title}
+        authorName={topic.author_name}
+        category={topic.category}
+        createdAt={topic.created_at}
         liked={topic.has_liked}
         likes={topic.like_count}
         onLikeClick={onLikeClick}

@@ -91,6 +91,12 @@ const TopicCard = ({ topic, onVote, onPinToggle }) => {
           </Link>
         </h3>
 
+        {topic.author_name && (
+          <p className="mt-1 truncate text-xs font-medium text-slate-500">
+            {topic.author_name} · {formattedDate}
+          </p>
+        )}
+
         <div className="mt-3">
           <ProgressBar voteResults={topic.vote_results} totalVote={topic.total_vote} />
           <div className="mt-3 space-y-2.5">
