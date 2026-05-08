@@ -93,7 +93,7 @@ const TopicCard = ({ topic, onVote, onPinToggle }) => {
 
         {topic.author_name && (
           <p className="mt-1 truncate text-xs font-medium text-slate-500">
-            {topic.author_name} · {formattedDate}
+            {topic.author_name}
           </p>
         )}
 
