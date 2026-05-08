@@ -156,6 +156,7 @@ class TopicService:
         if topic.user_id != user_id:
             raise HTTPException(status_code=403, detail="Not your topic")
         try:
+            await PinnedTopicCrud.unpin_by_topic(db, topic_id)
             deleted = await TopicCrud.delete_by_id(db, topic_id)
             await db.commit()
             return deleted

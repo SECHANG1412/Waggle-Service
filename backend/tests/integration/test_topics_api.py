@@ -3,7 +3,9 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 import pytest
+from sqlalchemy import select
 
+from app.db.models import PinnedTopic
 from tests.factories import create_topic
 
 
@@ -128,6 +130,28 @@ async def test_topic_pin_success_and_missing_topic_returns_404(
     assert pinned.json() is True
     assert missing.status_code == 404
     assert missing.json()["detail"] == "Topic not found"
+
+
+@pytest.mark.asyncio
+async def test_delete_topic_removes_pinned_references(
+    authenticated_client,
+    db_session,
+    auth_user,
+):
+    topic = await create_topic(db_session, user_id=auth_user.user_id, title="delete-pinned")
+    await db_session.commit()
+
+    pinned = await authenticated_client.post(f"/topics/{topic.topic_id}/pin")
+    assert pinned.status_code == 200
+
+    deleted = await authenticated_client.delete(f"/topics/{topic.topic_id}")
+    assert deleted.status_code == 200
+    assert deleted.json() is True
+
+    remaining_pinned = await db_session.execute(
+        select(PinnedTopic).where(PinnedTopic.topic_id == topic.topic_id)
+    )
+    assert remaining_pinned.scalars().all() == []
 
 
 @pytest.mark.asyncio

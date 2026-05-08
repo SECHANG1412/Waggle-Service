@@ -24,6 +24,13 @@ class PinnedTopicCrud:
         return result.rowcount > 0
 
     @staticmethod
+    async def unpin_by_topic(db: AsyncSession, topic_id: int) -> int:
+        result = await db.execute(
+            delete(PinnedTopic).where(PinnedTopic.topic_id == topic_id)
+        )
+        return result.rowcount or 0
+
+    @staticmethod
     async def list_by_user(db: AsyncSession, user_id: int):
         result = await db.execute(
             select(PinnedTopic).where(PinnedTopic.user_id == user_id).order_by(desc(PinnedTopic.pinned_at))
