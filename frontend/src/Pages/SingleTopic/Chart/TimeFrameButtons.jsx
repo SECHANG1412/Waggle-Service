@@ -8,10 +8,10 @@ function TimeFrameButtons({ selected, onChange, loading, options }) {
           key={idx}
           onClick={() => onChange(frames)}
           disabled={loading}
-          className={`min-h-11 min-w-[56px] shrink-0 rounded-md border px-3 py-2 text-sm font-medium transition-all duration-200 ${
+          className={`min-h-10 min-w-[58px] shrink-0 rounded-lg border px-3 py-2 text-sm font-bold transition-all duration-200 ${
             selected === frames
-              ? 'border-emerald-500 bg-emerald-500 text-white shadow-md'
-              : 'border-gray-300 hover:border-emerald-500'
+              ? 'border-blue-600 bg-blue-600 text-white shadow-md'
+              : 'border-slate-200 bg-white text-slate-700 hover:border-blue-300'
           }`}
         >
           {frames}

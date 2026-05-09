@@ -1,36 +1,39 @@
 import React from 'react';
-import { FaRegCalendarAlt, FaRegUser } from 'react-icons/fa';
-import { formatDateTime } from '../../../utils/date';
+import { FaChartBar, FaShieldAlt, FaTag } from 'react-icons/fa';
 
-const InfoBar = ({ authorName, createdAt, totalVotes }) => {
+const InfoBar = ({ totalVotes, category }) => {
+  const items = [
+    {
+      icon: <FaChartBar className="h-5 w-5 text-blue-600" />,
+      label: '총 투표수',
+      value: `${totalVotes}표`,
+    },
+    {
+      icon: <FaShieldAlt className="h-5 w-5 text-blue-600" />,
+      label: '투표 규칙',
+      value: '한 번만 투표 가능',
+    },
+    {
+      icon: <FaTag className="h-5 w-5 text-blue-600" />,
+      label: '카테고리',
+      value: category || '카테고리 없음',
+    },
+  ];
+
   return (
-    <>
-      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
-        {authorName && (
-          <span className="inline-flex items-center gap-2">
-            <FaRegUser className="h-4 w-4 shrink-0" />
-            <span>{authorName}</span>
+    <section className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-3">
+      {items.map((item) => (
+        <div key={item.label} className="flex items-center gap-3 sm:justify-center">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50">
+            {item.icon}
           </span>
-        )}
-        <span className="inline-flex items-center gap-2">
-          <FaRegCalendarAlt className="h-4 w-4 shrink-0" />
-          <span>
-            {formatDateTime(createdAt, 'ko-KR', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
+          <span className="min-w-0">
+            <span className="block text-xs font-semibold text-slate-500">{item.label}</span>
+            <span className="block truncate text-sm font-bold text-slate-800 sm:text-base">{item.value}</span>
           </span>
-        </span>
-      </div>
-
-      <div className="text-gray-700 text-base flex items-center space-x-2 mt-2 font-semibold">
-        <span className="text-gray-500">총 투표수</span>
-        <span className="text-blue-700">{totalVotes}</span>
-      </div>
-    </>
+        </div>
+      ))}
+    </section>
   );
 };
 

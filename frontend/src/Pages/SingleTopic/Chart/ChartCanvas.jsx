@@ -57,35 +57,35 @@ const ChartCanvas = ({ data, metric, options, colors, timeFrame }) => {
   return (
     <div className="vote-trend-chart h-full w-full">
       <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={data} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis
-          dataKey="label"
-          tick={{ fontSize: 12 }}
-          tickFormatter={tickFormatter}
-          interval="preserveStartEnd"
-          minTickGap={timeFrame === '1H' || timeFrame === '6H' ? 20 : 28}
-        />
-        <YAxis
-          tick={{ fontSize: 12 }}
-          domain={metric === 'percent' ? [0, 100] : ['auto', 'auto']}
-          tickFormatter={(v) => (metric === 'percent' ? `${v}%` : v)}
-        />
-        <Tooltip content={<CustomTooltip metric={metric} options={options} />} />
-        {options.map((_, i) => (
-          <Line
-            key={i}
-            type="monotone"
-            dataKey={`${metric}_${i}`}
-            name={`option_${i}`}
-            stroke={colors[i]}
-            strokeWidth={2}
-            dot={false}
-            connectNulls
-            activeDot={{ r: 6 }}
+        <LineChart data={data} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
+          <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
+          <XAxis
+            dataKey="label"
+            tick={{ fontSize: 12, fill: '#475569' }}
+            tickFormatter={tickFormatter}
+            interval="preserveStartEnd"
+            minTickGap={timeFrame === '1H' || timeFrame === '6H' ? 20 : 34}
           />
-        ))}
-      </LineChart>
+          <YAxis
+            tick={{ fontSize: 12, fill: '#475569' }}
+            domain={metric === 'percent' ? [0, 100] : ['auto', 'auto']}
+            tickFormatter={(v) => (metric === 'percent' ? `${v}%` : v)}
+          />
+          <Tooltip content={<CustomTooltip metric={metric} options={options} />} />
+          {options.map((_, i) => (
+            <Line
+              key={i}
+              type="monotone"
+              dataKey={`${metric}_${i}`}
+              name={`option_${i}`}
+              stroke={colors[i]}
+              strokeWidth={2.5}
+              dot={false}
+              connectNulls
+              activeDot={{ r: 6 }}
+            />
+          ))}
+        </LineChart>
       </ResponsiveContainer>
     </div>
   );

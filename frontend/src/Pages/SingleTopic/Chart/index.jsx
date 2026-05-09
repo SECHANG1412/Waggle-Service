@@ -6,28 +6,28 @@ import ChartLegend from './ChartLegend';
 import { voteColors } from '../../../constants/voteColors';
 import TimeFrameButtons from './TimeFrameButtons';
 
-const timeFrames = ['1H', '6H', '1D', '1W', '1M', 'ALL'];
+const timeFrames = ['1H', '6H', '1D', '1W', 'ALL'];
 
 const Chart = ({ topicId, voteOptions }) => {
   const { getTopicVotes } = useVote();
   const [selectedTimeFrame, setSelectedTimeFrame] = useState('1D');
-  const [chartMetric, setChartMetric] = useState('count');
-  const [loading, SetLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [voteData, setVoteData] = useState([]);
   const [hasLoaded, setHasLoaded] = useState(false);
   const colors = voteColors[voteOptions.length] || [];
+  const chartMetric = 'percent';
 
   const fetchTopicVotes = useCallback(
     async (frame) => {
       if (!topicId) return;
-      SetLoading(true);
+      setLoading(true);
 
       try {
-        const tmpVoteData = await getTopicVotes(topicId, frame);
-        setVoteData(tmpVoteData || []);
+        const nextVoteData = await getTopicVotes(topicId, frame);
+        setVoteData(nextVoteData || []);
       } finally {
         setHasLoaded(true);
-        SetLoading(false);
+        setLoading(false);
       }
     },
     [topicId, getTopicVotes]
@@ -37,7 +37,7 @@ const Chart = ({ topicId, voteOptions }) => {
     fetchTopicVotes('1D');
   }, [fetchTopicVotes]);
 
-  const onTimeFrameChage = (frame) => {
+  const onTimeFrameChange = (frame) => {
     if (frame !== selectedTimeFrame) {
       setSelectedTimeFrame(frame);
       fetchTopicVotes(frame);
@@ -45,19 +45,20 @@ const Chart = ({ topicId, voteOptions }) => {
   };
 
   return (
-    <section className="relative mb-6 rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:p-5">
-      <ChartHeader chartMetric={chartMetric} setChartMetric={setChartMetric} loading={loading} />
-      <div className="overflow-hidden rounded-md">
+    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+      <ChartHeader />
+      <ChartLegend options={voteOptions} colors={colors} />
+      <div className="mt-4 overflow-hidden rounded-md">
         {loading ? (
-          <div className="flex h-[220px] items-center justify-center text-sm text-slate-500 sm:h-[280px]">
-            차트 데이터를 불러오는 중입니다.
+          <div className="flex h-[220px] items-center justify-center text-sm text-slate-500 sm:h-[300px]">
+            투표 트렌드를 불러오는 중입니다.
           </div>
         ) : voteData.length === 0 && hasLoaded ? (
-          <div className="flex h-[220px] items-center justify-center text-sm text-slate-500 sm:h-[280px]">
-            표시할 투표 데이터가 없습니다.
+          <div className="flex h-[220px] items-center justify-center text-sm text-slate-500 sm:h-[300px]">
+            표시할 투표 트렌드가 아직 없습니다.
           </div>
         ) : (
-          <div className="h-[220px] w-full sm:h-[280px]">
+          <div className="h-[220px] w-full sm:h-[300px]">
             <ChartCanvas
               data={voteData}
               metric={chartMetric}
@@ -68,10 +69,9 @@ const Chart = ({ topicId, voteOptions }) => {
           </div>
         )}
       </div>
-      <ChartLegend options={voteOptions} colors={colors} />
       <TimeFrameButtons
         selected={selectedTimeFrame}
-        onChange={onTimeFrameChage}
+        onChange={onTimeFrameChange}
         loading={loading}
         options={timeFrames}
       />
