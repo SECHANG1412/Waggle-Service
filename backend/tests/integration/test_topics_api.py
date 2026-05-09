@@ -26,6 +26,36 @@ async def test_create_topic_includes_author_name(authenticated_client, auth_user
 
 
 @pytest.mark.asyncio
+async def test_create_topic_requires_exactly_two_vote_options(authenticated_client):
+    response = await authenticated_client.post(
+        "/topics",
+        json={
+            "title": "invalid-options",
+            "description": "desc",
+            "category": "general",
+            "vote_options": ["A", "B", "C"],
+        },
+    )
+
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_create_topic_rejects_too_long_title(authenticated_client):
+    response = await authenticated_client.post(
+        "/topics",
+        json={
+            "title": "A" * 81,
+            "description": "desc",
+            "category": "general",
+            "vote_options": ["A", "B"],
+        },
+    )
+
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
 async def test_topics_list_filters_and_sort_by_like_count(authenticated_client, db_session, auth_user):
     t1 = await create_topic(
         db_session,

@@ -1,22 +1,35 @@
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+TOPIC_TITLE_MAX_LENGTH = 80
+TOPIC_OPTION_COUNT = 2
+
+
 class TopicBase(BaseModel):
-    title: str
-    category: str = "자유"
-    vote_options: list[str] = Field(..., min_length=2, max_length=4)
+    title: str = Field(..., min_length=1, max_length=TOPIC_TITLE_MAX_LENGTH)
+    category: str = "기타"
+    vote_options: list[str] = Field(..., min_length=TOPIC_OPTION_COUNT, max_length=TOPIC_OPTION_COUNT)
     description: str | None = None
+
+    @field_validator("title")
+    @classmethod
+    def title_must_not_be_blank(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("title must not be blank.")
+        return stripped
 
     @field_validator("vote_options")
     @classmethod
     def check_vote_options_length(cls, value):
-        if not (2 <= len(value) <= 4):
-            raise ValueError("vote_options must contain between 2 and 4 options.")
+        if len(value) != TOPIC_OPTION_COUNT:
+            raise ValueError("vote_options must contain exactly 2 options.")
         return value
 
 
 class TopicCreate(TopicBase):
     pass
+
 
 class TopicInDB(TopicBase):
     topic_id: int
