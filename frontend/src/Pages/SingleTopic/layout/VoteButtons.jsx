@@ -3,49 +3,58 @@ import { FaCheckCircle } from 'react-icons/fa';
 
 const VoteButtons = ({ voteOptions, voteResults, totalVotes, hasVoted, useVoteIndex, onVote, colors }) => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-2.5 sm:space-y-3">
       {voteOptions.map((option, idx) => {
         const selected = useVoteIndex === idx;
         const baseColor = colors?.[idx] || '#64748b';
         const voteCount = voteResults[idx] ?? 0;
         const percent = totalVotes > 0 ? Math.round((voteCount / totalVotes) * 100) : 0;
-        const isPositiveTone = idx === 0;
-        const softBg = isPositiveTone ? '#f0fdf4' : '#fff1f2';
-        const textColor = hasVoted && selected ? '#ffffff' : baseColor;
+        const softBg = idx === 0 ? '#f0fdf4' : '#fff1f2';
 
         return (
           <article
             key={`${option}-${idx}`}
-            className="rounded-xl border p-4 transition sm:p-5"
+            className="rounded-xl border border-l-4 bg-white p-3 transition sm:p-4"
             style={{
-              backgroundColor: hasVoted && selected ? baseColor : softBg,
-              borderColor: hasVoted && selected ? baseColor : `${baseColor}66`,
+              backgroundColor: hasVoted ? '#ffffff' : softBg,
+              borderColor: hasVoted ? '#e2e8f0' : `${baseColor}55`,
+              borderLeftColor: baseColor,
             }}
           >
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <h3 className="break-words text-lg font-bold" style={{ color: textColor }}>
-                  {option}
-                </h3>
-                <p className="mt-2 text-4xl font-extrabold leading-none sm:text-5xl" style={{ color: textColor }}>
-                  {percent}%
-                </p>
-                <p className={`mt-2 text-sm font-bold ${hasVoted && selected ? 'text-white' : 'text-slate-600'}`}>
-                  {voteCount}표
-                </p>
+                <div className="flex min-w-0 items-center gap-2">
+                  <h3 className="truncate text-sm font-bold sm:text-base" style={{ color: baseColor }}>
+                    {option}
+                  </h3>
+                  {hasVoted && selected && (
+                    <span
+                      className="inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold"
+                      style={{ backgroundColor: `${baseColor}18`, color: baseColor }}
+                    >
+                      <FaCheckCircle className="h-3 w-3" />
+                      내 선택
+                    </span>
+                  )}
+                </div>
+                <div className="mt-1 flex items-baseline gap-2">
+                  <span className="text-2xl font-extrabold leading-none sm:text-3xl" style={{ color: baseColor }}>
+                    {percent}%
+                  </span>
+                  <span className="text-xs font-semibold text-slate-500 sm:text-sm">{voteCount}표</span>
+                </div>
               </div>
-              {hasVoted && selected && <FaCheckCircle className="mt-1 h-5 w-5 shrink-0 text-white" />}
+
+              {!hasVoted && (
+                <button
+                  onClick={() => onVote(idx)}
+                  className="min-h-10 shrink-0 rounded-lg px-3 py-2 text-xs font-bold text-white transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:px-4 sm:text-sm"
+                  style={{ backgroundColor: baseColor }}
+                >
+                  투표하기
+                </button>
+              )}
             </div>
-            <button
-              onClick={() => onVote(idx)}
-              disabled={hasVoted}
-              className={`mt-4 min-h-11 w-full rounded-lg px-4 py-2.5 text-sm font-bold text-white transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed sm:text-base ${
-                hasVoted ? 'opacity-70' : 'hover:brightness-95'
-              }`}
-              style={{ backgroundColor: baseColor }}
-            >
-              {hasVoted ? (selected ? '선택한 항목' : '투표 완료') : `${option}에 투표하기`}
-            </button>
           </article>
         );
       })}
