@@ -23,17 +23,17 @@ const Header = ({
   });
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
-          <span className="inline-flex rounded-md bg-blue-50 px-2.5 py-1 text-sm font-semibold text-blue-700">
+          <span className="inline-flex rounded-md bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700 sm:px-2.5 sm:py-1 sm:text-sm">
             {category || '카테고리 없음'}
           </span>
-          <h1 className="mt-4 break-words text-3xl font-bold leading-tight tracking-normal text-slate-950 sm:text-4xl">
+          <h1 className="mt-3 break-words text-2xl font-bold leading-tight tracking-normal text-slate-950 sm:mt-4 sm:text-4xl">
             {title}
           </h1>
           {description && (
-            <p className="mt-3 break-words text-base leading-relaxed text-slate-600 sm:text-lg">
+            <p className="mt-2 break-words text-sm leading-relaxed text-slate-600 sm:mt-3 sm:text-lg">
               {description}
             </p>
           )}
@@ -42,7 +42,7 @@ const Header = ({
           {actions}
           <button
             onClick={onLikeClick}
-            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600 transition hover:border-rose-200 hover:text-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-200"
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition hover:border-rose-200 hover:text-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-200"
             aria-label="좋아요"
           >
             <FaHeart className={`h-4 w-4 ${liked ? 'text-rose-500' : 'text-slate-300'}`} />
@@ -51,27 +51,27 @@ const Header = ({
         </div>
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-3 text-sm font-medium text-slate-500">
+      <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-medium text-slate-500 sm:mt-5 sm:gap-x-4 sm:text-sm">
         {authorName && (
           <span className="inline-flex items-center gap-2">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-blue-100 bg-blue-50 text-sm font-bold text-blue-700">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-blue-100 bg-blue-50 text-xs font-bold text-blue-700 sm:h-8 sm:w-8 sm:text-sm">
               {authorName.slice(0, 1).toUpperCase()}
             </span>
             <span className="text-slate-700">{authorName}</span>
           </span>
         )}
         {!authorName && (
-          <span className="inline-flex items-center gap-2">
-            <FaRegUser className="h-4 w-4" />
+          <span className="inline-flex items-center gap-1.5">
+            <FaRegUser className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span>작성자</span>
           </span>
         )}
-        <span className="inline-flex items-center gap-2">
-          <FaRegCalendarAlt className="h-4 w-4" />
+        <span className="inline-flex items-center gap-1.5">
+          <FaRegCalendarAlt className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           <span>{formattedDate}</span>
         </span>
-        <span className="inline-flex items-center gap-2">
-          <FaRegCommentDots className="h-4 w-4" />
+        <span className="inline-flex items-center gap-1.5">
+          <FaRegCommentDots className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           <span>{commentCount}</span>
         </span>
       </div>

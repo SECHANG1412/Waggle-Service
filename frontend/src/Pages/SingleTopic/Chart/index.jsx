@@ -45,20 +45,20 @@ const Chart = ({ topicId, voteOptions }) => {
   };
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+    <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-5">
       <ChartHeader />
       <ChartLegend options={voteOptions} colors={colors} />
-      <div className="mt-4 overflow-hidden rounded-md">
+      <div className="mt-3 overflow-hidden rounded-md sm:mt-4">
         {loading ? (
-          <div className="flex h-[220px] items-center justify-center text-sm text-slate-500 sm:h-[300px]">
+          <div className="flex h-[180px] items-center justify-center text-sm text-slate-500 sm:h-[300px]">
             투표 트렌드를 불러오는 중입니다.
           </div>
         ) : voteData.length === 0 && hasLoaded ? (
-          <div className="flex h-[220px] items-center justify-center text-sm text-slate-500 sm:h-[300px]">
+          <div className="flex h-[180px] items-center justify-center text-sm text-slate-500 sm:h-[300px]">
             표시할 투표 트렌드가 아직 없습니다.
           </div>
         ) : (
-          <div className="h-[220px] w-full sm:h-[300px]">
+          <div className="h-[180px] w-full sm:h-[300px]">
             <ChartCanvas
               data={voteData}
               metric={chartMetric}

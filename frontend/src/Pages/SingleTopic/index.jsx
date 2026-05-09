@@ -124,8 +124,10 @@ const SingleTopic = () => {
   const commentCount = topic.comment_count ?? topic.comments_count ?? 0;
   const colors = voteColors[topic.vote_options.length] || [];
   const votePanel = (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="mb-4 text-xl font-bold text-slate-950">지금 투표하기</h2>
+    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+      <h2 className="mb-3 text-lg font-bold text-slate-950 sm:mb-4 sm:text-xl">
+        {topic.has_voted ? '투표 결과' : '지금 투표하기'}
+      </h2>
       <VoteButtons
         voteOptions={topic.vote_options}
         voteResults={topic.vote_results}
@@ -135,16 +137,16 @@ const SingleTopic = () => {
         onVote={onVote}
         colors={colors}
       />
-      <p className="mt-5 text-center text-sm font-medium text-slate-500">
+      <p className="mt-3 text-center text-xs font-medium text-slate-500 sm:mt-4 sm:text-sm">
         한 번 투표하면 변경할 수 없습니다.
       </p>
     </section>
   );
 
   return (
-    <div className="bg-slate-50 px-4 py-5 sm:px-6 lg:px-8">
-      <div className="mx-auto grid max-w-7xl gap-5 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
-        <main className="space-y-5">
+    <div className="bg-slate-50 px-3 py-4 sm:px-6 sm:py-5 lg:px-8">
+      <div className="mx-auto grid max-w-7xl gap-4 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+        <main className="space-y-4 sm:space-y-5">
           <Header
             title={topic.title}
             description={topic.description}
@@ -159,7 +161,7 @@ const SingleTopic = () => {
               authUser?.user_id === topic.user_id ? (
                 <button
                   onClick={onDelete}
-                  className="min-h-10 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-100"
+                  className="min-h-9 rounded-lg border border-red-100 bg-red-50 px-3 py-1.5 text-sm font-semibold text-red-600 transition hover:bg-red-100"
                 >
                   {COMMON_MESSAGES.delete}
                 </button>
@@ -176,7 +178,7 @@ const SingleTopic = () => {
           <Comments topicId={id} />
         </main>
 
-        <aside className="hidden space-y-5 lg:sticky lg:top-6 lg:block">
+        <aside className="hidden space-y-4 lg:sticky lg:top-6 lg:block">
           {votePanel}
           <InfoBar totalVotes={topic.total_vote} category={topic.category} />
         </aside>
