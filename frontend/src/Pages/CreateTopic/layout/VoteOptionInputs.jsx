@@ -1,42 +1,32 @@
 import React from 'react';
 
-const VoteOptionInputs = ({ formData, onOptionAdd, onOptionRemove, onOptionChange }) => {
+const VoteOptionInputs = ({ formData, onOptionChange }) => {
   const voteOptions = formData.vote_options;
+
   return (
     <div>
-      <label className="block text-sm font-semibold text-slate-700 mb-2">
-        투표 옵션 <span className="text-red-500">*</span>
-      </label>
-      {voteOptions.map((option, index) => (
-        <div key={index} className="mb-2 flex gap-2">
+      <div className="mb-2 flex items-end justify-between gap-3">
+        <label className="block text-sm font-semibold text-slate-700">
+          투표 옵션 <span className="text-red-500">*</span>
+        </label>
+        <span className="text-xs font-medium text-slate-500">정확히 2개</span>
+      </div>
+      <div className="space-y-2">
+        {voteOptions.map((option, index) => (
           <input
+            key={index}
             type="text"
             value={option}
             onChange={(e) => onOptionChange(index, e.target.value)}
             required
             placeholder={`옵션 ${index + 1}`}
-            className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-3 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300"
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-3 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300"
           />
-          {voteOptions.length > 1 && (
-            <button
-              type="button"
-              onClick={() => onOptionRemove(index)}
-              className="flex min-h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-slate-400 hover:text-slate-800"
-            >
-              &times;
-            </button>
-          )}
-        </div>
-      ))}
-      {voteOptions.length < 4 && (
-        <button
-          type="button"
-          onClick={onOptionAdd}
-          className="mt-2 min-h-11 w-full rounded-lg border border-slate-300 bg-slate-50 py-2.5 font-semibold text-slate-800 shadow-sm transition-all duration-200 hover:border-slate-400 hover:bg-slate-100 hover:text-slate-900"
-        >
-          옵션 추가
-        </button>
-      )}
+        ))}
+      </div>
+      <p className="mt-1.5 text-xs text-slate-500">
+        토픽은 두 선택지 중 하나를 고르는 방식으로 생성됩니다.
+      </p>
     </div>
   );
 };

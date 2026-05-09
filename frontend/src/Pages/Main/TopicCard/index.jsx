@@ -82,8 +82,9 @@ const TopicCard = ({ topic, onVote, onPinToggle }) => {
       <h3 className="mt-4 text-2xl font-bold leading-tight tracking-normal text-slate-950">
         <Link
           to={detailPath}
-          className="block line-clamp-2 transition hover:text-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
+          className="block truncate transition hover:text-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
           aria-label={`${topic.title} 상세 보기`}
+          title={topic.title}
         >
           {topic.title}
         </Link>
