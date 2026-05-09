@@ -44,7 +44,7 @@ const TopicCard = ({ topic, onVote, onPinToggle }) => {
 
   return (
     <article
-      className="relative flex h-full cursor-pointer flex-col rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300 sm:p-5"
+      className="relative flex h-full cursor-pointer flex-col rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300 sm:p-4"
       role="link"
       tabIndex={0}
       aria-label={`${topic.title} 상세 보기`}
@@ -58,7 +58,7 @@ const TopicCard = ({ topic, onVote, onPinToggle }) => {
               Pinned
             </span>
           )}
-          <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+          <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[11px] font-semibold text-slate-700">
             {topic.category || '카테고리 없음'}
           </span>
           {topic.has_voted && (
@@ -71,7 +71,7 @@ const TopicCard = ({ topic, onVote, onPinToggle }) => {
           onClick={() => {
             onPinToggle(topic.topic_id, topic.is_pinned);
           }}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-slate-400 hover:text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-300"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-slate-400 hover:text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-300"
           aria-label={pinLabel}
           title={pinLabel}
         >
@@ -79,7 +79,7 @@ const TopicCard = ({ topic, onVote, onPinToggle }) => {
         </button>
       </div>
 
-      <h3 className="mt-6 text-3xl font-bold leading-tight tracking-normal text-slate-950">
+      <h3 className="mt-4 text-2xl font-bold leading-tight tracking-normal text-slate-950">
         <Link
           to={detailPath}
           className="block line-clamp-2 transition hover:text-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
@@ -90,14 +90,14 @@ const TopicCard = ({ topic, onVote, onPinToggle }) => {
       </h3>
 
       {topic.author_name && (
-        <div className="mt-5 flex items-center gap-3 text-sm font-semibold text-slate-600">
-          <FaRegUserCircle className="h-9 w-9 shrink-0 rounded-full bg-slate-100 p-2 text-slate-500" aria-hidden="true" />
+        <div className="mt-3 flex items-center gap-2.5 text-sm font-semibold text-slate-600">
+          <FaRegUserCircle className="h-7 w-7 shrink-0 rounded-full bg-slate-100 p-1.5 text-slate-500" aria-hidden="true" />
           <span className="truncate">{topic.author_name}</span>
         </div>
       )}
 
-      <div className="mt-6 border-t border-slate-200 pt-6">
-        <div className="space-y-3">
+      <div className="mt-4 border-t border-slate-200 pt-4">
+        <div className="space-y-2.5">
           {visibleOptions.map((opt, idx) => (
             <OptionButton key={idx} index={idx} option={opt} topic={topic} onVote={onVote} />
           ))}
