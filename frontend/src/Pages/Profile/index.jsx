@@ -1,12 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  FaCalendarAlt,
   FaChevronRight,
   FaCommentDots,
-  FaEnvelope,
   FaHeart,
-  FaPen,
   FaPoll,
   FaRegFileAlt,
   FaShieldAlt,
@@ -261,29 +258,9 @@ const Profile = () => {
             <div className="flex min-w-0 items-center gap-4">
               <Avatar user={user} avatarUrl={avatarUrl} size="lg" />
               <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="truncate text-2xl font-bold text-slate-950 sm:text-3xl">{user?.name}</h1>
-                  <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">Waggle 멤버</span>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-500">
-                  <span className="inline-flex items-center gap-2">
-                    <FaEnvelope className="text-slate-400" aria-hidden="true" />
-                    {user?.email}
-                  </span>
-                  <span className="inline-flex items-center gap-2">
-                    <FaCalendarAlt className="text-slate-400" aria-hidden="true" />
-                    가입일 {formatDateOnly(user?.joinedAt)}
-                  </span>
-                </div>
+                <h1 className="truncate text-2xl font-bold text-slate-950 sm:text-3xl">{user?.name}</h1>
               </div>
             </div>
-            <button
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-400 hover:text-slate-950 sm:w-auto"
-              onClick={() => setEditMode(true)}
-            >
-              <FaPen className="h-3.5 w-3.5" aria-hidden="true" />
-              프로필 수정
-            </button>
           </div>
 
           <div className="grid border-t border-slate-100 sm:grid-cols-3">
@@ -293,13 +270,7 @@ const Profile = () => {
           </div>
         </section>
 
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <RecentActivityCard
-            activities={activities}
-            loading={loadingActivity}
-            onView={(topicId) => navigate(`/topic/${topicId}`)}
-          />
-
+        <div className="grid gap-4 lg:grid-cols-[360px_minmax(0,1fr)]">
           <AccountPanel
             user={user}
             form={form}
@@ -312,6 +283,12 @@ const Profile = () => {
             onEdit={() => setEditMode(true)}
             onAvatarChange={onAvatarChange}
             onAvatarReset={resetAvatar}
+          />
+
+          <RecentActivityCard
+            activities={activities}
+            loading={loadingActivity}
+            onView={(topicId) => navigate(`/topic/${topicId}`)}
           />
         </div>
 
@@ -417,7 +394,26 @@ const AccountPanel = ({
         <h2 className="text-lg font-bold text-slate-950">계정 정보</h2>
         <p className="mt-1 text-sm text-slate-500">이름과 프로필 이미지를 관리합니다.</p>
       </div>
-      {!editMode && (
+      {editMode ? (
+        <div className="flex shrink-0 gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={saving}
+            className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-950 disabled:opacity-60"
+          >
+            취소
+          </button>
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={saving}
+            className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+          >
+            {saving ? '저장 중...' : '저장'}
+          </button>
+        </div>
+      ) : (
         <button
           type="button"
           onClick={onEdit}
@@ -426,14 +422,6 @@ const AccountPanel = ({
           수정
         </button>
       )}
-    </div>
-
-    <div className="mt-5 flex items-center gap-3 rounded-xl bg-slate-50 p-3">
-      <Avatar user={user} avatarUrl={avatarUrl} />
-      <div className="min-w-0">
-        <p className="truncate text-sm font-bold text-slate-900">{user?.name}</p>
-        <p className="truncate text-xs text-slate-500">{user?.email}</p>
-      </div>
     </div>
 
     <div className="mt-5 space-y-4">
@@ -471,25 +459,6 @@ const AccountPanel = ({
         </div>
       </Field>
     </div>
-
-    {editMode && (
-      <div className="mt-5 grid grid-cols-2 gap-2">
-        <button
-          onClick={onCancel}
-          disabled={saving}
-          className="min-h-10 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-300 disabled:opacity-60"
-        >
-          취소
-        </button>
-        <button
-          onClick={onSave}
-          disabled={saving}
-          className="min-h-10 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
-        >
-          {saving ? '저장 중...' : '저장'}
-        </button>
-      </div>
-    )}
   </aside>
 );
 
