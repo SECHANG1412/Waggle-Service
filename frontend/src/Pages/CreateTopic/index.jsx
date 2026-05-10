@@ -35,12 +35,12 @@ const CreateTopic = () => {
       const validVoteOptions = formData.vote_options.map((opt) => opt.trim());
 
       if (title.length > TITLE_MAX_LENGTH) {
-        showWarningAlert('제목이 너무 깁니다', `제목은 ${TITLE_MAX_LENGTH}자 이내로 입력해 주세요.`);
+        showWarningAlert('제목이 너무 깁니다', `제목은 최대 ${TITLE_MAX_LENGTH}자까지 입력할 수 있습니다.`);
         return;
       }
 
       if (validVoteOptions.some((opt) => opt === '') || validVoteOptions.length !== OPTION_COUNT) {
-        showWarningAlert('투표 옵션을 입력해 주세요', '투표 옵션은 정확히 2개가 필요합니다.');
+        showWarningAlert('투표 옵션을 입력해 주세요', '두 선택지를 모두 입력해 주세요.');
         return;
       }
 
