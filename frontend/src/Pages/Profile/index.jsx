@@ -1,5 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  FaCalendarAlt,
+  FaChevronRight,
+  FaCommentDots,
+  FaEnvelope,
+  FaHeart,
+  FaPen,
+  FaPoll,
+  FaRegFileAlt,
+  FaShieldAlt,
+  FaUserCircle,
+} from 'react-icons/fa';
 import { PROFILE_MESSAGES } from '../../constants/messages';
 import { useAuth } from '../../hooks/auth-context';
 import { handleAuthError, showErrorAlert, showSuccessAlert } from '../../utils/alertUtils';
@@ -7,7 +19,7 @@ import api from '../../utils/api';
 import { formatDateOnly } from '../../utils/date';
 
 const INQUIRY_STATUS_LABELS = {
-  pending: '접수됨',
+  pending: '대기 중',
   in_progress: '처리 중',
   resolved: '처리 완료',
 };
@@ -18,7 +30,7 @@ const CONTENT_STATUS_LABELS = {
 };
 
 const CONTENT_STATUS_NOTICE =
-  '운영 정책에 따라 숨김 처리되었습니다. 이의가 있다면 문의를 남겨 주세요.';
+  '숨김 처리된 콘텐츠는 관리자 검토 사유를 확인할 수 있습니다. 추가 확인이 필요하면 문의를 남겨주세요.';
 
 const Profile = () => {
   const { isAuthenticated } = useAuth();
@@ -161,6 +173,15 @@ const Profile = () => {
     fetchContentStatus();
   }, [isAuthenticated]);
 
+  const statItems = useMemo(
+    () => [
+      { label: '작성한 토픽', value: stats.topics, icon: FaRegFileAlt, tone: 'blue' },
+      { label: '투표 참여', value: stats.votes, icon: FaPoll, tone: 'emerald' },
+      { label: '받은 좋아요', value: stats.likes, icon: FaHeart, tone: 'rose' },
+    ],
+    [stats]
+  );
+
   const onChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -198,241 +219,323 @@ const Profile = () => {
     setEditMode(false);
   };
 
+  const onAvatarChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const url = reader.result?.toString() || '';
+      setAvatarUrl(url);
+      localStorage.setItem('avatar_url', url);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const resetAvatar = () => {
+    setAvatarUrl('');
+    localStorage.removeItem('avatar_url');
+  };
+
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-10 text-slate-500">
-        <div className="animate-spin h-6 w-6 border-4 border-slate-400 border-t-transparent rounded-full mr-3" />
-        <span>불러오는 중...</span>
+      <div className="flex items-center justify-center py-10 text-slate-500">
+        <div className="mr-3 h-6 w-6 animate-spin rounded-full border-4 border-slate-400 border-t-transparent" />
+        <span>프로필을 불러오는 중...</span>
       </div>
     );
   }
 
   if (!isAuthenticated || error) {
     return (
-      <div className="max-w-3xl mx-auto bg-white shadow-sm rounded-2xl p-8 text-center border border-slate-200">
+      <div className="mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
         <p className="text-slate-600">{error || PROFILE_MESSAGES.loginRequired}</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 px-3 py-6 sm:px-4 sm:py-12">
-      <div className="mx-auto max-w-5xl space-y-4 sm:space-y-6">
-        <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-md sm:gap-4 sm:p-6">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-gradient-to-br from-slate-300 to-slate-100 text-xl font-bold text-slate-800 shadow-sm sm:h-16 sm:w-16 sm:text-2xl">
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt="avatar"
-                className="h-full w-full rounded-full border border-slate-200 object-cover"
-              />
-            ) : (
-              user?.name?.[0]?.toUpperCase() || 'U'
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <h1 className="truncate text-xl font-semibold text-slate-900 sm:text-2xl">{user?.name}</h1>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-          <StatCard label="작성한 토픽" value={loadingStats ? '...' : stats.topics} />
-          <StatCard label="투표 횟수" value={loadingStats ? '...' : stats.votes} />
-          <StatCard label="받은 좋아요" value={loadingStats ? '...' : stats.likes} />
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 md:gap-6">
-          <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 shadow-md sm:p-6">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <h3 className="text-lg font-semibold text-slate-900">계정 정보</h3>
-              {editMode ? (
-                <div className="flex gap-2">
-                  <button
-                    onClick={onSave}
-                    disabled={saving}
-                    className="inline-flex h-10 flex-1 items-center justify-center rounded-lg bg-slate-900 px-4 text-sm text-white shadow-sm transition hover:bg-slate-800 disabled:opacity-60 sm:flex-none"
-                  >
-                    {saving ? '저장 중...' : '저장'}
-                  </button>
-                  <button
-                    onClick={onCancel}
-                    disabled={saving}
-                    className="inline-flex h-10 flex-1 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-700 transition hover:border-slate-300 hover:text-slate-900 sm:flex-none"
-                  >
-                    취소
-                  </button>
+    <div className="min-h-screen bg-slate-100 px-3 py-5 sm:px-4 sm:py-8">
+      <div className="mx-auto max-w-6xl space-y-4 sm:space-y-5">
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-5 p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex min-w-0 items-center gap-4">
+              <Avatar user={user} avatarUrl={avatarUrl} size="lg" />
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="truncate text-2xl font-bold text-slate-950 sm:text-3xl">{user?.name}</h1>
+                  <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">Waggle 멤버</span>
                 </div>
-              ) : (
-                <button
-                  className="inline-flex h-10 w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm text-slate-700 shadow-sm transition hover:border-slate-400 hover:text-slate-900 sm:w-auto"
-                  onClick={() => setEditMode(true)}
-                >
-                  프로필 수정
-                </button>
-              )}
-            </div>
-            <div className="space-y-3">
-              <Field label="이름">
-                {editMode ? (
-                  <input
-                    name="name"
-                    value={form.name}
-                    onChange={onChange}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 shadow-inner focus:outline-none focus:ring-2 focus:ring-slate-400"
-                  />
-                ) : (
-                  <input
-                    value={user?.name || ''}
-                    disabled
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800"
-                  />
-                )}
-              </Field>
-              <Field label="이메일">
-                <input
-                  value={user?.email || ''}
-                  disabled
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800"
-                />
-              </Field>
-              <Field label="가입일">
-                <input
-                  value={user?.joinedAt || ''}
-                  disabled
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800"
-                />
-              </Field>
-              <Field label="프로필 이미지" alignTop>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-300 bg-slate-200 shadow-inner">
-                    {avatarUrl ? (
-                      <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
-                    ) : (
-                      <span className="text-slate-700 font-semibold">
-                        {user?.name?.[0]?.toUpperCase() || 'U'}
-                      </span>
-                    )}
-                  </div>
-                  <label className="min-h-10 cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-2 text-center text-sm text-slate-700 hover:border-slate-300 hover:text-slate-900">
-                    이미지 선택
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        const reader = new FileReader();
-                        reader.onload = () => {
-                          const url = reader.result?.toString() || '';
-                          setAvatarUrl(url);
-                          localStorage.setItem('avatar_url', url);
-                        };
-                        reader.readAsDataURL(file);
-                      }}
-                    />
-                  </label>
-                  {avatarUrl && (
-                    <button
-                      onClick={() => {
-                        setAvatarUrl('');
-                        localStorage.removeItem('avatar_url');
-                      }}
-                      className="text-left text-sm text-red-500 hover:underline sm:text-center"
-                    >
-                      제거
-                    </button>
-                  )}
+                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-500">
+                  <span className="inline-flex items-center gap-2">
+                    <FaEnvelope className="text-slate-400" aria-hidden="true" />
+                    {user?.email}
+                  </span>
+                  <span className="inline-flex items-center gap-2">
+                    <FaCalendarAlt className="text-slate-400" aria-hidden="true" />
+                    가입일 {formatDateOnly(user?.joinedAt)}
+                  </span>
                 </div>
-              </Field>
-            </div>
-          </div>
-
-          <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-md sm:p-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-900">최근 활동</h3>
-            </div>
-            {loadingActivity ? (
-              <p className="text-sm text-slate-500">불러오는 중...</p>
-            ) : activities.length === 0 ? (
-              <p className="text-sm text-slate-500">최근 활동이 없습니다.</p>
-            ) : (
-              <div className="divide-y divide-slate-100">
-                {activities.map((item, idx) => {
-                  const topicId = item.topic_id;
-                  return (
-                    <ActivityRow
-                      key={idx}
-                      title={item.title}
-                      date={formatDateOnly(item.created_at)}
-                      onView={topicId ? () => navigate(`/topic/${topicId}`) : undefined}
-                    />
-                  );
-                })}
               </div>
-            )}
+            </div>
+            <button
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-400 hover:text-slate-950 sm:w-auto"
+              onClick={() => setEditMode(true)}
+            >
+              <FaPen className="h-3.5 w-3.5" aria-hidden="true" />
+              프로필 수정
+            </button>
           </div>
+
+          <div className="grid border-t border-slate-100 sm:grid-cols-3">
+            {statItems.map((item) => (
+              <StatSummary key={item.label} item={item} loading={loadingStats} />
+            ))}
+          </div>
+        </section>
+
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <RecentActivityCard
+            activities={activities}
+            loading={loadingActivity}
+            onView={(topicId) => navigate(`/topic/${topicId}`)}
+          />
+
+          <AccountPanel
+            user={user}
+            form={form}
+            editMode={editMode}
+            saving={saving}
+            avatarUrl={avatarUrl}
+            onChange={onChange}
+            onSave={onSave}
+            onCancel={onCancel}
+            onEdit={() => setEditMode(true)}
+            onAvatarChange={onAvatarChange}
+            onAvatarReset={resetAvatar}
+          />
         </div>
 
-        <InquiryHistorySection inquiries={inquiries} loading={loadingInquiries} />
-        <ContentStatusSection
-          items={contentStatus}
-          loading={loadingContentStatus}
-          onContact={() => navigate('/contact')}
-        />
+        <div className="grid gap-4 lg:grid-cols-2">
+          <InquiryHistorySection inquiries={inquiries} loading={loadingInquiries} />
+          <ContentStatusSection
+            items={contentStatus}
+            loading={loadingContentStatus}
+            onContact={() => navigate('/contact')}
+          />
+        </div>
       </div>
     </div>
   );
 };
 
-const StatCard = ({ label, value }) => (
-  <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-md">
-    <p className="text-sm font-semibold text-slate-600">{label}</p>
-    <p className="mt-1 text-2xl font-bold text-slate-900">{value}</p>
-  </div>
+const toneClasses = {
+  blue: 'bg-blue-50 text-blue-600',
+  emerald: 'bg-emerald-50 text-emerald-600',
+  rose: 'bg-rose-50 text-rose-500',
+};
+
+const Avatar = ({ user, avatarUrl, size = 'md' }) => {
+  const sizeClass = size === 'lg' ? 'h-16 w-16 text-2xl sm:h-20 sm:w-20 sm:text-3xl' : 'h-12 w-12 text-lg';
+
+  return (
+    <div
+      className={`flex ${sizeClass} shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-gradient-to-br from-blue-100 to-slate-100 font-bold text-blue-700 shadow-sm`}
+    >
+      {avatarUrl ? (
+        <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
+      ) : (
+        user?.name?.[0]?.toUpperCase() || 'U'
+      )}
+    </div>
+  );
+};
+
+const StatSummary = ({ item, loading }) => {
+  const Icon = item.icon;
+
+  return (
+    <div className="flex items-center gap-3 border-t border-slate-100 px-5 py-4 first:border-t-0 sm:border-l sm:border-t-0 sm:first:border-l-0">
+      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${toneClasses[item.tone]}`}>
+        <Icon aria-hidden="true" />
+      </span>
+      <div>
+        <p className="text-xs font-semibold text-slate-500">{item.label}</p>
+        <p className="mt-0.5 text-2xl font-bold text-slate-950">{loading ? '...' : item.value}</p>
+      </div>
+    </div>
+  );
+};
+
+const RecentActivityCard = ({ activities, loading, onView }) => (
+  <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <div className="flex items-center justify-between gap-3">
+      <div>
+        <h2 className="text-lg font-bold text-slate-950">최근 활동</h2>
+        <p className="mt-1 text-sm text-slate-500">내가 참여한 토픽 흐름을 빠르게 확인할 수 있습니다.</p>
+      </div>
+    </div>
+
+    {loading ? (
+      <div className="mt-5 space-y-3">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div key={index} className="h-16 animate-pulse rounded-xl bg-slate-100" />
+        ))}
+      </div>
+    ) : activities.length === 0 ? (
+      <EmptyState icon={FaCommentDots} title="아직 활동이 없습니다" description="토픽에 투표하거나 댓글을 남기면 이곳에 표시됩니다." />
+    ) : (
+      <div className="mt-5 divide-y divide-slate-100">
+        {activities.slice(0, 6).map((item, idx) => (
+          <ActivityRow
+            key={`${item.topic_id || 'activity'}-${idx}`}
+            title={item.title}
+            date={formatDateOnly(item.created_at)}
+            onView={item.topic_id ? () => onView(item.topic_id) : undefined}
+          />
+        ))}
+      </div>
+    )}
+  </section>
+);
+
+const AccountPanel = ({
+  user,
+  form,
+  editMode,
+  saving,
+  avatarUrl,
+  onChange,
+  onSave,
+  onCancel,
+  onEdit,
+  onAvatarChange,
+  onAvatarReset,
+}) => (
+  <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <div className="flex items-start justify-between gap-3">
+      <div>
+        <h2 className="text-lg font-bold text-slate-950">계정 정보</h2>
+        <p className="mt-1 text-sm text-slate-500">이름과 프로필 이미지를 관리합니다.</p>
+      </div>
+      {!editMode && (
+        <button
+          type="button"
+          onClick={onEdit}
+          className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-950"
+        >
+          수정
+        </button>
+      )}
+    </div>
+
+    <div className="mt-5 flex items-center gap-3 rounded-xl bg-slate-50 p-3">
+      <Avatar user={user} avatarUrl={avatarUrl} />
+      <div className="min-w-0">
+        <p className="truncate text-sm font-bold text-slate-900">{user?.name}</p>
+        <p className="truncate text-xs text-slate-500">{user?.email}</p>
+      </div>
+    </div>
+
+    <div className="mt-5 space-y-4">
+      <Field label="이름">
+        {editMode ? (
+          <input
+            name="name"
+            value={form.name}
+            onChange={onChange}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-slate-300"
+          />
+        ) : (
+          <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800">{user?.name}</p>
+        )}
+      </Field>
+      <Field label="이메일">
+        <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800">{user?.email}</p>
+      </Field>
+      <Field label="가입일">
+        <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800">
+          {formatDateOnly(user?.joinedAt)}
+        </p>
+      </Field>
+      <Field label="프로필 이미지">
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="inline-flex min-h-10 cursor-pointer items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-950">
+            이미지 선택
+            <input type="file" accept="image/*" className="hidden" onChange={onAvatarChange} />
+          </label>
+          {avatarUrl && (
+            <button type="button" onClick={onAvatarReset} className="text-sm font-semibold text-red-500 hover:underline">
+              삭제
+            </button>
+          )}
+        </div>
+      </Field>
+    </div>
+
+    {editMode && (
+      <div className="mt-5 grid grid-cols-2 gap-2">
+        <button
+          onClick={onCancel}
+          disabled={saving}
+          className="min-h-10 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-300 disabled:opacity-60"
+        >
+          취소
+        </button>
+        <button
+          onClick={onSave}
+          disabled={saving}
+          className="min-h-10 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+        >
+          {saving ? '저장 중...' : '저장'}
+        </button>
+      </div>
+    )}
+  </aside>
 );
 
 const Field = ({ label, children }) => (
-  <div className="flex flex-col gap-1 py-2">
-    <span className="text-sm font-medium text-slate-700">{label}</span>
-    <div className="text-sm text-slate-800">{children}</div>
+  <div>
+    <span className="mb-1.5 block text-xs font-bold text-slate-500">{label}</span>
+    {children}
   </div>
 );
 
 const ActivityRow = ({ title, date, onView }) => (
-  <div className="flex flex-col gap-2 border-b last:border-0 py-3">
-    <p className="line-clamp-2 text-sm font-medium leading-relaxed text-slate-800">{title}</p>
-    <div className="flex items-center justify-between text-xs text-slate-500">
-      <span>{date}</span>
-      <button
-        onClick={onView}
-        disabled={!onView}
-        className={`text-xs transition ${onView ? 'text-slate-500 hover:text-slate-800' : 'text-slate-300'}`}
-      >
-        보기
-      </button>
+  <button
+    type="button"
+    onClick={onView}
+    disabled={!onView}
+    className="flex w-full items-center justify-between gap-4 py-4 text-left transition hover:bg-slate-50 disabled:cursor-default disabled:hover:bg-transparent"
+  >
+    <div className="min-w-0">
+      <p className="line-clamp-1 text-sm font-bold text-slate-900">{title}</p>
+      <p className="mt-1 text-xs text-slate-500">{date}</p>
     </div>
+    <FaChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden="true" />
+  </button>
+);
+
+const EmptyState = ({ icon: Icon, title, description }) => (
+  <div className="mt-5 flex min-h-36 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center">
+    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm">
+      <Icon aria-hidden="true" />
+    </span>
+    <p className="mt-3 text-sm font-bold text-slate-900">{title}</p>
+    <p className="mt-1 text-sm text-slate-500">{description}</p>
   </div>
 );
 
 const InquiryHistorySection = ({ inquiries, loading }) => (
-  <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 shadow-md sm:p-6">
-    <div>
-      <h3 className="text-lg font-semibold text-slate-900">내 문의 내역</h3>
-      <p className="mt-1 text-sm text-slate-500">
-        접수한 문의의 처리 상태와 관리자 처리 사유를 확인할 수 있습니다.
-      </p>
-    </div>
+  <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <SectionHeader title="내 문의 내역" description="접수한 문의와 처리 상태를 확인할 수 있습니다." />
 
     {loading ? (
-      <p className="text-sm text-slate-500">문의 내역을 불러오는 중입니다.</p>
+      <p className="mt-5 text-sm text-slate-500">문의 내역을 불러오는 중입니다.</p>
     ) : inquiries.length === 0 ? (
-      <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-500">
-        아직 접수한 문의가 없습니다.
-      </div>
+      <EmptyState icon={FaUserCircle} title="문의 내역이 없습니다" description="문의가 필요하면 고객센터에서 새 문의를 남길 수 있습니다." />
     ) : (
-      <div className="space-y-3">
-        {inquiries.map((inquiry) => (
+      <div className="mt-5 space-y-3">
+        {inquiries.slice(0, 3).map((inquiry) => (
           <InquiryHistoryItem key={inquiry.inquiry_id} inquiry={inquiry} />
         ))}
       </div>
@@ -444,22 +547,22 @@ const InquiryHistoryItem = ({ inquiry }) => {
   const statusLabel = INQUIRY_STATUS_LABELS[inquiry.status] || inquiry.status;
 
   return (
-    <article className="rounded-lg border border-slate-200 bg-slate-50 p-3 sm:p-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <span className="inline-flex rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700">
+    <article className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <span className="inline-flex rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-bold text-slate-700">
             {statusLabel}
           </span>
-          <h4 className="mt-2 break-words text-base font-semibold text-slate-900">{inquiry.title}</h4>
+          <h3 className="mt-2 line-clamp-1 text-sm font-bold text-slate-900">{inquiry.title}</h3>
         </div>
-        <span className="text-xs text-slate-500">{formatDateOnly(inquiry.created_at)}</span>
+        <span className="shrink-0 text-xs text-slate-500">{formatDateOnly(inquiry.created_at)}</span>
       </div>
 
-      <p className="mt-3 line-clamp-2 break-words text-sm leading-relaxed text-slate-600">{inquiry.content}</p>
+      <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-slate-600">{inquiry.content}</p>
 
       {inquiry.latest_reason && (
-        <div className="mt-3 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
-          <span className="font-semibold text-slate-900">처리 사유: </span>
+        <div className="mt-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+          <span className="font-bold text-slate-900">처리 사유: </span>
           {inquiry.latest_reason}
         </div>
       )}
@@ -468,23 +571,16 @@ const InquiryHistoryItem = ({ inquiry }) => {
 };
 
 const ContentStatusSection = ({ items, loading, onContact }) => (
-  <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 shadow-md sm:p-6">
-    <div>
-      <h3 className="text-lg font-semibold text-slate-900">내 콘텐츠 상태</h3>
-      <p className="mt-1 text-sm text-slate-500">
-        숨김 처리된 내 토픽과 댓글을 확인할 수 있습니다.
-      </p>
-    </div>
+  <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <SectionHeader title="내 콘텐츠 상태" description="숨김 처리된 토픽과 댓글을 확인할 수 있습니다." />
 
     {loading ? (
-      <p className="text-sm text-slate-500">콘텐츠 상태를 불러오는 중입니다.</p>
+      <p className="mt-5 text-sm text-slate-500">콘텐츠 상태를 불러오는 중입니다.</p>
     ) : items.length === 0 ? (
-      <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-500">
-        숨김 처리된 콘텐츠가 없습니다.
-      </div>
+      <EmptyState icon={FaShieldAlt} title="숨김 처리된 콘텐츠가 없습니다" description="현재 제한된 토픽이나 댓글이 없습니다." />
     ) : (
-      <div className="space-y-3">
-        {items.map((item) => (
+      <div className="mt-5 space-y-3">
+        {items.slice(0, 3).map((item) => (
           <ContentStatusItem key={`${item.type}-${item.item_id}`} item={item} onContact={onContact} />
         ))}
       </div>
@@ -496,37 +592,42 @@ const ContentStatusItem = ({ item, onContact }) => {
   const typeLabel = CONTENT_STATUS_LABELS[item.type] || item.type;
 
   return (
-    <article className="rounded-lg border border-slate-200 bg-slate-50 p-3 sm:p-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <span className="inline-flex rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
+    <article className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <span className="inline-flex rounded-md border border-red-100 bg-red-50 px-2 py-1 text-xs font-bold text-red-700">
             숨김 처리
           </span>
-          <h4 className="mt-2 break-words text-base font-semibold text-slate-900">
+          <h3 className="mt-2 line-clamp-1 text-sm font-bold text-slate-900">
             {typeLabel}: {item.title}
-          </h4>
+          </h3>
         </div>
-        <span className="text-xs text-slate-500">
+        <span className="shrink-0 text-xs text-slate-500">
           {item.hidden_at ? formatDateOnly(item.hidden_at) : '-'}
         </span>
       </div>
 
-      {item.content && (
-        <p className="mt-3 line-clamp-2 break-words text-sm leading-relaxed text-slate-600">{item.content}</p>
-      )}
+      {item.content && <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-slate-600">{item.content}</p>}
 
-      <div className="mt-3 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+      <div className="mt-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
         <p>{CONTENT_STATUS_NOTICE}</p>
         <button
           type="button"
           onClick={onContact}
-          className="mt-2 text-sm font-semibold text-slate-800 underline-offset-4 hover:underline"
+          className="mt-2 text-sm font-bold text-slate-900 underline-offset-4 hover:underline"
         >
-          문의 남기기
+          문의하기
         </button>
       </div>
     </article>
   );
 };
+
+const SectionHeader = ({ title, description }) => (
+  <div>
+    <h2 className="text-lg font-bold text-slate-950">{title}</h2>
+    <p className="mt-1 text-sm text-slate-500">{description}</p>
+  </div>
+);
 
 export default Profile;
