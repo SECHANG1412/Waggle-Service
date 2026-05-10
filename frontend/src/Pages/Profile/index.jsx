@@ -515,10 +515,10 @@ const ActivityRow = ({ title, date, onView }) => (
   </button>
 );
 
-const EmptyState = ({ icon: Icon, title, description }) => (
+const EmptyState = ({ icon, title, description }) => (
   <div className="mt-5 flex min-h-36 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center">
     <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm">
-      <Icon aria-hidden="true" />
+      {React.createElement(icon, { 'aria-hidden': true })}
     </span>
     <p className="mt-3 text-sm font-bold text-slate-900">{title}</p>
     <p className="mt-1 text-sm text-slate-500">{description}</p>
