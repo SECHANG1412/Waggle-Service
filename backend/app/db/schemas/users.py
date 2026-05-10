@@ -23,14 +23,17 @@ class UserLogin(BaseModel):
 
 class UserUpdate(BaseModel):
     email: str | None = None
-    username: str | None = None
+    username: str | None = Field(None, min_length=2, max_length=50)
     password: str | None = None
+
+    model_config = ConfigDict(str_strip_whitespace=True)
 
 
 class UserInDB(BaseModel):
     user_id: int
     email: str
     username: str
+    username_normalized: str
     password: str
     is_admin: bool = False
     created_at: datetime

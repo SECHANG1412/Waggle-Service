@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.db.models import User
+from app.db.models.user import normalize_username
 from app.db.schemas.users import UserCreate, UserUpdate
 
 class UserCrud:
@@ -50,6 +51,14 @@ class UserCrud:
     @staticmethod
     async def get_by_username(db: AsyncSession, username: str) -> User | None:
         result = await db.execute(select(User).filter(User.username == username))
+        return result.scalar_one_or_none()
+
+    @staticmethod
+    async def get_by_normalized_username(db: AsyncSession, username: str) -> User | None:
+        normalized = normalize_username(username)
+        result = await db.execute(
+            select(User).filter(User.username_normalized == normalized)
+        )
         return result.scalar_one_or_none()
     
     @staticmethod

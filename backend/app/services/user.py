@@ -1,28 +1,33 @@
 from datetime import datetime
 
-from sqlalchemy.ext.asyncio import AsyncSession
+from email_validator import EmailNotValidError, validate_email
 from fastapi import HTTPException
-from email_validator import validate_email, EmailNotValidError
-from app.db.crud import CommentCrud, LikeCrud, TopicCrud, UserCrud, VoteCrud
-from app.db.models import User
-from app.db.schemas.users import (
-    UserLogin,
-    UserCreate,
-    UserRead,
-    UserUpdate,
-    UserStats,
-    UserActivity,
-    UserHiddenContent,
-)
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.jwt_handler import (
     create_access_token,
     create_refresh_token,
     get_password_hash,
     verify_password,
 )
+from app.db.crud import CommentCrud, LikeCrud, TopicCrud, UserCrud, VoteCrud
+from app.db.models import User
+from app.db.schemas.users import (
+    UserActivity,
+    UserCreate,
+    UserHiddenContent,
+    UserLogin,
+    UserRead,
+    UserStats,
+    UserUpdate,
+)
 
 
 class UserService:
+    _USERNAME_TAKEN_MESSAGE = "이미 사용 중인 이름입니다."
+    _EMAIL_TAKEN_MESSAGE = "이미 사용 중인 이메일입니다."
+
     _DISPOSABLE_DOMAINS = {
         "mailinator.com",
         "tempmail.com",
@@ -43,11 +48,11 @@ class UserService:
             v = validate_email(email, check_deliverability=True)
             normalized = v.email
         except EmailNotValidError:
-            raise HTTPException(status_code=400, detail="올바른 이메일 형식이 아닙니다.")
+            raise HTTPException(status_code=400, detail="유효한 이메일을 입력해 주세요.")
 
         domain = normalized.split("@")[-1].lower()
         if domain in UserService._DISPOSABLE_DOMAINS:
-            raise HTTPException(status_code=400, detail="일회용 이메일 주소는 사용할 수 없습니다.")
+            raise HTTPException(status_code=400, detail="일회용 이메일은 사용할 수 없습니다.")
         return normalized
 
     @staticmethod
@@ -61,10 +66,10 @@ class UserService:
     async def signup(db: AsyncSession, user: UserCreate) -> UserRead:
         user.email = UserService._validate_email(user.email)
 
-        if await UserCrud.get_by_username(db, user.username):
-            raise HTTPException(status_code=400, detail="이미 사용 중인 닉네임입니다.")
+        if await UserCrud.get_by_normalized_username(db, user.username):
+            raise HTTPException(status_code=400, detail=UserService._USERNAME_TAKEN_MESSAGE)
         if await UserCrud.get_by_email(db, user.email):
-            raise HTTPException(status_code=400, detail="이미 사용 중인 이메일입니다.")
+            raise HTTPException(status_code=400, detail=UserService._EMAIL_TAKEN_MESSAGE)
 
         user.password = await get_password_hash(user.password)
 
@@ -73,6 +78,9 @@ class UserService:
             await db.commit()
             await db.refresh(db_user)
             return await UserService._build_user_read(db, db_user)
+        except IntegrityError:
+            await db.rollback()
+            raise HTTPException(status_code=400, detail=UserService._USERNAME_TAKEN_MESSAGE)
         except Exception:
             await db.rollback()
             raise HTTPException(status_code=500, detail="회원가입 처리 중 오류가 발생했습니다.")
@@ -100,21 +108,28 @@ class UserService:
             update.email = UserService._validate_email(update.email)
             existing_email = await UserCrud.get_by_email(db, update.email)
             if existing_email and existing_email.user_id != user_id:
-                raise HTTPException(status_code=400, detail="이미 사용 중인 이메일입니다.")
+                raise HTTPException(status_code=400, detail=UserService._EMAIL_TAKEN_MESSAGE)
+
         if update.username:
-            existing_username = await UserCrud.get_by_username(db, update.username)
+            existing_username = await UserCrud.get_by_normalized_username(db, update.username)
             if existing_username and existing_username.user_id != user_id:
-                raise HTTPException(status_code=400, detail="이미 사용 중인 닉네임입니다.")
+                raise HTTPException(status_code=400, detail=UserService._USERNAME_TAKEN_MESSAGE)
 
         if update.password:
             update.password = await get_password_hash(update.password)
 
-        db_user = await UserCrud.update_by_id(db, user_id, update)
-        if not db_user:
-            raise HTTPException(status_code=404, detail="User not found")
-        await db.commit()
-        await db.refresh(db_user)
-        return await UserService._build_user_read(db, db_user)
+        try:
+            db_user = await UserCrud.update_by_id(db, user_id, update)
+            if not db_user:
+                raise HTTPException(status_code=404, detail="User not found")
+            await db.commit()
+            await db.refresh(db_user)
+            return await UserService._build_user_read(db, db_user)
+        except HTTPException:
+            raise
+        except IntegrityError:
+            await db.rollback()
+            raise HTTPException(status_code=400, detail=UserService._USERNAME_TAKEN_MESSAGE)
 
     @staticmethod
     async def get_stats(db: AsyncSession, user_id: int) -> UserStats:

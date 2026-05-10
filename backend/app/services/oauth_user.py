@@ -27,7 +27,7 @@ async def ensure_oauth_user(
     candidate = base_username
     suffix = 1
 
-    while await UserCrud.get_by_username(db, candidate):
+    while await UserCrud.get_by_normalized_username(db, candidate):
         candidate = f"{base_username}{suffix}"
         suffix += 1
 

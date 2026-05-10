@@ -69,6 +69,43 @@ async def test_update_me_hashes_password_before_saving(
 
 
 @pytest.mark.asyncio
+async def test_update_me_rejects_duplicate_username_with_case_and_spaces(
+    authenticated_client: AsyncClient,
+    db_session,
+):
+    await create_user(db_session, username="TakenName", email="taken@example.com")
+    await db_session.commit()
+
+    response = await authenticated_client.put(
+        "/users/me",
+        json={"username": "  takenname  "},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "이미 사용 중인 이름입니다."
+
+
+@pytest.mark.asyncio
+async def test_update_me_allows_own_username_with_extra_spaces(
+    authenticated_client: AsyncClient,
+    db_session,
+    auth_user,
+):
+    updated_username = auth_user.username.upper()
+
+    response = await authenticated_client.put(
+        "/users/me",
+        json={"username": f"  {updated_username}  "},
+    )
+
+    assert response.status_code == 200
+
+    await db_session.refresh(auth_user)
+    assert auth_user.username == updated_username
+    assert auth_user.username_normalized == updated_username.casefold()
+
+
+@pytest.mark.asyncio
 async def test_user_activity_includes_topic_id_and_latest_first(
     authenticated_client: AsyncClient,
     db_session,
