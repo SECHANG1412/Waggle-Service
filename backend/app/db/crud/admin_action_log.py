@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -37,6 +39,8 @@ class AdminActionLogCrud:
         action: str | None = None,
         target_type: str | None = None,
         admin_user_id: int | None = None,
+        start_at: datetime | None = None,
+        end_at: datetime | None = None,
         limit: int = 100,
     ) -> list[AdminActionLog]:
         query = select(AdminActionLog)
@@ -47,6 +51,10 @@ class AdminActionLogCrud:
             query = query.where(AdminActionLog.target_type == target_type)
         if admin_user_id is not None:
             query = query.where(AdminActionLog.admin_user_id == admin_user_id)
+        if start_at:
+            query = query.where(AdminActionLog.created_at >= start_at)
+        if end_at:
+            query = query.where(AdminActionLog.created_at < end_at)
 
         query = query.order_by(desc(AdminActionLog.created_at), desc(AdminActionLog.log_id)).limit(limit)
         result = await db.execute(query)

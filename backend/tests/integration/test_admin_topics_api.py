@@ -171,3 +171,62 @@ async def test_hide_missing_topic_returns_404(
     )
 
     assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_admin_can_delete_and_restore_topic_with_audit_logs(
+    client: AsyncClient,
+    db_session,
+    set_auth_cookies,
+):
+    owner = await create_user(db_session)
+    topic = await create_topic(db_session, user_id=owner.user_id)
+    admin = await _set_admin_cookies(client, db_session, set_auth_cookies)
+
+    delete_response = await client.patch(
+        f"/manage-api/topics/{topic.topic_id}/delete",
+        json={"reason": "spam"},
+    )
+
+    assert delete_response.status_code == 200
+    assert delete_response.json()["is_hidden"] is True
+
+    restore_response = await client.patch(
+        f"/manage-api/topics/{topic.topic_id}/restore",
+        json={"reason": "mistake"},
+    )
+
+    assert restore_response.status_code == 200
+    assert restore_response.json()["is_hidden"] is False
+
+    result = await db_session.execute(
+        select(AdminActionLog).order_by(AdminActionLog.log_id)
+    )
+    logs = result.scalars().all()
+    assert [log.action for log in logs] == ["DELETE_TOPIC", "RESTORE_TOPIC"]
+    assert all(log.admin_user_id == admin.user_id for log in logs)
+    assert logs[0].target_id == topic.topic_id
+    assert logs[0].reason == "spam"
+    assert logs[1].reason == "mistake"
+
+
+@pytest.mark.asyncio
+async def test_admin_can_filter_topics_by_deleted_status(
+    client: AsyncClient,
+    db_session,
+    set_auth_cookies,
+):
+    owner = await create_user(db_session)
+    await create_topic(db_session, user_id=owner.user_id, title="visible")
+    await create_topic(
+        db_session,
+        user_id=owner.user_id,
+        title="deleted",
+        is_hidden=True,
+    )
+    await _set_admin_cookies(client, db_session, set_auth_cookies)
+
+    response = await client.get("/manage-api/topics", params={"status": "deleted"})
+
+    assert response.status_code == 200
+    assert [item["title"] for item in response.json()] == ["deleted"]

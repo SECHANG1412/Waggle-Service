@@ -72,8 +72,19 @@ class TopicService:
         return await TopicCrud.count_all_with_filters(db, category, search)
 
     @staticmethod
-    async def get_all_for_admin(db: AsyncSession) -> list[Topic]:
-        return await TopicCrud.get_all_for_admin(db)
+    async def get_all_for_admin(
+        db: AsyncSession,
+        *,
+        status: str | None = None,
+        start_at=None,
+        end_at=None,
+    ) -> list[Topic]:
+        return await TopicCrud.get_all_for_admin(
+            db,
+            status=status,
+            start_at=start_at,
+            end_at=end_at,
+        )
 
     @staticmethod
     async def hide_for_admin(
@@ -133,6 +144,82 @@ class TopicService:
                 db,
                 admin_user_id=admin_user_id,
                 action="UNHIDE_TOPIC",
+                target_type="Topic",
+                target_id=topic_id,
+                before_value=before_value,
+                after_value={
+                    "is_hidden": False,
+                    "hidden_by": None,
+                },
+                reason=update.reason,
+            )
+            await db.commit()
+            await db.refresh(updated)
+            return updated
+        except Exception:
+            await db.rollback()
+            raise
+
+    @staticmethod
+    async def delete_for_admin(
+        db: AsyncSession,
+        topic_id: int,
+        update: TopicModerationUpdate,
+        admin_user_id: int,
+    ) -> Topic:
+        topic = await TopicCrud.get_by_id(db, topic_id)
+        if not topic:
+            raise HTTPException(status_code=404, detail="Topic not found")
+
+        before_value = {
+            "is_hidden": topic.is_hidden,
+            "hidden_by": topic.hidden_by,
+        }
+        try:
+            updated = await TopicCrud.hide(db, topic, admin_user_id)
+            await AdminActionLogService.record(
+                db,
+                admin_user_id=admin_user_id,
+                action="DELETE_TOPIC",
+                target_type="Topic",
+                target_id=topic_id,
+                before_value=before_value,
+                after_value={
+                    "is_hidden": True,
+                    "hidden_by": admin_user_id,
+                },
+                reason=update.reason,
+            )
+            await db.commit()
+            await db.refresh(updated)
+            return updated
+        except Exception:
+            await db.rollback()
+            raise
+
+    @staticmethod
+    async def restore_for_admin(
+        db: AsyncSession,
+        topic_id: int,
+        update: TopicModerationUpdate,
+        admin_user_id: int,
+    ) -> Topic:
+        topic = await TopicCrud.get_by_id(db, topic_id)
+        if not topic:
+            raise HTTPException(status_code=404, detail="Topic not found")
+        if not topic.is_hidden:
+            raise HTTPException(status_code=400, detail="Topic is not deleted")
+
+        before_value = {
+            "is_hidden": topic.is_hidden,
+            "hidden_by": topic.hidden_by,
+        }
+        try:
+            updated = await TopicCrud.unhide(db, topic)
+            await AdminActionLogService.record(
+                db,
+                admin_user_id=admin_user_id,
+                action="RESTORE_TOPIC",
                 target_type="Topic",
                 target_id=topic_id,
                 before_value=before_value,

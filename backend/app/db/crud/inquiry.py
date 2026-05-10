@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -24,15 +26,29 @@ class InquiryCrud:
         return inquiry
 
     @staticmethod
-    async def get_all(db: AsyncSession) -> list[Inquiry]:
-        result = await db.execute(select(Inquiry).order_by(desc(Inquiry.created_at)))
+    async def get_all(
+        db: AsyncSession,
+        *,
+        status: str | None = None,
+        start_at: datetime | None = None,
+        end_at: datetime | None = None,
+    ) -> list[Inquiry]:
+        query = select(Inquiry)
+        if status:
+            query = query.where(Inquiry.status == status)
+        if start_at:
+            query = query.where(Inquiry.created_at >= start_at)
+        if end_at:
+            query = query.where(Inquiry.created_at < end_at)
+        query = query.order_by(desc(Inquiry.created_at), desc(Inquiry.inquiry_id))
+        result = await db.execute(query)
         return list(result.scalars().all())
 
     @staticmethod
     async def get_all_by_user_id(db: AsyncSession, user_id: int) -> list[Inquiry]:
         result = await db.execute(
             select(Inquiry)
-            .where(Inquiry.user_id == user_id)
+            .where(Inquiry.user_id == user_id, Inquiry.status != "deleted")
             .order_by(desc(Inquiry.created_at), desc(Inquiry.inquiry_id))
         )
         return list(result.scalars().all())

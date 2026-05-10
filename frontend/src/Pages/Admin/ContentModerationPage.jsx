@@ -2,11 +2,20 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
 
-const FILTER_OPTIONS = [
-  { value: 'all', label: '전체' },
-  { value: 'visible', label: '노출 중' },
-  { value: 'hidden', label: '숨김' },
+const STATUS_OPTIONS = [
+  { value: '', label: '전체' },
+  { value: 'visible', label: '공개' },
+  { value: 'deleted', label: '삭제됨' },
 ];
+
+const DATE_OPTIONS = [
+  { value: 'all', label: '전체 기간' },
+  { value: 'today', label: '오늘' },
+  { value: '7d', label: '최근 7일' },
+  { value: '30d', label: '최근 30일' },
+];
+
+const DELETE_REASONS = ['스팸', '욕설/비방', '개인정보', '광고', '기타'];
 
 const formatDate = (value) => {
   if (!value) return '-';
@@ -16,15 +25,34 @@ const formatDate = (value) => {
   }).format(new Date(value));
 };
 
-const VisibilityBadge = ({ isHidden }) => (
+const getDateParams = (dateFilter) => {
+  if (dateFilter === 'all') return {};
+  const now = new Date();
+  const start = new Date(now);
+
+  if (dateFilter === 'today') {
+    start.setHours(0, 0, 0, 0);
+  } else if (dateFilter === '7d') {
+    start.setDate(now.getDate() - 7);
+  } else if (dateFilter === '30d') {
+    start.setDate(now.getDate() - 30);
+  }
+
+  return {
+    start_at: start.toISOString(),
+    end_at: now.toISOString(),
+  };
+};
+
+const StatusBadge = ({ isDeleted }) => (
   <span
     className={`inline-flex rounded-md border px-2 py-1 text-xs font-semibold ${
-      isHidden
+      isDeleted
         ? 'border-red-200 bg-red-50 text-red-700'
         : 'border-emerald-200 bg-emerald-50 text-emerald-700'
     }`}
   >
-    {isHidden ? '숨김' : '노출 중'}
+    {isDeleted ? '삭제됨' : '공개'}
   </span>
 );
 
@@ -36,34 +64,35 @@ const ContentModerationPage = ({
   getItemTitle,
   getItemDescription,
   getItemMeta,
-  hideEndpoint,
-  unhideEndpoint,
+  deleteEndpoint,
+  restoreEndpoint,
 }) => {
   const [items, setItems] = useState([]);
-  const [filter, setFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [dateFilter, setDateFilter] = useState('all');
   const [reasonById, setReasonById] = useState({});
   const [message, setMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [actionItemId, setActionItemId] = useState(null);
 
-  const filteredItems = useMemo(() => {
-    if (filter === 'visible') return items.filter((item) => !item.is_hidden);
-    if (filter === 'hidden') return items.filter((item) => item.is_hidden);
-    return items;
-  }, [filter, items]);
+  const params = useMemo(() => {
+    const nextParams = { ...getDateParams(dateFilter) };
+    if (statusFilter) nextParams.status = statusFilter;
+    return nextParams;
+  }, [dateFilter, statusFilter]);
 
   const loadItems = useCallback(async () => {
     setIsLoading(true);
     setMessage(null);
     try {
-      const response = await api.get(listEndpoint);
+      const response = await api.get(listEndpoint, { params });
       setItems(response.data);
     } catch {
-      setMessage({ type: 'error', text: '콘텐츠 목록을 불러오지 못했습니다.' });
+      setMessage({ type: 'error', text: '목록을 불러오지 못했습니다.' });
     } finally {
       setIsLoading(false);
     }
-  }, [listEndpoint]);
+  }, [listEndpoint, params]);
 
   useEffect(() => {
     loadItems();
@@ -80,28 +109,49 @@ const ContentModerationPage = ({
     );
   };
 
-  const handleModeration = async (item, nextHidden) => {
+  const handleDelete = async (item) => {
     const itemId = getItemId(item);
     const reason = (reasonById[itemId] || '').trim();
 
     if (!reason) {
-      setMessage({ type: 'error', text: '조치 사유를 입력해야 합니다.' });
+      setMessage({ type: 'error', text: '삭제 사유를 선택하거나 입력해주세요.' });
+      return;
+    }
+    if (!window.confirm('이 항목을 삭제 처리하시겠습니까? 일반 사용자에게 보이지 않습니다.')) {
       return;
     }
 
     setActionItemId(itemId);
     setMessage(null);
     try {
-      const endpoint = nextHidden ? hideEndpoint(itemId) : unhideEndpoint(itemId);
-      const response = await api.patch(endpoint, { reason });
+      const response = await api.patch(deleteEndpoint(itemId), { reason });
       updateItem(response.data);
       setReason(itemId, '');
-      setMessage({
-        type: 'success',
-        text: nextHidden ? '콘텐츠를 숨김 처리했습니다.' : '콘텐츠 숨김을 해제했습니다.',
-      });
+      setMessage({ type: 'success', text: '삭제 처리했습니다.' });
     } catch {
-      setMessage({ type: 'error', text: '콘텐츠 조치에 실패했습니다.' });
+      setMessage({ type: 'error', text: '삭제 처리하지 못했습니다.' });
+    } finally {
+      setActionItemId(null);
+    }
+  };
+
+  const handleRestore = async (item) => {
+    const itemId = getItemId(item);
+    const reason = (reasonById[itemId] || '관리자 복구').trim();
+
+    if (!window.confirm('이 항목을 복구하시겠습니까? 일반 사용자에게 다시 표시됩니다.')) {
+      return;
+    }
+
+    setActionItemId(itemId);
+    setMessage(null);
+    try {
+      const response = await api.patch(restoreEndpoint(itemId), { reason });
+      updateItem(response.data);
+      setReason(itemId, '');
+      setMessage({ type: 'success', text: '복구 처리했습니다.' });
+    } catch {
+      setMessage({ type: 'error', text: '복구 처리하지 못했습니다.' });
     } finally {
       setActionItemId(null);
     }
@@ -120,35 +170,53 @@ const ContentModerationPage = ({
           <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
         </div>
 
-        <label className="text-sm font-semibold text-slate-700">
-          노출 상태
-          <select
-            value={filter}
-            onChange={(event) => setFilter(event.target.value)}
-            className="mt-2 block min-h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-          >
-            {FILTER_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="text-sm font-semibold text-slate-700">
+            상태
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+              className="mt-2 block min-h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+            >
+              {STATUS_OPTIONS.map((option) => (
+                <option key={option.value || 'all'} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="text-sm font-semibold text-slate-700">
+            기간
+            <select
+              value={dateFilter}
+              onChange={(event) => setDateFilter(event.target.value)}
+              className="mt-2 block min-h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+            >
+              {DATE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
       </div>
 
       {message && <p className={`mb-4 text-sm font-semibold ${messageColor}`}>{message.text}</p>}
 
       <section className="rounded-lg border border-slate-200 bg-white">
         {isLoading ? (
-          <p className="px-4 py-8 text-sm text-slate-500">콘텐츠 목록을 불러오고 있습니다.</p>
-        ) : filteredItems.length === 0 ? (
-          <p className="px-4 py-8 text-sm text-slate-500">조건에 맞는 콘텐츠가 없습니다.</p>
+          <p className="px-4 py-8 text-sm text-slate-500">목록을 불러오는 중입니다.</p>
+        ) : items.length === 0 ? (
+          <p className="px-4 py-8 text-sm text-slate-500">조건에 맞는 항목이 없습니다.</p>
         ) : (
           <ul className="divide-y divide-slate-100">
-            {filteredItems.map((item) => {
+            {items.map((item) => {
               const itemId = getItemId(item);
               const isActionLoading = actionItemId === itemId;
               const reason = reasonById[itemId] || '';
+              const isDeleted = item.is_hidden;
               return (
                 <li key={itemId} className="p-3 sm:p-4">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -157,20 +225,24 @@ const ContentModerationPage = ({
                         <h2 className="break-words text-base font-semibold text-slate-900">
                           {getItemTitle(item)}
                         </h2>
-                        <VisibilityBadge isHidden={item.is_hidden} />
+                        <StatusBadge isDeleted={isDeleted} />
                       </div>
                       <p className="line-clamp-3 break-words text-sm leading-6 text-slate-600">
                         {getItemDescription(item)}
                       </p>
-                      <dl className="mt-3 grid gap-1 text-xs text-slate-500 sm:grid-cols-2">
+                      <dl className="mt-3 grid gap-2 text-xs text-slate-500 sm:grid-cols-2">
                         {getItemMeta(item).map((meta) => (
                           <div key={meta.label}>
                             <dt className="font-semibold text-slate-700">{meta.label}</dt>
-                            <dd>{meta.value}</dd>
+                            <dd className="break-words">{meta.value}</dd>
                           </div>
                         ))}
                         <div>
-                          <dt className="font-semibold text-slate-700">숨김 처리일</dt>
+                          <dt className="font-semibold text-slate-700">작성일</dt>
+                          <dd>{formatDate(item.created_at)}</dd>
+                        </div>
+                        <div>
+                          <dt className="font-semibold text-slate-700">삭제 처리일</dt>
                           <dd>{formatDate(item.hidden_at)}</dd>
                         </div>
                         <div>
@@ -182,30 +254,38 @@ const ContentModerationPage = ({
 
                     <div className="w-full shrink-0 lg:w-80">
                       <label className="block text-sm font-semibold text-slate-700">
-                        조치 사유
-                        <textarea
+                        처리 사유
+                        <select
                           value={reason}
                           onChange={(event) => setReason(itemId, event.target.value)}
-                          rows={3}
-                          placeholder="숨김 또는 해제 사유를 입력하세요."
-                          className="mt-2 w-full resize-y rounded-md border border-slate-200 px-3 py-2 text-sm leading-6"
-                        />
+                          className="mt-2 block min-h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+                        >
+                          <option value="">사유 선택</option>
+                          {DELETE_REASONS.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
                       </label>
+                      <textarea
+                        value={reason}
+                        onChange={(event) => setReason(itemId, event.target.value)}
+                        rows={3}
+                        placeholder="직접 입력도 가능합니다."
+                        className="mt-2 w-full resize-y rounded-md border border-slate-200 px-3 py-2 text-sm leading-6"
+                      />
                       <button
                         type="button"
-                        disabled={isActionLoading || !reason.trim()}
-                        onClick={() => handleModeration(item, !item.is_hidden)}
+                        disabled={isActionLoading || (!isDeleted && !reason.trim())}
+                        onClick={() => (isDeleted ? handleRestore(item) : handleDelete(item))}
                         className={`mt-3 min-h-11 w-full rounded-md px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-300 ${
-                          item.is_hidden
+                          isDeleted
                             ? 'bg-blue-600 hover:bg-blue-700'
                             : 'bg-red-600 hover:bg-red-700'
                         }`}
                       >
-                        {isActionLoading
-                          ? '처리 중'
-                          : item.is_hidden
-                            ? '숨김 해제'
-                            : '숨김 처리'}
+                        {isActionLoading ? '처리 중' : isDeleted ? '복구' : '삭제'}
                       </button>
                     </div>
                   </div>

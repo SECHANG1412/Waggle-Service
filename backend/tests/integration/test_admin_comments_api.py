@@ -193,3 +193,74 @@ async def test_hide_missing_comment_returns_404(
     )
 
     assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_admin_can_delete_and_restore_comment_with_audit_logs(
+    client: AsyncClient,
+    db_session,
+    set_auth_cookies,
+):
+    owner = await create_user(db_session)
+    topic = await create_topic(db_session, user_id=owner.user_id)
+    comment = await create_comment(
+        db_session,
+        user_id=owner.user_id,
+        topic_id=topic.topic_id,
+    )
+    admin = await _set_admin_cookies(client, db_session, set_auth_cookies)
+
+    delete_response = await client.patch(
+        f"/manage-api/comments/{comment.comment_id}/delete",
+        json={"reason": "abuse"},
+    )
+
+    assert delete_response.status_code == 200
+    assert delete_response.json()["is_hidden"] is True
+
+    restore_response = await client.patch(
+        f"/manage-api/comments/{comment.comment_id}/restore",
+        json={"reason": "mistake"},
+    )
+
+    assert restore_response.status_code == 200
+    assert restore_response.json()["is_hidden"] is False
+
+    result = await db_session.execute(
+        select(AdminActionLog).order_by(AdminActionLog.log_id)
+    )
+    logs = result.scalars().all()
+    assert [log.action for log in logs] == ["DELETE_COMMENT", "RESTORE_COMMENT"]
+    assert all(log.admin_user_id == admin.user_id for log in logs)
+    assert logs[0].target_id == comment.comment_id
+    assert logs[0].reason == "abuse"
+    assert logs[1].reason == "mistake"
+
+
+@pytest.mark.asyncio
+async def test_admin_can_filter_comments_by_deleted_status(
+    client: AsyncClient,
+    db_session,
+    set_auth_cookies,
+):
+    owner = await create_user(db_session)
+    topic = await create_topic(db_session, user_id=owner.user_id)
+    await create_comment(
+        db_session,
+        user_id=owner.user_id,
+        topic_id=topic.topic_id,
+        content="visible",
+    )
+    await create_comment(
+        db_session,
+        user_id=owner.user_id,
+        topic_id=topic.topic_id,
+        content="deleted",
+        is_hidden=True,
+    )
+    await _set_admin_cookies(client, db_session, set_auth_cookies)
+
+    response = await client.get("/manage-api/comments", params={"status": "deleted"})
+
+    assert response.status_code == 200
+    assert [item["content"] for item in response.json()] == ["deleted"]

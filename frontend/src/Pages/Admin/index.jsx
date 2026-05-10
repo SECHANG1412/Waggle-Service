@@ -4,6 +4,12 @@ import api from '../../utils/api';
 
 const ACTION_LABELS = {
   UPDATE_INQUIRY_STATUS: '문의 상태 변경',
+  DELETE_INQUIRY: '문의 삭제',
+  RESTORE_INQUIRY: '문의 복구',
+  DELETE_TOPIC: '토픽 삭제',
+  RESTORE_TOPIC: '토픽 복구',
+  DELETE_COMMENT: '댓글 삭제',
+  RESTORE_COMMENT: '댓글 복구',
   HIDE_TOPIC: '토픽 숨김',
   UNHIDE_TOPIC: '토픽 숨김 해제',
   HIDE_COMMENT: '댓글 숨김',
@@ -11,9 +17,10 @@ const ACTION_LABELS = {
 };
 
 const STATUS_LABELS = {
-  pending: '대기',
-  in_progress: '처리 중',
-  resolved: '해결',
+  pending: '미처리',
+  in_progress: '처리중',
+  resolved: '완료',
+  deleted: '삭제됨',
 };
 
 const formatDate = (value) => {
@@ -59,7 +66,7 @@ const Admin = () => {
       setComments(commentsResponse.data);
       setLogs(logsResponse.data);
     } catch {
-      setMessage({ type: 'error', text: '관리자 대시보드 정보를 불러오지 못했습니다.' });
+      setMessage({ type: 'error', text: '관리자 대시보드를 불러오지 못했습니다.' });
     } finally {
       setIsLoading(false);
     }
@@ -72,9 +79,9 @@ const Admin = () => {
   const stats = useMemo(() => {
     return {
       pendingInquiries: inquiries.filter((inquiry) => inquiry.status === 'pending').length,
-      inProgressInquiries: inquiries.filter((inquiry) => inquiry.status === 'in_progress').length,
-      hiddenTopics: topics.filter((topic) => topic.is_hidden).length,
-      hiddenComments: comments.filter((comment) => comment.is_hidden).length,
+      resolvedInquiries: inquiries.filter((inquiry) => inquiry.status === 'resolved').length,
+      deletedTopics: topics.filter((topic) => topic.is_hidden).length,
+      deletedComments: comments.filter((comment) => comment.is_hidden).length,
     };
   }, [comments, inquiries, topics]);
 
@@ -91,7 +98,7 @@ const Admin = () => {
           <p className="text-sm font-semibold text-blue-600">관리자</p>
           <h1 className="mt-3 break-words text-2xl font-bold text-slate-900 sm:text-3xl">운영 대시보드</h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            문의 처리 현황, 숨김 콘텐츠, 최근 관리자 작업 이력을 한눈에 확인합니다.
+            문의, 토픽, 댓글 처리 현황과 최근 관리자 작업을 확인합니다.
           </p>
         </div>
         <button
@@ -107,10 +114,10 @@ const Admin = () => {
       {message && <p className="mb-4 text-sm font-semibold text-red-600">{message.text}</p>}
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="처리 대기 문의" value={stats.pendingInquiries} to="/manage/inquiries" />
-        <StatCard label="처리 중 문의" value={stats.inProgressInquiries} to="/manage/inquiries" />
-        <StatCard label="숨김 토픽" value={stats.hiddenTopics} to="/manage/topics" />
-        <StatCard label="숨김 댓글" value={stats.hiddenComments} to="/manage/comments" />
+        <StatCard label="미처리 문의" value={stats.pendingInquiries} to="/manage/inquiries" />
+        <StatCard label="완료 문의" value={stats.resolvedInquiries} to="/manage/inquiries" />
+        <StatCard label="삭제 처리 토픽" value={stats.deletedTopics} to="/manage/topics" />
+        <StatCard label="삭제 처리 댓글" value={stats.deletedComments} to="/manage/comments" />
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
@@ -123,7 +130,7 @@ const Admin = () => {
           </div>
 
           {isLoading ? (
-            <p className="px-4 py-8 text-sm text-slate-500">최근 문의를 불러오고 있습니다.</p>
+            <p className="px-4 py-8 text-sm text-slate-500">최근 문의를 불러오는 중입니다.</p>
           ) : recentInquiries.length === 0 ? (
             <p className="px-4 py-8 text-sm text-slate-500">접수된 문의가 없습니다.</p>
           ) : (
@@ -156,7 +163,7 @@ const Admin = () => {
           </div>
 
           {isLoading ? (
-            <p className="px-4 py-8 text-sm text-slate-500">최근 작업을 불러오고 있습니다.</p>
+            <p className="px-4 py-8 text-sm text-slate-500">최근 작업을 불러오는 중입니다.</p>
           ) : logs.length === 0 ? (
             <p className="px-4 py-8 text-sm text-slate-500">기록된 관리자 작업이 없습니다.</p>
           ) : (
@@ -183,7 +190,7 @@ const Admin = () => {
       </div>
 
       <section className="mt-5 rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-        <h2 className="text-base font-semibold text-slate-900">바로가기</h2>
+        <h2 className="text-base font-semibold text-slate-900">빠른 이동</h2>
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
             to="/manage/inquiries"

@@ -3,7 +3,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.crud import AdminActionLogCrud, InquiryCrud, UserCrud
 from app.db.models import Inquiry
-from app.db.schemas.inquiries import InquiryCreate, InquiryStatusUpdate, MyInquiryRead
+from app.db.schemas.inquiries import (
+    InquiryCreate,
+    InquiryDeleteUpdate,
+    InquiryStatusUpdate,
+    MyInquiryRead,
+)
 from app.services.admin_action_log import AdminActionLogService
 
 
@@ -27,8 +32,19 @@ class InquiryService:
             raise
 
     @staticmethod
-    async def get_all_for_admin(db: AsyncSession) -> list[Inquiry]:
-        return await InquiryCrud.get_all(db)
+    async def get_all_for_admin(
+        db: AsyncSession,
+        *,
+        status: str | None = None,
+        start_at=None,
+        end_at=None,
+    ) -> list[Inquiry]:
+        return await InquiryCrud.get_all(
+            db,
+            status=status,
+            start_at=start_at,
+            end_at=end_at,
+        )
 
     @staticmethod
     async def get_all_by_user(db: AsyncSession, user_id: int) -> list[MyInquiryRead]:
@@ -70,6 +86,67 @@ class InquiryService:
                 db,
                 admin_user_id=admin_user_id,
                 action="UPDATE_INQUIRY_STATUS",
+                target_type="Inquiry",
+                target_id=inquiry_id,
+                before_value={"status": before_status},
+                after_value={"status": update.status},
+                reason=update.reason,
+            )
+            await db.commit()
+            await db.refresh(updated)
+            return updated
+        except Exception:
+            await db.rollback()
+            raise
+
+    @staticmethod
+    async def delete_for_admin(
+        db: AsyncSession,
+        inquiry_id: int,
+        update: InquiryDeleteUpdate,
+        admin_user_id: int,
+    ) -> Inquiry:
+        inquiry = await InquiryService.get_by_id_for_admin(db, inquiry_id)
+        before_status = inquiry.status
+        reason = update.reason or "관리자 문의 삭제"
+        try:
+            updated = await InquiryCrud.update_status(db, inquiry, "deleted")
+            await AdminActionLogService.record(
+                db,
+                admin_user_id=admin_user_id,
+                action="DELETE_INQUIRY",
+                target_type="Inquiry",
+                target_id=inquiry_id,
+                before_value={"status": before_status},
+                after_value={"status": "deleted"},
+                reason=reason,
+            )
+            await db.commit()
+            await db.refresh(updated)
+            return updated
+        except Exception:
+            await db.rollback()
+            raise
+
+    @staticmethod
+    async def restore_for_admin(
+        db: AsyncSession,
+        inquiry_id: int,
+        update: InquiryStatusUpdate,
+        admin_user_id: int,
+    ) -> Inquiry:
+        inquiry = await InquiryService.get_by_id_for_admin(db, inquiry_id)
+        before_status = inquiry.status
+        if before_status != "deleted":
+            raise HTTPException(status_code=400, detail="Inquiry is not deleted")
+        if update.status == "deleted":
+            raise HTTPException(status_code=400, detail="Restore status is invalid")
+        try:
+            updated = await InquiryCrud.update_status(db, inquiry, update.status)
+            await AdminActionLogService.record(
+                db,
+                admin_user_id=admin_user_id,
+                action="RESTORE_INQUIRY",
                 target_type="Inquiry",
                 target_id=inquiry_id,
                 before_value={"status": before_status},

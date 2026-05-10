@@ -125,8 +125,24 @@ class TopicCrud:
         return result.scalar() or 0
 
     @staticmethod
-    async def get_all_for_admin(db: AsyncSession) -> list[Topic]:
-        result = await db.execute(select(Topic).order_by(desc(Topic.created_at)))
+    async def get_all_for_admin(
+        db: AsyncSession,
+        *,
+        status: str | None = None,
+        start_at: datetime | None = None,
+        end_at: datetime | None = None,
+    ) -> list[Topic]:
+        query = select(Topic)
+        if status == "visible":
+            query = query.where(Topic.is_hidden.is_(False))
+        elif status == "deleted":
+            query = query.where(Topic.is_hidden.is_(True))
+        if start_at:
+            query = query.where(Topic.created_at >= start_at)
+        if end_at:
+            query = query.where(Topic.created_at < end_at)
+        query = query.order_by(desc(Topic.created_at), desc(Topic.topic_id))
+        result = await db.execute(query)
         return list(result.scalars().all())
 
     @staticmethod
