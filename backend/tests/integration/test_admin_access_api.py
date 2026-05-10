@@ -71,6 +71,38 @@ async def test_signup_creates_regular_user(client: AsyncClient, db_session, monk
     db_user = await UserCrud.get_by_email(db_session, "new-user@example.com")
     assert db_user is not None
     assert db_user.is_admin is False
+    assert db_user.username_normalized == "new-user"
+
+
+@pytest.mark.asyncio
+async def test_signup_rejects_duplicate_username_with_case_and_spaces(
+    client: AsyncClient,
+    db_session,
+    monkeypatch,
+):
+    async def fake_hash_password(password: str) -> str:
+        return f"hashed::{password}"
+
+    await create_user(db_session, username="TakenName", email="taken@example.com")
+    await db_session.commit()
+
+    monkeypatch.setattr("app.services.user.get_password_hash", fake_hash_password)
+    monkeypatch.setattr(
+        "app.services.user.UserService._validate_email",
+        staticmethod(lambda email: email),
+    )
+
+    response = await client.post(
+        "/users/signup",
+        json={
+            "email": "new-user@example.com",
+            "username": "  takenname  ",
+            "password": "password123",
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "이미 사용 중인 이름입니다."
 
 
 @pytest.mark.asyncio

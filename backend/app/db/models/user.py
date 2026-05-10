@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import datetime
 from typing import Optional, List
-from sqlalchemy import Boolean, String, TIMESTAMP, false, func
+from sqlalchemy import Boolean, String, TIMESTAMP, event, false, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 
@@ -11,6 +11,9 @@ class User(Base):
 
     user_id: Mapped[int] = mapped_column(primary_key=True, index=True)
     username: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+    username_normalized: Mapped[str] = mapped_column(
+        String(50), nullable=False, unique=True
+    )
     email: Mapped[str] = mapped_column(
         String(100), unique=True, index=True, nullable=False
     )
@@ -50,3 +53,13 @@ class User(Base):
     reply_likes: Mapped[List["ReplyLike"]] = relationship(
         "ReplyLike", back_populates="user", cascade="all, delete-orphan"
     )
+
+
+def normalize_username(username: str) -> str:
+    return username.strip().casefold()
+
+
+@event.listens_for(User, "before_insert")
+@event.listens_for(User, "before_update")
+def set_username_normalized(mapper, connection, target: User) -> None:
+    target.username_normalized = normalize_username(target.username)
