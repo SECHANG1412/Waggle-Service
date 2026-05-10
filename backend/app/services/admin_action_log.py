@@ -35,6 +35,8 @@ class AdminActionLogService:
         action: str | None = None,
         target_type: str | None = None,
         admin_user_id: int | None = None,
+        start_at=None,
+        end_at=None,
         limit: int = 100,
     ) -> list[AdminActionLog]:
         return await AdminActionLogCrud.get_all_for_admin(
@@ -42,5 +44,7 @@ class AdminActionLogService:
             action=action,
             target_type=target_type,
             admin_user_id=admin_user_id,
+            start_at=start_at,
+            end_at=end_at,
             limit=limit,
         )

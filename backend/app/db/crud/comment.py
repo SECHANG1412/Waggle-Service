@@ -76,8 +76,24 @@ class CommentCrud:
         return {topic_id: count for topic_id, count in result.all()}
 
     @staticmethod
-    async def get_all_for_admin(db: AsyncSession) -> list[Comment]:
-        result = await db.execute(select(Comment).order_by(desc(Comment.created_at)))
+    async def get_all_for_admin(
+        db: AsyncSession,
+        *,
+        status: str | None = None,
+        start_at: datetime | None = None,
+        end_at: datetime | None = None,
+    ) -> list[Comment]:
+        query = select(Comment)
+        if status == "visible":
+            query = query.where(Comment.is_hidden.is_(False))
+        elif status == "deleted":
+            query = query.where(Comment.is_hidden.is_(True))
+        if start_at:
+            query = query.where(Comment.created_at >= start_at)
+        if end_at:
+            query = query.where(Comment.created_at < end_at)
+        query = query.order_by(desc(Comment.created_at), desc(Comment.comment_id))
+        result = await db.execute(query)
         return list(result.scalars().all())
 
     @staticmethod

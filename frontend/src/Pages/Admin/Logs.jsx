@@ -5,6 +5,12 @@ import api from '../../utils/api';
 const ACTION_OPTIONS = [
   { value: '', label: '전체' },
   { value: 'UPDATE_INQUIRY_STATUS', label: '문의 상태 변경' },
+  { value: 'DELETE_INQUIRY', label: '문의 삭제' },
+  { value: 'RESTORE_INQUIRY', label: '문의 복구' },
+  { value: 'DELETE_TOPIC', label: '토픽 삭제' },
+  { value: 'RESTORE_TOPIC', label: '토픽 복구' },
+  { value: 'DELETE_COMMENT', label: '댓글 삭제' },
+  { value: 'RESTORE_COMMENT', label: '댓글 복구' },
   { value: 'HIDE_TOPIC', label: '토픽 숨김' },
   { value: 'UNHIDE_TOPIC', label: '토픽 숨김 해제' },
   { value: 'HIDE_COMMENT', label: '댓글 숨김' },
@@ -16,6 +22,13 @@ const TARGET_TYPE_OPTIONS = [
   { value: 'Inquiry', label: '문의' },
   { value: 'Topic', label: '토픽' },
   { value: 'Comment', label: '댓글' },
+];
+
+const DATE_OPTIONS = [
+  { value: 'all', label: '전체 기간' },
+  { value: 'today', label: '오늘' },
+  { value: '7d', label: '최근 7일' },
+  { value: '30d', label: '최근 30일' },
 ];
 
 const ACTION_LABELS = Object.fromEntries(
@@ -34,15 +47,38 @@ const formatDate = (value) => {
   }).format(new Date(value));
 };
 
+const getDateParams = (dateFilter) => {
+  if (dateFilter === 'all') return {};
+  const now = new Date();
+  const start = new Date(now);
+
+  if (dateFilter === 'today') {
+    start.setHours(0, 0, 0, 0);
+  } else if (dateFilter === '7d') {
+    start.setDate(now.getDate() - 7);
+  } else if (dateFilter === '30d') {
+    start.setDate(now.getDate() - 30);
+  }
+
+  return {
+    start_at: start.toISOString(),
+    end_at: now.toISOString(),
+  };
+};
+
+const buildLogSentence = (log) => {
+  const actionLabel = ACTION_LABELS[log.action] || log.action;
+  const targetLabel = TARGET_TYPE_LABELS[log.target_type] || log.target_type;
+  return `관리자 ID ${log.admin_user_id}이 ${targetLabel} #${log.target_id}을 ${actionLabel} 처리`;
+};
+
 const JsonPreview = ({ label, value }) => (
-  <div className="min-w-0">
-    <dt className="mb-1 text-xs font-semibold text-slate-700">{label}</dt>
-    <dd>
-      <pre className="max-h-40 max-w-full overflow-auto rounded-md bg-slate-50 p-3 text-xs leading-5 text-slate-700">
-        {JSON.stringify(value, null, 2)}
-      </pre>
-    </dd>
-  </div>
+  <details className="min-w-0 rounded-md bg-slate-50 p-3">
+    <summary className="cursor-pointer text-xs font-semibold text-slate-700">{label}</summary>
+    <pre className="mt-2 max-h-40 max-w-full overflow-auto text-xs leading-5 text-slate-700">
+      {JSON.stringify(value, null, 2)}
+    </pre>
+  </details>
 );
 
 const AdminLogs = () => {
@@ -51,12 +87,13 @@ const AdminLogs = () => {
     action: '',
     targetType: '',
     adminUserId: '',
+    date: 'all',
   });
   const [message, setMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const params = useMemo(() => {
-    const nextParams = { limit: 100 };
+    const nextParams = { limit: 100, ...getDateParams(filters.date) };
     if (filters.action) nextParams.action = filters.action;
     if (filters.targetType) nextParams.target_type = filters.targetType;
     if (filters.adminUserId.trim()) {
@@ -87,7 +124,7 @@ const AdminLogs = () => {
   };
 
   const resetFilters = () => {
-    setFilters({ action: '', targetType: '', adminUserId: '' });
+    setFilters({ action: '', targetType: '', adminUserId: '', date: 'all' });
   };
 
   return (
@@ -98,14 +135,14 @@ const AdminLogs = () => {
         </Link>
         <h1 className="mt-3 break-words text-2xl font-bold text-slate-900 sm:text-3xl">감사 로그</h1>
         <p className="mt-2 text-sm leading-6 text-slate-600">
-          관리자 조치 이력과 사유, 변경 전후 값을 확인합니다.
+          관리자 작업 내역을 문장형으로 확인하고 날짜, 작업, 대상 기준으로 필터링합니다.
         </p>
       </div>
 
       <section className="mb-5 rounded-lg border border-slate-200 bg-white p-4">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <label className="text-sm font-semibold text-slate-700">
-            작업 유형
+            작업
             <select
               value={filters.action}
               onChange={(event) => updateFilter('action', event.target.value)}
@@ -120,7 +157,7 @@ const AdminLogs = () => {
           </label>
 
           <label className="text-sm font-semibold text-slate-700">
-            대상 유형
+            대상
             <select
               value={filters.targetType}
               onChange={(event) => updateFilter('targetType', event.target.value)}
@@ -128,6 +165,21 @@ const AdminLogs = () => {
             >
               {TARGET_TYPE_OPTIONS.map((option) => (
                 <option key={option.value || 'all'} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="text-sm font-semibold text-slate-700">
+            기간
+            <select
+              value={filters.date}
+              onChange={(event) => updateFilter('date', event.target.value)}
+              className="mt-2 block min-h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+            >
+              {DATE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
@@ -161,7 +213,7 @@ const AdminLogs = () => {
 
       <section className="rounded-lg border border-slate-200 bg-white">
         {isLoading ? (
-          <p className="px-4 py-8 text-sm text-slate-500">감사 로그를 불러오고 있습니다.</p>
+          <p className="px-4 py-8 text-sm text-slate-500">감사 로그를 불러오는 중입니다.</p>
         ) : logs.length === 0 ? (
           <p className="px-4 py-8 text-sm text-slate-500">조건에 맞는 감사 로그가 없습니다.</p>
         ) : (
@@ -178,23 +230,23 @@ const AdminLogs = () => {
                         {TARGET_TYPE_LABELS[log.target_type] || log.target_type} #{log.target_id}
                       </span>
                     </div>
-                    <p className="mt-2 text-sm text-slate-600">
-                      관리자 ID {log.admin_user_id} · {formatDate(log.created_at)}
+                    <p className="mt-2 break-words text-sm font-semibold text-slate-900">
+                      {buildLogSentence(log)}
                     </p>
+                    <p className="mt-1 text-xs text-slate-500">{formatDate(log.created_at)}</p>
                   </div>
                   <p className="text-xs text-slate-500">로그 ID {log.log_id}</p>
                 </div>
 
-                <dl className="grid gap-4 lg:grid-cols-3">
-                  <div>
-                    <dt className="mb-1 text-xs font-semibold text-slate-700">사유</dt>
-                    <dd className="break-words rounded-md bg-slate-50 p-3 text-sm leading-6 text-slate-700">
-                      {log.reason}
-                    </dd>
-                  </div>
-                  <JsonPreview label="변경 전" value={log.before_value} />
-                  <JsonPreview label="변경 후" value={log.after_value} />
-                </dl>
+                <div className="mb-3 break-words rounded-md bg-white text-sm leading-6 text-slate-700">
+                  <span className="font-semibold text-slate-900">사유: </span>
+                  {log.reason}
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-2">
+                  <JsonPreview label="변경 전 상세" value={log.before_value} />
+                  <JsonPreview label="변경 후 상세" value={log.after_value} />
+                </div>
               </li>
             ))}
           </ul>
