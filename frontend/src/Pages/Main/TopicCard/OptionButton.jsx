@@ -24,18 +24,18 @@ const OptionButton = ({ option, index, topic, onVote }) => {
         if (!topic.has_voted) onVote(topic.topic_id, index);
       }}
       style={styles}
-      className="group flex min-h-[56px] w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-l-4 px-3 py-2 text-left transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-300 disabled:cursor-not-allowed"
+      className="group flex min-h-[44px] w-full cursor-pointer items-center justify-between gap-2.5 rounded-lg border border-l-4 px-3 py-1.5 text-left transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-300 disabled:cursor-not-allowed"
     >
       <span
-        className="min-w-0 flex-1 break-words text-base font-bold leading-snug"
+        className="min-w-0 flex-1 break-words text-sm font-bold leading-snug"
         style={{ color: topic.has_voted && isSelected ? '#ffffff' : baseColor }}
       >
         {option}
       </span>
-      <span className="flex shrink-0 items-center gap-2.5">
+      <span className="flex shrink-0 items-center gap-2">
         <span className={`text-right ${topic.has_voted && isSelected ? 'text-white' : 'text-slate-500'}`}>
           <span
-            className="block text-base font-bold leading-tight"
+            className="block text-sm font-bold leading-tight"
             style={{ color: topic.has_voted && isSelected ? '#ffffff' : baseColor }}
           >
             {percent}%

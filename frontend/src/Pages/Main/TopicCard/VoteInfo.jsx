@@ -3,9 +3,9 @@ import { FaHeart, FaCommentDots } from 'react-icons/fa';
 
 const VoteInfo = ({ createdAt, likeCount, totalVote, commentCount }) => {
   return (
-    <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-3 text-xs text-slate-500">
+    <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-2.5 text-[11px] text-slate-500">
       <span className="whitespace-nowrap">{createdAt}</span>
-      <div className="flex shrink-0 items-center gap-3">
+      <div className="flex shrink-0 items-center gap-2.5">
         <span className="flex items-center gap-1">
           <FaHeart className="text-rose-400" />
           {likeCount}
