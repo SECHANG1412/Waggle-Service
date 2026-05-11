@@ -3,7 +3,7 @@ from httpx import AsyncClient
 from sqlalchemy import select
 
 from app.db.crud import InquiryCrud
-from app.db.models import AdminActionLog
+from app.db.models import AdminActionLog, Inquiry
 from tests.factories import create_inquiry, create_user
 
 
@@ -138,33 +138,45 @@ async def test_update_inquiry_status_rejects_invalid_status(
 
 
 @pytest.mark.asyncio
-async def test_admin_can_delete_inquiry_and_record_audit_log(
+async def test_admin_can_delete_inquiry_and_record_snapshot_log(
     client: AsyncClient,
     db_session,
     set_auth_cookies,
 ):
-    inquiry = await create_inquiry(db_session, status="resolved")
+    inquiry = await create_inquiry(
+        db_session,
+        title="remove inquiry",
+        content="resolved issue",
+        status="resolved",
+        name="tester",
+        email="tester@example.com",
+    )
+    inquiry_id = inquiry.inquiry_id
     admin = await _set_admin_cookies(client, db_session, set_auth_cookies)
 
     response = await client.patch(
-        f"/manage-api/inquiries/{inquiry.inquiry_id}/delete",
+        f"/manage-api/inquiries/{inquiry_id}/delete",
         json={"reason": "completed cleanup"},
     )
 
     assert response.status_code == 200
-    assert response.json()["status"] == "deleted"
+    assert response.json() == {"deleted": True}
 
-    await db_session.refresh(inquiry)
-    assert inquiry.status == "deleted"
+    deleted_inquiry = await db_session.get(Inquiry, inquiry_id)
+    assert deleted_inquiry is None
 
     result = await db_session.execute(select(AdminActionLog))
     log = result.scalar_one()
     assert log.admin_user_id == admin.user_id
     assert log.action == "DELETE_INQUIRY"
     assert log.target_type == "Inquiry"
-    assert log.target_id == inquiry.inquiry_id
-    assert log.before_value == {"status": "resolved"}
-    assert log.after_value == {"status": "deleted"}
+    assert log.target_id == inquiry_id
+    assert log.before_value["title"] == "remove inquiry"
+    assert log.before_value["content"] == "resolved issue"
+    assert log.before_value["status"] == "resolved"
+    assert log.before_value["name"] == "tester"
+    assert log.before_value["email"] == "tester@example.com"
+    assert log.after_value == {"deleted": True}
     assert log.reason == "completed cleanup"
 
 
@@ -175,53 +187,10 @@ async def test_admin_can_filter_inquiries_by_status(
     set_auth_cookies,
 ):
     await create_inquiry(db_session, title="pending", status="pending")
-    await create_inquiry(db_session, title="deleted", status="deleted")
+    await create_inquiry(db_session, title="resolved", status="resolved")
     await _set_admin_cookies(client, db_session, set_auth_cookies)
 
-    response = await client.get("/manage-api/inquiries", params={"status": "deleted"})
+    response = await client.get("/manage-api/inquiries", params={"status": "resolved"})
 
     assert response.status_code == 200
-    payload = response.json()
-    assert [item["title"] for item in payload] == ["deleted"]
-
-
-@pytest.mark.asyncio
-async def test_admin_inquiry_list_excludes_deleted_by_default(
-    client: AsyncClient,
-    db_session,
-    set_auth_cookies,
-):
-    await create_inquiry(db_session, title="visible", status="pending")
-    await create_inquiry(db_session, title="deleted", status="deleted")
-    await _set_admin_cookies(client, db_session, set_auth_cookies)
-
-    response = await client.get("/manage-api/inquiries")
-
-    assert response.status_code == 200
-    assert [item["title"] for item in response.json()] == ["visible"]
-
-
-@pytest.mark.asyncio
-async def test_deleted_inquiry_is_excluded_from_my_inquiries(
-    authenticated_client: AsyncClient,
-    db_session,
-    auth_user,
-):
-    await create_inquiry(
-        db_session,
-        user_id=auth_user.user_id,
-        title="deleted inquiry",
-        status="deleted",
-    )
-    await create_inquiry(
-        db_session,
-        user_id=auth_user.user_id,
-        title="visible inquiry",
-        status="pending",
-    )
-    await db_session.commit()
-
-    response = await authenticated_client.get("/inquiries/me")
-
-    assert response.status_code == 200
-    assert [item["title"] for item in response.json()] == ["visible inquiry"]
+    assert [item["title"] for item in response.json()] == ["resolved"]

@@ -6,15 +6,8 @@ const ACTION_OPTIONS = [
   { value: '', label: '전체' },
   { value: 'UPDATE_INQUIRY_STATUS', label: '문의 상태 변경' },
   { value: 'DELETE_INQUIRY', label: '문의 삭제' },
-  { value: 'RESTORE_INQUIRY', label: '문의 복구' },
   { value: 'DELETE_TOPIC', label: '토픽 삭제' },
-  { value: 'RESTORE_TOPIC', label: '토픽 복구' },
   { value: 'DELETE_COMMENT', label: '댓글 삭제' },
-  { value: 'RESTORE_COMMENT', label: '댓글 복구' },
-  { value: 'HIDE_TOPIC', label: '토픽 숨김' },
-  { value: 'UNHIDE_TOPIC', label: '토픽 숨김 해제' },
-  { value: 'HIDE_COMMENT', label: '댓글 숨김' },
-  { value: 'UNHIDE_COMMENT', label: '댓글 숨김 해제' },
 ];
 
 const TARGET_TYPE_OPTIONS = [
@@ -43,13 +36,6 @@ const STATUS_LABELS = {
   pending: '미처리',
   in_progress: '처리중',
   resolved: '완료',
-  deleted: '삭제됨',
-};
-
-const FIELD_LABELS = {
-  status: '상태',
-  is_hidden: '노출 상태',
-  hidden_by: '처리 관리자',
 };
 
 const formatDate = (value) => {
@@ -79,40 +65,73 @@ const getDateParams = (dateFilter) => {
   };
 };
 
-const formatValue = (key, value) => {
-  if (key === 'status') return STATUS_LABELS[value] || value || '-';
-  if (key === 'is_hidden') return value ? '삭제 보관' : '공개';
-  if (value === null || value === undefined) return '-';
-  return String(value);
+const getTargetName = (log) => {
+  const snapshot = log.before_value || {};
+  if (log.target_type === 'Topic') return snapshot.title || `토픽 #${log.target_id}`;
+  if (log.target_type === 'Comment') return snapshot.content || `댓글 #${log.target_id}`;
+  if (log.target_type === 'Inquiry') return snapshot.title || `문의 #${log.target_id}`;
+  return `${log.target_type} #${log.target_id}`;
 };
 
 const buildLogSentence = (log) => {
-  const actionLabel = ACTION_LABELS[log.action] || log.action;
   const targetLabel = TARGET_TYPE_LABELS[log.target_type] || log.target_type;
-  return `관리자 ID ${log.admin_user_id}이 ${targetLabel} #${log.target_id}을 ${actionLabel} 처리`;
+  const targetName = getTargetName(log);
+
+  if (log.action === 'UPDATE_INQUIRY_STATUS') {
+    return `관리자 ID ${log.admin_user_id}이 ${targetLabel} "${targetName}"의 상태를 변경`;
+  }
+  if (log.action?.startsWith('DELETE_')) {
+    return `관리자 ID ${log.admin_user_id}이 ${targetLabel} "${targetName}"을 영구 삭제`;
+  }
+  return `관리자 ID ${log.admin_user_id}이 ${targetLabel} "${targetName}"을 처리`;
 };
 
-const buildChangeSummary = (log) => {
-  const keys = Array.from(
-    new Set([
-      ...Object.keys(log.before_value || {}),
-      ...Object.keys(log.after_value || {}),
-    ])
-  );
+const buildSummaryRows = (log) => {
+  const snapshot = log.before_value || {};
+  if (log.action === 'UPDATE_INQUIRY_STATUS') {
+    return [
+      {
+        label: '상태 변경',
+        value: `${STATUS_LABELS[snapshot.status] || snapshot.status || '-'} -> ${
+          STATUS_LABELS[log.after_value?.status] || log.after_value?.status || '-'
+        }`,
+      },
+    ];
+  }
 
-  if (keys.length === 0) return ['변경 상세 없음'];
+  if (log.action === 'DELETE_TOPIC') {
+    return [
+      { label: '처리 내용', value: '토픽 영구 삭제' },
+      { label: '토픽 제목', value: snapshot.title || '-' },
+      { label: '작성자 ID', value: snapshot.author_id ?? '-' },
+      { label: '카테고리', value: snapshot.category || '-' },
+    ];
+  }
 
-  return keys.map((key) => {
-    const label = FIELD_LABELS[key] || key;
-    const beforeValue = formatValue(key, log.before_value?.[key]);
-    const afterValue = formatValue(key, log.after_value?.[key]);
-    return `${label}: ${beforeValue} -> ${afterValue}`;
-  });
+  if (log.action === 'DELETE_COMMENT') {
+    return [
+      { label: '처리 내용', value: '댓글 영구 삭제' },
+      { label: '댓글 내용', value: snapshot.content || '-' },
+      { label: '작성자 ID', value: snapshot.author_id ?? '-' },
+      { label: '토픽 ID', value: snapshot.topic_id ?? '-' },
+    ];
+  }
+
+  if (log.action === 'DELETE_INQUIRY') {
+    return [
+      { label: '처리 내용', value: '문의 영구 삭제' },
+      { label: '문의 제목', value: snapshot.title || '-' },
+      { label: '작성자', value: snapshot.name || '-' },
+      { label: '이메일', value: snapshot.email || '-' },
+    ];
+  }
+
+  return [{ label: '처리 내용', value: ACTION_LABELS[log.action] || log.action }];
 };
 
 const RawJsonPreview = ({ log }) => (
   <details className="rounded-md bg-slate-50 p-3">
-    <summary className="cursor-pointer text-xs font-semibold text-slate-700">원본 데이터 보기</summary>
+    <summary className="cursor-pointer text-xs font-semibold text-slate-700">원본 기록 보기</summary>
     <div className="mt-3 grid gap-3 lg:grid-cols-2">
       <pre className="max-h-44 overflow-auto rounded-md bg-white p-3 text-xs leading-5 text-slate-700">
         {JSON.stringify(log.before_value, null, 2)}
@@ -178,14 +197,14 @@ const AdminLogs = () => {
         </Link>
         <h1 className="mt-3 break-words text-2xl font-bold text-slate-900 sm:text-3xl">감사 로그</h1>
         <p className="mt-2 text-sm leading-6 text-slate-600">
-          관리자 작업을 문장과 변경 요약 중심으로 확인합니다.
+          관리자 조치의 대상, 사유, 변경 내용을 확인합니다.
         </p>
       </div>
 
       <section className="mb-5 rounded-lg border border-slate-200 bg-white p-4">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <label className="text-sm font-semibold text-slate-700">
-            작업
+            조치
             <select
               value={filters.action}
               onChange={(event) => updateFilter('action', event.target.value)}
@@ -287,12 +306,15 @@ const AdminLogs = () => {
                 </div>
 
                 <div className="mb-3 rounded-md border border-slate-200 bg-slate-50 p-3">
-                  <p className="mb-2 text-xs font-semibold text-slate-700">변경 요약</p>
-                  <ul className="space-y-1 text-sm text-slate-700">
-                    {buildChangeSummary(log).map((summary) => (
-                      <li key={summary}>{summary}</li>
+                  <p className="mb-2 text-xs font-semibold text-slate-700">처리 요약</p>
+                  <dl className="grid gap-2 text-sm text-slate-700 sm:grid-cols-2">
+                    {buildSummaryRows(log).map((row) => (
+                      <div key={row.label}>
+                        <dt className="font-semibold text-slate-900">{row.label}</dt>
+                        <dd className="break-words">{row.value}</dd>
+                      </div>
                     ))}
-                  </ul>
+                  </dl>
                 </div>
 
                 <RawJsonPreview log={log} />

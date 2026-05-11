@@ -20,14 +20,12 @@ const STATUS_LABELS = {
   pending: '미처리',
   in_progress: '처리중',
   resolved: '완료',
-  deleted: '삭제 보관',
 };
 
 const STATUS_STYLES = {
   pending: 'bg-amber-50 text-amber-700 border-amber-200',
   in_progress: 'bg-blue-50 text-blue-700 border-blue-200',
   resolved: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  deleted: 'bg-red-50 text-red-700 border-red-200',
 };
 
 const formatDate = (value) => {
@@ -67,7 +65,7 @@ const StatusBadge = ({ status }) => (
   </span>
 );
 
-const AdminInquiries = ({ archiveMode = false }) => {
+const AdminInquiries = () => {
   const [inquiries, setInquiries] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [selectedInquiry, setSelectedInquiry] = useState(null);
@@ -82,13 +80,9 @@ const AdminInquiries = ({ archiveMode = false }) => {
 
   const params = useMemo(() => {
     const nextParams = { ...getDateParams(dateFilter) };
-    if (archiveMode) {
-      nextParams.status = 'deleted';
-    } else if (statusFilter) {
-      nextParams.status = statusFilter;
-    }
+    if (statusFilter) nextParams.status = statusFilter;
     return nextParams;
-  }, [archiveMode, dateFilter, statusFilter]);
+  }, [dateFilter, statusFilter]);
 
   const loadInquiries = useCallback(async () => {
     setIsListLoading(true);
@@ -120,7 +114,7 @@ const AdminInquiries = ({ archiveMode = false }) => {
     try {
       const response = await api.get(`/manage-api/inquiries/${inquiryId}`);
       setSelectedInquiry(response.data);
-      setNextStatus(response.data.status === 'deleted' ? 'resolved' : response.data.status);
+      setNextStatus(response.data.status);
       setReason('');
     } catch {
       setMessage({ type: 'error', text: '문의 상세를 불러오지 못했습니다.' });
@@ -185,8 +179,8 @@ const AdminInquiries = ({ archiveMode = false }) => {
 
   const handleDelete = async () => {
     if (!selectedInquiry) return;
-    const trimmedReason = reason.trim() || '완료 문의 정리';
-    if (!window.confirm('이 문의를 삭제 처리하시겠습니까? 기본 목록에서 제외됩니다.')) {
+    const trimmedReason = reason.trim() || '관리자 문의 삭제';
+    if (!window.confirm('이 문의를 영구 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.')) {
       return;
     }
 
@@ -199,33 +193,9 @@ const AdminInquiries = ({ archiveMode = false }) => {
       );
       removeInquiry(selectedInquiry.inquiry_id);
       setReason('');
-      setMessage({ type: 'success', text: '문의를 삭제 처리했습니다. 삭제 보관함에서 확인할 수 있습니다.' });
+      setMessage({ type: 'success', text: '문의를 영구 삭제했습니다. 삭제 내역은 감사 로그에 기록됩니다.' });
     } catch {
-      setMessage({ type: 'error', text: '문의를 삭제 처리하지 못했습니다.' });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleRestore = async () => {
-    if (!selectedInquiry) return;
-    const trimmedReason = reason.trim() || '관리자 복구';
-    if (!window.confirm('이 문의를 복구하시겠습니까?')) {
-      return;
-    }
-
-    setIsSubmitting(true);
-    setMessage(null);
-    try {
-      await api.patch(
-        `/manage-api/inquiries/${selectedInquiry.inquiry_id}/restore`,
-        { status: nextStatus, reason: trimmedReason }
-      );
-      removeInquiry(selectedInquiry.inquiry_id);
-      setReason('');
-      setMessage({ type: 'success', text: '문의를 복구했습니다. 기본 목록에서 확인할 수 있습니다.' });
-    } catch {
-      setMessage({ type: 'error', text: '문의를 복구하지 못했습니다.' });
+      setMessage({ type: 'error', text: '문의를 영구 삭제하지 못했습니다.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -240,33 +210,27 @@ const AdminInquiries = ({ archiveMode = false }) => {
           <Link to="/manage" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
             관리자 홈
           </Link>
-          <h1 className="mt-3 break-words text-2xl font-bold text-slate-900 sm:text-3xl">
-            {archiveMode ? '문의 삭제 보관함' : '문의 관리'}
-          </h1>
+          <h1 className="mt-3 break-words text-2xl font-bold text-slate-900 sm:text-3xl">문의 관리</h1>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            {archiveMode
-              ? '삭제 처리된 문의를 확인하고 필요하면 복구합니다.'
-              : '문의 상태를 처리하고 완료된 문의를 삭제 보관함으로 이동합니다.'}
+            문의 상태를 처리하고, 더 이상 보관할 필요가 없는 문의를 영구 삭제합니다.
           </p>
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-          {!archiveMode && (
-            <label className="text-sm font-semibold text-slate-700">
-              상태
-              <select
-                value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value)}
-                className="mt-2 block min-h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-              >
-                {STATUS_OPTIONS.map((option) => (
-                  <option key={option.value || 'all'} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
+          <label className="text-sm font-semibold text-slate-700">
+            상태
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+              className="mt-2 block min-h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+            >
+              {STATUS_OPTIONS.map((option) => (
+                <option key={option.value || 'all'} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
           <label className="text-sm font-semibold text-slate-700">
             기간
@@ -282,13 +246,6 @@ const AdminInquiries = ({ archiveMode = false }) => {
               ))}
             </select>
           </label>
-
-          <Link
-            to={archiveMode ? '/manage/inquiries' : '/manage/inquiries/archive'}
-            className="inline-flex min-h-11 items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-          >
-            {archiveMode ? '기본 목록' : '삭제 보관함'}
-          </Link>
         </div>
       </div>
 
@@ -297,17 +254,13 @@ const AdminInquiries = ({ archiveMode = false }) => {
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)]">
         <section className="rounded-lg border border-slate-200 bg-white">
           <div className="border-b border-slate-200 px-4 py-3">
-            <h2 className="text-base font-semibold text-slate-900">
-              {archiveMode ? '삭제 보관 문의' : '문의 목록'}
-            </h2>
+            <h2 className="text-base font-semibold text-slate-900">문의 목록</h2>
           </div>
 
           {isListLoading ? (
             <p className="px-4 py-8 text-sm text-slate-500">문의 목록을 불러오는 중입니다.</p>
           ) : inquiries.length === 0 ? (
-            <p className="px-4 py-8 text-sm text-slate-500">
-              {archiveMode ? '삭제 보관함에 문의가 없습니다.' : '조건에 맞는 문의가 없습니다.'}
-            </p>
+            <p className="px-4 py-8 text-sm text-slate-500">조건에 맞는 문의가 없습니다.</p>
           ) : (
             <ul className="divide-y divide-slate-100">
               {inquiries.map((inquiry) => {
@@ -331,7 +284,7 @@ const AdminInquiries = ({ archiveMode = false }) => {
                         <StatusBadge status={inquiry.status} />
                       </div>
                       <p className="mt-2 text-xs text-slate-500">
-                        접수일 {formatDate(inquiry.created_at)}
+                        작성일 {formatDate(inquiry.created_at)}
                       </p>
                     </button>
                   </li>
@@ -367,7 +320,7 @@ const AdminInquiries = ({ archiveMode = false }) => {
                     <dd>{selectedInquiry.email}</dd>
                   </div>
                   <div>
-                    <dt className="font-semibold text-slate-800">접수일</dt>
+                    <dt className="font-semibold text-slate-800">작성일</dt>
                     <dd>{formatDate(selectedInquiry.created_at)}</dd>
                   </div>
                   <div>
@@ -383,7 +336,7 @@ const AdminInquiries = ({ archiveMode = false }) => {
 
               <form onSubmit={handleStatusChange} className="space-y-4 border-t border-slate-200 pt-4">
                 <label className="block text-sm font-semibold text-slate-700">
-                  {archiveMode ? '복구 상태' : '처리 상태'}
+                  처리 상태
                   <select
                     value={nextStatus}
                     onChange={(event) => setNextStatus(event.target.value)}
@@ -403,41 +356,28 @@ const AdminInquiries = ({ archiveMode = false }) => {
                     value={reason}
                     onChange={(event) => setReason(event.target.value)}
                     rows={4}
-                    placeholder={archiveMode ? '복구 사유를 입력할 수 있습니다.' : '처리 또는 삭제 사유를 입력해주세요.'}
+                    placeholder="상태 변경 또는 삭제 사유를 입력하세요."
                     className="mt-2 w-full resize-y rounded-md border border-slate-200 px-3 py-2 text-sm leading-6"
                   />
                 </label>
 
                 <div className="grid gap-2 sm:grid-cols-2">
-                  {archiveMode ? (
-                    <button
-                      type="button"
-                      disabled={isSubmitting}
-                      onClick={handleRestore}
-                      className="min-h-11 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-                    >
-                      {isSubmitting ? '처리 중' : '복구'}
-                    </button>
-                  ) : (
-                    <button
-                      type="submit"
-                      disabled={isSubmitting || !reason.trim()}
-                      className="min-h-11 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-                    >
-                      {isSubmitting ? '처리 중' : '상태 변경'}
-                    </button>
-                  )}
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || !reason.trim()}
+                    className="min-h-11 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  >
+                    {isSubmitting ? '처리 중' : '상태 변경'}
+                  </button>
 
-                  {!archiveMode && (
-                    <button
-                      type="button"
-                      disabled={isSubmitting}
-                      onClick={handleDelete}
-                      className="min-h-11 rounded-md border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
-                    >
-                      삭제
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={handleDelete}
+                    className="min-h-11 rounded-md border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
+                  >
+                    영구 삭제
+                  </button>
                 </div>
               </form>
             </div>

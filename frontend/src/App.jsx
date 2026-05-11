@@ -9,11 +9,8 @@ import { useAuth } from './hooks/auth-context';
 import { AuthProvider } from './hooks/useAuth';
 import Admin from './Pages/Admin';
 import AdminComments from './Pages/Admin/Comments';
-import AdminCommentArchive from './Pages/Admin/CommentArchive';
 import AdminInquiries from './Pages/Admin/Inquiries';
-import AdminInquiryArchive from './Pages/Admin/InquiryArchive';
 import AdminLogs from './Pages/Admin/Logs';
-import AdminTopicArchive from './Pages/Admin/TopicArchive';
 import AdminTopics from './Pages/Admin/Topics';
 import Contact from './Pages/Contact';
 import CreateTopic from './Pages/CreateTopic';
@@ -31,7 +28,7 @@ const ProtectedRoute = ({ children }) => {
   if (isAuthLoading) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center px-4 text-sm text-slate-500">
-        로그인 상태를 확인하고 있습니다.
+        로그인 상태를 확인하는 중입니다.
       </div>
     );
   }
@@ -105,7 +102,7 @@ const AdminRoute = () => {
   if (isAuthLoading || status === 'checking') {
     return (
       <div className="flex min-h-[50vh] items-center justify-center px-4 text-sm text-slate-500">
-        관리자 권한을 확인하고 있습니다.
+        관리자 권한을 확인하는 중입니다.
       </div>
     );
   }
@@ -129,9 +126,9 @@ const AdminRoute = () => {
         <p className="text-sm font-semibold text-blue-600">접근 권한 없음</p>
         <h1 className="mt-3 text-2xl font-bold text-slate-900">관리자만 접근할 수 있습니다.</h1>
         <p className="mt-3 text-sm leading-6 text-slate-600">
-          현재 계정에는 관리자 권한이 없습니다. 서비스 이용은 메인 화면에서 계속할 수 있습니다.
+          현재 계정에는 관리자 권한이 없습니다. 필요한 경우 관리자에게 권한 부여를 요청하세요.
         </p>
-        <NavigateButton to="/">메인으로 돌아가기</NavigateButton>
+        <NavigateButton to="/">홈으로 이동</NavigateButton>
       </div>
     );
   }
@@ -142,7 +139,7 @@ const AdminRoute = () => {
         <p className="text-sm font-semibold text-red-600">확인 실패</p>
         <h1 className="mt-3 text-2xl font-bold text-slate-900">관리자 권한을 확인하지 못했습니다.</h1>
         <p className="mt-3 text-sm leading-6 text-slate-600">
-          잠시 후 다시 시도해 주세요.
+          잠시 후 다시 시도해주세요.
         </p>
       </div>
     );
@@ -171,7 +168,7 @@ const NotFound = () => (
       to="/"
       className="mx-auto mt-6 inline-flex rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
     >
-      홈으로 돌아가기
+      홈으로 이동
     </Link>
   </div>
 );
@@ -212,11 +209,8 @@ const router = createBrowserRouter([
             children: [
               { index: true, element: <Admin /> },
               { path: 'inquiries', element: <AdminInquiries /> },
-              { path: 'inquiries/archive', element: <AdminInquiryArchive /> },
               { path: 'topics', element: <AdminTopics /> },
-              { path: 'topics/archive', element: <AdminTopicArchive /> },
               { path: 'comments', element: <AdminComments /> },
-              { path: 'comments/archive', element: <AdminCommentArchive /> },
               { path: 'logs', element: <AdminLogs /> },
             ],
           },

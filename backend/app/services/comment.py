@@ -66,7 +66,6 @@ class CommentService:
             replies = await ReplyCrud.get_all_by_comment_id(db, comment_id)
 
             if replies:
-                # Soft-delete comments with replies to preserve thread context.
                 await LikeCrud.delete_comment_likes_by_comment_id(db, comment_id)
                 comment.content = "삭제된 댓글입니다."
                 comment.is_deleted = True
@@ -75,7 +74,6 @@ class CommentService:
                 await db.refresh(comment)
                 return await CommentService._build_comment_read(db, comment, user_id)
 
-            # Hard-delete comments that have no replies.
             await LikeCrud.delete_comment_likes_by_comment_id(db, comment_id)
             deleted = await CommentCrud.delete_by_id(db, comment_id)
             await db.commit()
@@ -129,151 +127,37 @@ class CommentService:
         )
 
     @staticmethod
-    async def hide_for_admin(
-        db: AsyncSession,
-        comment_id: int,
-        update: CommentModerationUpdate,
-        admin_user_id: int,
-    ) -> Comment:
-        comment = await CommentCrud.get_by_id(db, comment_id)
-        if not comment:
-            raise HTTPException(status_code=404, detail="Comment not found")
-
-        before_value = {
-            "is_hidden": comment.is_hidden,
-            "hidden_by": comment.hidden_by,
-        }
-        try:
-            updated = await CommentCrud.hide(db, comment, admin_user_id)
-            await AdminActionLogService.record(
-                db,
-                admin_user_id=admin_user_id,
-                action="HIDE_COMMENT",
-                target_type="Comment",
-                target_id=comment_id,
-                before_value=before_value,
-                after_value={
-                    "is_hidden": True,
-                    "hidden_by": admin_user_id,
-                },
-                reason=update.reason,
-            )
-            await db.commit()
-            await db.refresh(updated)
-            return updated
-        except Exception:
-            await db.rollback()
-            raise
-
-    @staticmethod
-    async def unhide_for_admin(
-        db: AsyncSession,
-        comment_id: int,
-        update: CommentModerationUpdate,
-        admin_user_id: int,
-    ) -> Comment:
-        comment = await CommentCrud.get_by_id(db, comment_id)
-        if not comment:
-            raise HTTPException(status_code=404, detail="Comment not found")
-
-        before_value = {
-            "is_hidden": comment.is_hidden,
-            "hidden_by": comment.hidden_by,
-        }
-        try:
-            updated = await CommentCrud.unhide(db, comment)
-            await AdminActionLogService.record(
-                db,
-                admin_user_id=admin_user_id,
-                action="UNHIDE_COMMENT",
-                target_type="Comment",
-                target_id=comment_id,
-                before_value=before_value,
-                after_value={
-                    "is_hidden": False,
-                    "hidden_by": None,
-                },
-                reason=update.reason,
-            )
-            await db.commit()
-            await db.refresh(updated)
-            return updated
-        except Exception:
-            await db.rollback()
-            raise
-
-    @staticmethod
     async def delete_for_admin(
         db: AsyncSession,
         comment_id: int,
         update: CommentModerationUpdate,
         admin_user_id: int,
-    ) -> Comment:
+    ) -> dict[str, bool]:
         comment = await CommentCrud.get_by_id(db, comment_id)
         if not comment:
             raise HTTPException(status_code=404, detail="Comment not found")
 
-        before_value = {
-            "is_hidden": comment.is_hidden,
-            "hidden_by": comment.hidden_by,
+        snapshot = {
+            "content": comment.content,
+            "author_id": comment.user_id,
+            "topic_id": comment.topic_id,
+            "is_deleted": comment.is_deleted,
+            "created_at": comment.created_at.isoformat(),
         }
         try:
-            updated = await CommentCrud.hide(db, comment, admin_user_id)
             await AdminActionLogService.record(
                 db,
                 admin_user_id=admin_user_id,
                 action="DELETE_COMMENT",
                 target_type="Comment",
                 target_id=comment_id,
-                before_value=before_value,
-                after_value={
-                    "is_hidden": True,
-                    "hidden_by": admin_user_id,
-                },
+                before_value=snapshot,
+                after_value={"deleted": True},
                 reason=update.reason,
             )
+            await CommentCrud.delete_by_id(db, comment_id)
             await db.commit()
-            await db.refresh(updated)
-            return updated
-        except Exception:
-            await db.rollback()
-            raise
-
-    @staticmethod
-    async def restore_for_admin(
-        db: AsyncSession,
-        comment_id: int,
-        update: CommentModerationUpdate,
-        admin_user_id: int,
-    ) -> Comment:
-        comment = await CommentCrud.get_by_id(db, comment_id)
-        if not comment:
-            raise HTTPException(status_code=404, detail="Comment not found")
-        if not comment.is_hidden:
-            raise HTTPException(status_code=400, detail="Comment is not deleted")
-
-        before_value = {
-            "is_hidden": comment.is_hidden,
-            "hidden_by": comment.hidden_by,
-        }
-        try:
-            updated = await CommentCrud.unhide(db, comment)
-            await AdminActionLogService.record(
-                db,
-                admin_user_id=admin_user_id,
-                action="RESTORE_COMMENT",
-                target_type="Comment",
-                target_id=comment_id,
-                before_value=before_value,
-                after_value={
-                    "is_hidden": False,
-                    "hidden_by": None,
-                },
-                reason=update.reason,
-            )
-            await db.commit()
-            await db.refresh(updated)
-            return updated
+            return {"deleted": True}
         except Exception:
             await db.rollback()
             raise

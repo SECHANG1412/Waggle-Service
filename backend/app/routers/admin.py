@@ -78,7 +78,7 @@ async def update_inquiry_status(
     )
 
 
-@router.patch("/inquiries/{inquiry_id}/delete", response_model=InquiryRead)
+@router.patch("/inquiries/{inquiry_id}/delete")
 async def delete_inquiry(
     inquiry_id: int,
     update: InquiryDeleteUpdate,
@@ -86,16 +86,6 @@ async def delete_inquiry(
     db: AsyncSession = Depends(get_db),
 ):
     return await InquiryService.delete_for_admin(db, inquiry_id, update, admin_user_id)
-
-
-@router.patch("/inquiries/{inquiry_id}/restore", response_model=InquiryRead)
-async def restore_inquiry(
-    inquiry_id: int,
-    update: InquiryStatusUpdate,
-    admin_user_id: int = Depends(require_admin_user_id),
-    db: AsyncSession = Depends(get_db),
-):
-    return await InquiryService.restore_for_admin(db, inquiry_id, update, admin_user_id)
 
 
 @router.get("/topics", response_model=list[TopicAdminRead])
@@ -114,27 +104,7 @@ async def list_topics_for_admin(
     )
 
 
-@router.patch("/topics/{topic_id}/hide", response_model=TopicAdminRead)
-async def hide_topic(
-    topic_id: int,
-    update: TopicModerationUpdate,
-    admin_user_id: int = Depends(require_admin_user_id),
-    db: AsyncSession = Depends(get_db),
-):
-    return await TopicService.hide_for_admin(db, topic_id, update, admin_user_id)
-
-
-@router.patch("/topics/{topic_id}/unhide", response_model=TopicAdminRead)
-async def unhide_topic(
-    topic_id: int,
-    update: TopicModerationUpdate,
-    admin_user_id: int = Depends(require_admin_user_id),
-    db: AsyncSession = Depends(get_db),
-):
-    return await TopicService.unhide_for_admin(db, topic_id, update, admin_user_id)
-
-
-@router.patch("/topics/{topic_id}/delete", response_model=TopicAdminRead)
+@router.patch("/topics/{topic_id}/delete")
 async def delete_topic_for_admin(
     topic_id: int,
     update: TopicModerationUpdate,
@@ -142,16 +112,6 @@ async def delete_topic_for_admin(
     db: AsyncSession = Depends(get_db),
 ):
     return await TopicService.delete_for_admin(db, topic_id, update, admin_user_id)
-
-
-@router.patch("/topics/{topic_id}/restore", response_model=TopicAdminRead)
-async def restore_topic_for_admin(
-    topic_id: int,
-    update: TopicModerationUpdate,
-    admin_user_id: int = Depends(require_admin_user_id),
-    db: AsyncSession = Depends(get_db),
-):
-    return await TopicService.restore_for_admin(db, topic_id, update, admin_user_id)
 
 
 @router.get("/comments", response_model=list[CommentAdminRead])
@@ -170,27 +130,7 @@ async def list_comments_for_admin(
     )
 
 
-@router.patch("/comments/{comment_id}/hide", response_model=CommentAdminRead)
-async def hide_comment(
-    comment_id: int,
-    update: CommentModerationUpdate,
-    admin_user_id: int = Depends(require_admin_user_id),
-    db: AsyncSession = Depends(get_db),
-):
-    return await CommentService.hide_for_admin(db, comment_id, update, admin_user_id)
-
-
-@router.patch("/comments/{comment_id}/unhide", response_model=CommentAdminRead)
-async def unhide_comment(
-    comment_id: int,
-    update: CommentModerationUpdate,
-    admin_user_id: int = Depends(require_admin_user_id),
-    db: AsyncSession = Depends(get_db),
-):
-    return await CommentService.unhide_for_admin(db, comment_id, update, admin_user_id)
-
-
-@router.patch("/comments/{comment_id}/delete", response_model=CommentAdminRead)
+@router.patch("/comments/{comment_id}/delete")
 async def delete_comment_for_admin(
     comment_id: int,
     update: CommentModerationUpdate,
@@ -198,13 +138,3 @@ async def delete_comment_for_admin(
     db: AsyncSession = Depends(get_db),
 ):
     return await CommentService.delete_for_admin(db, comment_id, update, admin_user_id)
-
-
-@router.patch("/comments/{comment_id}/restore", response_model=CommentAdminRead)
-async def restore_comment_for_admin(
-    comment_id: int,
-    update: CommentModerationUpdate,
-    admin_user_id: int = Depends(require_admin_user_id),
-    db: AsyncSession = Depends(get_db),
-):
-    return await CommentService.restore_for_admin(db, comment_id, update, admin_user_id)
