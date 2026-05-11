@@ -133,10 +133,6 @@ class TopicCrud:
         end_at: datetime | None = None,
     ) -> list[Topic]:
         query = select(Topic)
-        if status in (None, "visible"):
-            query = query.where(Topic.is_hidden.is_(False))
-        elif status == "deleted":
-            query = query.where(Topic.is_hidden.is_(True))
         if start_at:
             query = query.where(Topic.created_at >= start_at)
         if end_at:

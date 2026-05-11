@@ -63,10 +63,10 @@ async def test_admin_can_list_logs(client: AsyncClient, db_session, set_auth_coo
     log = await _create_log(
         db_session,
         admin_user_id=admin.user_id,
-        action="HIDE_TOPIC",
+        action="DELETE_TOPIC",
         target_type="Topic",
         target_id=10,
-        reason="hidden by policy",
+        reason="spam",
     )
     await db_session.commit()
 
@@ -77,12 +77,12 @@ async def test_admin_can_list_logs(client: AsyncClient, db_session, set_auth_coo
     assert len(payload) == 1
     assert payload[0]["log_id"] == log.log_id
     assert payload[0]["admin_user_id"] == admin.user_id
-    assert payload[0]["action"] == "HIDE_TOPIC"
+    assert payload[0]["action"] == "DELETE_TOPIC"
     assert payload[0]["target_type"] == "Topic"
     assert payload[0]["target_id"] == 10
     assert payload[0]["before_value"] == {"status": "before"}
     assert payload[0]["after_value"] == {"status": "after"}
-    assert payload[0]["reason"] == "hidden by policy"
+    assert payload[0]["reason"] == "spam"
 
 
 @pytest.mark.asyncio
@@ -96,21 +96,21 @@ async def test_admin_logs_filters_by_action_target_type_and_admin_user(
     matched = await _create_log(
         db_session,
         admin_user_id=admin.user_id,
-        action="HIDE_COMMENT",
+        action="DELETE_COMMENT",
         target_type="Comment",
         target_id=20,
     )
     await _create_log(
         db_session,
         admin_user_id=admin.user_id,
-        action="HIDE_TOPIC",
+        action="DELETE_TOPIC",
         target_type="Topic",
         target_id=21,
     )
     await _create_log(
         db_session,
         admin_user_id=other_admin.user_id,
-        action="HIDE_COMMENT",
+        action="DELETE_COMMENT",
         target_type="Comment",
         target_id=22,
     )
@@ -119,7 +119,7 @@ async def test_admin_logs_filters_by_action_target_type_and_admin_user(
     response = await client.get(
         "/manage-api/logs",
         params={
-            "action": "HIDE_COMMENT",
+            "action": "DELETE_COMMENT",
             "target_type": "Comment",
             "admin_user_id": admin.user_id,
         },

@@ -4,7 +4,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
-InquiryStatus = Literal["pending", "in_progress", "resolved", "deleted"]
+InquiryStatus = Literal["pending", "in_progress", "resolved"]
 
 
 class InquiryCreate(BaseModel):

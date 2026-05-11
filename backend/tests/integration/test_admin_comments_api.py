@@ -2,7 +2,7 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
 
-from app.db.models import AdminActionLog
+from app.db.models import AdminActionLog, Comment
 from tests.factories import create_comment, create_topic, create_user
 
 
@@ -36,7 +36,7 @@ async def test_admin_comment_list_rejects_regular_user(
 
 
 @pytest.mark.asyncio
-async def test_admin_comment_list_excludes_deleted_by_default(
+async def test_admin_comment_list_includes_legacy_hidden_comments(
     client: AsyncClient,
     db_session,
     set_auth_cookies,
@@ -61,12 +61,14 @@ async def test_admin_comment_list_excludes_deleted_by_default(
     response = await client.get("/manage-api/comments")
 
     assert response.status_code == 200
-    payload = response.json()
-    assert [item["content"] for item in payload] == ["public-comment"]
+    assert [item["content"] for item in response.json()] == [
+        "hidden-comment",
+        "public-comment",
+    ]
 
 
 @pytest.mark.asyncio
-async def test_admin_can_hide_comment_and_record_audit_log(
+async def test_admin_can_delete_comment_and_record_snapshot_log(
     client: AsyncClient,
     db_session,
     set_auth_cookies,
@@ -77,81 +79,41 @@ async def test_admin_can_hide_comment_and_record_audit_log(
         db_session,
         user_id=owner.user_id,
         topic_id=topic.topic_id,
+        content="remove comment",
     )
+    comment_id = comment.comment_id
     admin = await _set_admin_cookies(client, db_session, set_auth_cookies)
 
     response = await client.patch(
-        f"/manage-api/comments/{comment.comment_id}/hide",
-        json={"reason": "abusive comment"},
+        f"/manage-api/comments/{comment_id}/delete",
+        json={"reason": "abuse"},
     )
 
     assert response.status_code == 200
-    payload = response.json()
-    assert payload["is_hidden"] is True
-    assert payload["hidden_by"] == admin.user_id
+    assert response.json() == {"deleted": True}
 
-    await db_session.refresh(comment)
-    assert comment.is_hidden is True
-    assert comment.hidden_by == admin.user_id
-    assert comment.hidden_at is not None
+    result = await db_session.execute(
+        select(Comment).where(Comment.comment_id == comment_id)
+    )
+    deleted_comment = result.scalar_one_or_none()
+    assert deleted_comment is None
 
     result = await db_session.execute(select(AdminActionLog))
     log = result.scalar_one()
     assert log.admin_user_id == admin.user_id
-    assert log.action == "HIDE_COMMENT"
+    assert log.action == "DELETE_COMMENT"
     assert log.target_type == "Comment"
-    assert log.target_id == comment.comment_id
-    assert log.before_value == {"is_hidden": False, "hidden_by": None}
-    assert log.after_value == {"is_hidden": True, "hidden_by": admin.user_id}
-    assert log.reason == "abusive comment"
+    assert log.target_id == comment_id
+    assert log.before_value["content"] == "remove comment"
+    assert log.before_value["author_id"] == owner.user_id
+    assert log.before_value["topic_id"] == topic.topic_id
+    assert log.before_value["is_deleted"] is False
+    assert log.after_value == {"deleted": True}
+    assert log.reason == "abuse"
 
 
 @pytest.mark.asyncio
-async def test_admin_can_unhide_comment_and_record_audit_log(
-    client: AsyncClient,
-    db_session,
-    set_auth_cookies,
-):
-    owner = await create_user(db_session)
-    admin = await _set_admin_cookies(client, db_session, set_auth_cookies)
-    topic = await create_topic(db_session, user_id=owner.user_id)
-    comment = await create_comment(
-        db_session,
-        user_id=owner.user_id,
-        topic_id=topic.topic_id,
-        is_hidden=True,
-        hidden_by=admin.user_id,
-    )
-    await db_session.commit()
-
-    response = await client.patch(
-        f"/manage-api/comments/{comment.comment_id}/unhide",
-        json={"reason": "review completed"},
-    )
-
-    assert response.status_code == 200
-    payload = response.json()
-    assert payload["is_hidden"] is False
-    assert payload["hidden_by"] is None
-
-    await db_session.refresh(comment)
-    assert comment.is_hidden is False
-    assert comment.hidden_by is None
-    assert comment.hidden_at is None
-
-    result = await db_session.execute(select(AdminActionLog))
-    log = result.scalar_one()
-    assert log.admin_user_id == admin.user_id
-    assert log.action == "UNHIDE_COMMENT"
-    assert log.target_type == "Comment"
-    assert log.target_id == comment.comment_id
-    assert log.before_value == {"is_hidden": True, "hidden_by": admin.user_id}
-    assert log.after_value == {"is_hidden": False, "hidden_by": None}
-    assert log.reason == "review completed"
-
-
-@pytest.mark.asyncio
-async def test_hide_comment_requires_reason(
+async def test_delete_comment_requires_reason(
     client: AsyncClient,
     db_session,
     set_auth_cookies,
@@ -166,7 +128,7 @@ async def test_hide_comment_requires_reason(
     await _set_admin_cookies(client, db_session, set_auth_cookies)
 
     response = await client.patch(
-        f"/manage-api/comments/{comment.comment_id}/hide",
+        f"/manage-api/comments/{comment.comment_id}/delete",
         json={"reason": "   "},
     )
 
@@ -177,7 +139,7 @@ async def test_hide_comment_requires_reason(
 
 
 @pytest.mark.asyncio
-async def test_hide_missing_comment_returns_404(
+async def test_delete_missing_comment_returns_404(
     client: AsyncClient,
     db_session,
     set_auth_cookies,
@@ -185,79 +147,8 @@ async def test_hide_missing_comment_returns_404(
     await _set_admin_cookies(client, db_session, set_auth_cookies)
 
     response = await client.patch(
-        "/manage-api/comments/999999/hide",
+        "/manage-api/comments/999999/delete",
         json={"reason": "missing comment"},
     )
 
     assert response.status_code == 404
-
-
-@pytest.mark.asyncio
-async def test_admin_can_delete_and_restore_comment_with_audit_logs(
-    client: AsyncClient,
-    db_session,
-    set_auth_cookies,
-):
-    owner = await create_user(db_session)
-    topic = await create_topic(db_session, user_id=owner.user_id)
-    comment = await create_comment(
-        db_session,
-        user_id=owner.user_id,
-        topic_id=topic.topic_id,
-    )
-    admin = await _set_admin_cookies(client, db_session, set_auth_cookies)
-
-    delete_response = await client.patch(
-        f"/manage-api/comments/{comment.comment_id}/delete",
-        json={"reason": "abuse"},
-    )
-
-    assert delete_response.status_code == 200
-    assert delete_response.json()["is_hidden"] is True
-
-    restore_response = await client.patch(
-        f"/manage-api/comments/{comment.comment_id}/restore",
-        json={"reason": "mistake"},
-    )
-
-    assert restore_response.status_code == 200
-    assert restore_response.json()["is_hidden"] is False
-
-    result = await db_session.execute(
-        select(AdminActionLog).order_by(AdminActionLog.log_id)
-    )
-    logs = result.scalars().all()
-    assert [log.action for log in logs] == ["DELETE_COMMENT", "RESTORE_COMMENT"]
-    assert all(log.admin_user_id == admin.user_id for log in logs)
-    assert logs[0].target_id == comment.comment_id
-    assert logs[0].reason == "abuse"
-    assert logs[1].reason == "mistake"
-
-
-@pytest.mark.asyncio
-async def test_admin_can_filter_comments_by_deleted_status(
-    client: AsyncClient,
-    db_session,
-    set_auth_cookies,
-):
-    owner = await create_user(db_session)
-    topic = await create_topic(db_session, user_id=owner.user_id)
-    await create_comment(
-        db_session,
-        user_id=owner.user_id,
-        topic_id=topic.topic_id,
-        content="visible",
-    )
-    await create_comment(
-        db_session,
-        user_id=owner.user_id,
-        topic_id=topic.topic_id,
-        content="deleted",
-        is_hidden=True,
-    )
-    await _set_admin_cookies(client, db_session, set_auth_cookies)
-
-    response = await client.get("/manage-api/comments", params={"status": "deleted"})
-
-    assert response.status_code == 200
-    assert [item["content"] for item in response.json()] == ["deleted"]

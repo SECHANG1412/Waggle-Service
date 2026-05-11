@@ -84,10 +84,6 @@ class CommentCrud:
         end_at: datetime | None = None,
     ) -> list[Comment]:
         query = select(Comment)
-        if status in (None, "visible"):
-            query = query.where(Comment.is_hidden.is_(False))
-        elif status == "deleted":
-            query = query.where(Comment.is_hidden.is_(True))
         if start_at:
             query = query.where(Comment.created_at >= start_at)
         if end_at:

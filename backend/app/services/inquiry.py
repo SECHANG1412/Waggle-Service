@@ -105,57 +105,32 @@ class InquiryService:
         inquiry_id: int,
         update: InquiryDeleteUpdate,
         admin_user_id: int,
-    ) -> Inquiry:
+    ) -> dict[str, bool]:
         inquiry = await InquiryService.get_by_id_for_admin(db, inquiry_id)
-        before_status = inquiry.status
         reason = update.reason or "관리자 문의 삭제"
+        snapshot = {
+            "title": inquiry.title,
+            "content": inquiry.content,
+            "status": inquiry.status,
+            "name": inquiry.name,
+            "email": inquiry.email,
+            "user_id": inquiry.user_id,
+            "created_at": inquiry.created_at.isoformat(),
+        }
         try:
-            updated = await InquiryCrud.update_status(db, inquiry, "deleted")
             await AdminActionLogService.record(
                 db,
                 admin_user_id=admin_user_id,
                 action="DELETE_INQUIRY",
                 target_type="Inquiry",
                 target_id=inquiry_id,
-                before_value={"status": before_status},
-                after_value={"status": "deleted"},
+                before_value=snapshot,
+                after_value={"deleted": True},
                 reason=reason,
             )
+            await InquiryCrud.delete(db, inquiry)
             await db.commit()
-            await db.refresh(updated)
-            return updated
-        except Exception:
-            await db.rollback()
-            raise
-
-    @staticmethod
-    async def restore_for_admin(
-        db: AsyncSession,
-        inquiry_id: int,
-        update: InquiryStatusUpdate,
-        admin_user_id: int,
-    ) -> Inquiry:
-        inquiry = await InquiryService.get_by_id_for_admin(db, inquiry_id)
-        before_status = inquiry.status
-        if before_status != "deleted":
-            raise HTTPException(status_code=400, detail="Inquiry is not deleted")
-        if update.status == "deleted":
-            raise HTTPException(status_code=400, detail="Restore status is invalid")
-        try:
-            updated = await InquiryCrud.update_status(db, inquiry, update.status)
-            await AdminActionLogService.record(
-                db,
-                admin_user_id=admin_user_id,
-                action="RESTORE_INQUIRY",
-                target_type="Inquiry",
-                target_id=inquiry_id,
-                before_value={"status": before_status},
-                after_value={"status": update.status},
-                reason=update.reason,
-            )
-            await db.commit()
-            await db.refresh(updated)
-            return updated
+            return {"deleted": True}
         except Exception:
             await db.rollback()
             raise
