@@ -1,10 +1,10 @@
 import ContentModerationPage from './ContentModerationPage';
 
-const AdminTopics = () => (
+const AdminTopicArchive = () => (
   <ContentModerationPage
-    title="토픽 관리"
-    description="토픽을 날짜와 상태별로 확인하고, 문제가 있는 토픽을 삭제 또는 복구합니다."
-    archiveMode={false}
+    title="토픽 삭제 보관함"
+    description="삭제 처리된 토픽을 확인하고 필요하면 복구합니다."
+    archiveMode
     archivePath="/manage/topics/archive"
     listPath="/manage/topics"
     listEndpoint="/manage-api/topics"
@@ -21,4 +21,4 @@ const AdminTopics = () => (
   />
 );
 
-export default AdminTopics;
+export default AdminTopicArchive;
