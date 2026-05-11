@@ -43,6 +43,7 @@ const formatDate = (value) => {
   return new Intl.DateTimeFormat('ko-KR', {
     dateStyle: 'medium',
     timeStyle: 'short',
+    timeZone: 'Asia/Seoul',
   }).format(new Date(value));
 };
 
@@ -73,17 +74,26 @@ const getTargetName = (log) => {
   return `${log.target_type} #${log.target_id}`;
 };
 
+const getAuthorName = (snapshot) => {
+  if (snapshot.author_name) return snapshot.author_name;
+  if (snapshot.name) return snapshot.name;
+  if (snapshot.author_id !== undefined && snapshot.author_id !== null) {
+    return `ID ${snapshot.author_id}`;
+  }
+  return '-';
+};
+
 const buildLogSentence = (log) => {
   const targetLabel = TARGET_TYPE_LABELS[log.target_type] || log.target_type;
   const targetName = getTargetName(log);
 
   if (log.action === 'UPDATE_INQUIRY_STATUS') {
-    return `관리자 ID ${log.admin_user_id}이 ${targetLabel} "${targetName}"의 상태를 변경`;
+    return `관리자가 ${targetLabel} "${targetName}"의 상태를 변경`;
   }
   if (log.action?.startsWith('DELETE_')) {
-    return `관리자 ID ${log.admin_user_id}이 ${targetLabel} "${targetName}"을 영구 삭제`;
+    return `관리자가 ${targetLabel} "${targetName}"을 영구 삭제`;
   }
-  return `관리자 ID ${log.admin_user_id}이 ${targetLabel} "${targetName}"을 처리`;
+  return `관리자가 ${targetLabel} "${targetName}"을 처리`;
 };
 
 const buildSummaryRows = (log) => {
@@ -103,7 +113,7 @@ const buildSummaryRows = (log) => {
     return [
       { label: '처리 내용', value: '토픽 영구 삭제' },
       { label: '토픽 제목', value: snapshot.title || '-' },
-      { label: '작성자 ID', value: snapshot.author_id ?? '-' },
+      { label: '작성자', value: getAuthorName(snapshot) },
       { label: '카테고리', value: snapshot.category || '-' },
     ];
   }
@@ -112,7 +122,7 @@ const buildSummaryRows = (log) => {
     return [
       { label: '처리 내용', value: '댓글 영구 삭제' },
       { label: '댓글 내용', value: snapshot.content || '-' },
-      { label: '작성자 ID', value: snapshot.author_id ?? '-' },
+      { label: '작성자', value: getAuthorName(snapshot) },
       { label: '토픽 ID', value: snapshot.topic_id ?? '-' },
     ];
   }
@@ -121,7 +131,7 @@ const buildSummaryRows = (log) => {
     return [
       { label: '처리 내용', value: '문의 영구 삭제' },
       { label: '문의 제목', value: snapshot.title || '-' },
-      { label: '작성자', value: snapshot.name || '-' },
+      { label: '작성자', value: getAuthorName(snapshot) },
       { label: '이메일', value: snapshot.email || '-' },
     ];
   }

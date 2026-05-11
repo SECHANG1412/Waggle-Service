@@ -73,7 +73,7 @@ async def test_admin_can_delete_comment_and_record_snapshot_log(
     db_session,
     set_auth_cookies,
 ):
-    owner = await create_user(db_session)
+    owner = await create_user(db_session, username="comment-author")
     topic = await create_topic(db_session, user_id=owner.user_id)
     comment = await create_comment(
         db_session,
@@ -106,6 +106,7 @@ async def test_admin_can_delete_comment_and_record_snapshot_log(
     assert log.target_id == comment_id
     assert log.before_value["content"] == "remove comment"
     assert log.before_value["author_id"] == owner.user_id
+    assert log.before_value["author_name"] == "comment-author"
     assert log.before_value["topic_id"] == topic.topic_id
     assert log.before_value["is_deleted"] is False
     assert log.after_value == {"deleted": True}

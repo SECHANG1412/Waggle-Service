@@ -7,6 +7,7 @@ from app.db.crud import (
     PinnedTopicCrud,
     ReplyCrud,
     TopicCrud,
+    UserCrud,
     VoteCrud,
 )
 from app.db.models import Topic
@@ -112,12 +113,14 @@ class TopicService:
         if not topic:
             raise HTTPException(status_code=404, detail="Topic not found")
 
+        author = await UserCrud.get_by_id(db, topic.user_id)
         snapshot = {
             "title": topic.title,
             "description": topic.description,
             "category": topic.category,
             "vote_options": topic.vote_options,
             "author_id": topic.user_id,
+            "author_name": author.username if author else None,
             "created_at": topic.created_at.isoformat(),
         }
         try:
