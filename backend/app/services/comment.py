@@ -137,9 +137,11 @@ class CommentService:
         if not comment:
             raise HTTPException(status_code=404, detail="Comment not found")
 
+        author = await UserCrud.get_by_id(db, comment.user_id)
         snapshot = {
             "content": comment.content,
             "author_id": comment.user_id,
+            "author_name": author.username if author else None,
             "topic_id": comment.topic_id,
             "is_deleted": comment.is_deleted,
             "created_at": comment.created_at.isoformat(),
