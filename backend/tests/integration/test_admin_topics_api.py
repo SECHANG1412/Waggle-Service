@@ -36,7 +36,7 @@ async def test_admin_topic_list_rejects_regular_user(
 
 
 @pytest.mark.asyncio
-async def test_admin_can_list_topics_including_hidden(
+async def test_admin_topic_list_excludes_deleted_by_default(
     client: AsyncClient,
     db_session,
     set_auth_cookies,
@@ -55,7 +55,7 @@ async def test_admin_can_list_topics_including_hidden(
 
     assert response.status_code == 200
     payload = response.json()
-    assert {item["title"] for item in payload} == {"public-topic", "hidden-topic"}
+    assert [item["title"] for item in payload] == ["public-topic"]
 
 
 @pytest.mark.asyncio

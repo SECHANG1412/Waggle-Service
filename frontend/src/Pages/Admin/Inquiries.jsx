@@ -7,12 +7,7 @@ const STATUS_OPTIONS = [
   { value: 'pending', label: '미처리' },
   { value: 'in_progress', label: '처리중' },
   { value: 'resolved', label: '완료' },
-  { value: 'deleted', label: '삭제됨' },
 ];
-
-const ACTIVE_STATUS_OPTIONS = STATUS_OPTIONS.filter(
-  (option) => option.value && option.value !== 'deleted'
-);
 
 const DATE_OPTIONS = [
   { value: 'all', label: '전체 기간' },
@@ -25,7 +20,7 @@ const STATUS_LABELS = {
   pending: '미처리',
   in_progress: '처리중',
   resolved: '완료',
-  deleted: '삭제됨',
+  deleted: '삭제 보관',
 };
 
 const STATUS_STYLES = {
@@ -72,13 +67,13 @@ const StatusBadge = ({ status }) => (
   </span>
 );
 
-const AdminInquiries = () => {
+const AdminInquiries = ({ archiveMode = false }) => {
   const [inquiries, setInquiries] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [selectedInquiry, setSelectedInquiry] = useState(null);
   const [statusFilter, setStatusFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
-  const [nextStatus, setNextStatus] = useState('pending');
+  const [nextStatus, setNextStatus] = useState('resolved');
   const [reason, setReason] = useState('');
   const [message, setMessage] = useState(null);
   const [isListLoading, setIsListLoading] = useState(true);
@@ -87,9 +82,13 @@ const AdminInquiries = () => {
 
   const params = useMemo(() => {
     const nextParams = { ...getDateParams(dateFilter) };
-    if (statusFilter) nextParams.status = statusFilter;
+    if (archiveMode) {
+      nextParams.status = 'deleted';
+    } else if (statusFilter) {
+      nextParams.status = statusFilter;
+    }
     return nextParams;
-  }, [dateFilter, statusFilter]);
+  }, [archiveMode, dateFilter, statusFilter]);
 
   const loadInquiries = useCallback(async () => {
     setIsListLoading(true);
@@ -137,6 +136,14 @@ const AdminInquiries = () => {
   useEffect(() => {
     loadInquiryDetail(selectedId);
   }, [loadInquiryDetail, selectedId]);
+
+  const removeInquiry = (inquiryId) => {
+    setInquiries((prev) => prev.filter((inquiry) => inquiry.inquiry_id !== inquiryId));
+    if (selectedId === inquiryId) {
+      setSelectedId(null);
+      setSelectedInquiry(null);
+    }
+  };
 
   const replaceInquiry = (updated) => {
     setSelectedInquiry(updated);
@@ -186,13 +193,13 @@ const AdminInquiries = () => {
     setIsSubmitting(true);
     setMessage(null);
     try {
-      const response = await api.patch(
+      await api.patch(
         `/manage-api/inquiries/${selectedInquiry.inquiry_id}/delete`,
         { reason: trimmedReason }
       );
-      replaceInquiry(response.data);
+      removeInquiry(selectedInquiry.inquiry_id);
       setReason('');
-      setMessage({ type: 'success', text: '문의를 삭제 처리했습니다.' });
+      setMessage({ type: 'success', text: '문의를 삭제 처리했습니다. 삭제 보관함에서 확인할 수 있습니다.' });
     } catch {
       setMessage({ type: 'error', text: '문의를 삭제 처리하지 못했습니다.' });
     } finally {
@@ -210,13 +217,13 @@ const AdminInquiries = () => {
     setIsSubmitting(true);
     setMessage(null);
     try {
-      const response = await api.patch(
+      await api.patch(
         `/manage-api/inquiries/${selectedInquiry.inquiry_id}/restore`,
         { status: nextStatus, reason: trimmedReason }
       );
-      replaceInquiry(response.data);
+      removeInquiry(selectedInquiry.inquiry_id);
       setReason('');
-      setMessage({ type: 'success', text: '문의를 복구했습니다.' });
+      setMessage({ type: 'success', text: '문의를 복구했습니다. 기본 목록에서 확인할 수 있습니다.' });
     } catch {
       setMessage({ type: 'error', text: '문의를 복구하지 못했습니다.' });
     } finally {
@@ -225,7 +232,6 @@ const AdminInquiries = () => {
   };
 
   const messageColor = message?.type === 'success' ? 'text-emerald-700' : 'text-red-600';
-  const isDeleted = selectedInquiry?.status === 'deleted';
 
   return (
     <section className="mx-auto max-w-6xl px-3 py-6 sm:px-4 sm:py-10">
@@ -234,27 +240,33 @@ const AdminInquiries = () => {
           <Link to="/manage" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
             관리자 홈
           </Link>
-          <h1 className="mt-3 break-words text-2xl font-bold text-slate-900 sm:text-3xl">문의 관리</h1>
+          <h1 className="mt-3 break-words text-2xl font-bold text-slate-900 sm:text-3xl">
+            {archiveMode ? '문의 삭제 보관함' : '문의 관리'}
+          </h1>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            문의 상태를 처리하고 완료된 문의를 삭제 처리합니다.
+            {archiveMode
+              ? '삭제 처리된 문의를 확인하고 필요하면 복구합니다.'
+              : '문의 상태를 처리하고 완료된 문의를 삭제 보관함으로 이동합니다.'}
           </p>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="text-sm font-semibold text-slate-700">
-            상태
-            <select
-              value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value)}
-              className="mt-2 block min-h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-            >
-              {STATUS_OPTIONS.map((option) => (
-                <option key={option.value || 'all'} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          {!archiveMode && (
+            <label className="text-sm font-semibold text-slate-700">
+              상태
+              <select
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value)}
+                className="mt-2 block min-h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+              >
+                {STATUS_OPTIONS.map((option) => (
+                  <option key={option.value || 'all'} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
 
           <label className="text-sm font-semibold text-slate-700">
             기간
@@ -270,6 +282,13 @@ const AdminInquiries = () => {
               ))}
             </select>
           </label>
+
+          <Link
+            to={archiveMode ? '/manage/inquiries' : '/manage/inquiries/archive'}
+            className="inline-flex min-h-11 items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            {archiveMode ? '기본 목록' : '삭제 보관함'}
+          </Link>
         </div>
       </div>
 
@@ -278,13 +297,17 @@ const AdminInquiries = () => {
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)]">
         <section className="rounded-lg border border-slate-200 bg-white">
           <div className="border-b border-slate-200 px-4 py-3">
-            <h2 className="text-base font-semibold text-slate-900">문의 목록</h2>
+            <h2 className="text-base font-semibold text-slate-900">
+              {archiveMode ? '삭제 보관 문의' : '문의 목록'}
+            </h2>
           </div>
 
           {isListLoading ? (
             <p className="px-4 py-8 text-sm text-slate-500">문의 목록을 불러오는 중입니다.</p>
           ) : inquiries.length === 0 ? (
-            <p className="px-4 py-8 text-sm text-slate-500">조건에 맞는 문의가 없습니다.</p>
+            <p className="px-4 py-8 text-sm text-slate-500">
+              {archiveMode ? '삭제 보관함에 문의가 없습니다.' : '조건에 맞는 문의가 없습니다.'}
+            </p>
           ) : (
             <ul className="divide-y divide-slate-100">
               {inquiries.map((inquiry) => {
@@ -360,13 +383,13 @@ const AdminInquiries = () => {
 
               <form onSubmit={handleStatusChange} className="space-y-4 border-t border-slate-200 pt-4">
                 <label className="block text-sm font-semibold text-slate-700">
-                  처리 상태
+                  {archiveMode ? '복구 상태' : '처리 상태'}
                   <select
                     value={nextStatus}
                     onChange={(event) => setNextStatus(event.target.value)}
                     className="mt-2 block min-h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
                   >
-                    {ACTIVE_STATUS_OPTIONS.map((option) => (
+                    {STATUS_OPTIONS.filter((option) => option.value).map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>
@@ -380,13 +403,13 @@ const AdminInquiries = () => {
                     value={reason}
                     onChange={(event) => setReason(event.target.value)}
                     rows={4}
-                    placeholder="처리 또는 삭제 사유를 입력해주세요."
+                    placeholder={archiveMode ? '복구 사유를 입력할 수 있습니다.' : '처리 또는 삭제 사유를 입력해주세요.'}
                     className="mt-2 w-full resize-y rounded-md border border-slate-200 px-3 py-2 text-sm leading-6"
                   />
                 </label>
 
                 <div className="grid gap-2 sm:grid-cols-2">
-                  {isDeleted ? (
+                  {archiveMode ? (
                     <button
                       type="button"
                       disabled={isSubmitting}
@@ -405,14 +428,16 @@ const AdminInquiries = () => {
                     </button>
                   )}
 
-                  <button
-                    type="button"
-                    disabled={isSubmitting || isDeleted}
-                    onClick={handleDelete}
-                    className="min-h-11 rounded-md border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
-                  >
-                    삭제
-                  </button>
+                  {!archiveMode && (
+                    <button
+                      type="button"
+                      disabled={isSubmitting}
+                      onClick={handleDelete}
+                      className="min-h-11 rounded-md border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
+                    >
+                      삭제
+                    </button>
+                  )}
                 </div>
               </form>
             </div>

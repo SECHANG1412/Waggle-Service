@@ -20,7 +20,7 @@ const STATUS_LABELS = {
   pending: '미처리',
   in_progress: '처리중',
   resolved: '완료',
-  deleted: '삭제됨',
+  deleted: '삭제 보관',
 };
 
 const formatDate = (value) => {
@@ -41,10 +41,20 @@ const StatCard = ({ label, value, to }) => (
   </Link>
 );
 
+const QuickLink = ({ to, children }) => (
+  <Link
+    to={to}
+    className="min-h-11 rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+  >
+    {children}
+  </Link>
+);
+
 const Admin = () => {
   const [inquiries, setInquiries] = useState([]);
-  const [topics, setTopics] = useState([]);
-  const [comments, setComments] = useState([]);
+  const [deletedInquiries, setDeletedInquiries] = useState([]);
+  const [deletedTopics, setDeletedTopics] = useState([]);
+  const [deletedComments, setDeletedComments] = useState([]);
   const [logs, setLogs] = useState([]);
   const [message, setMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,17 +63,24 @@ const Admin = () => {
     setIsLoading(true);
     setMessage(null);
     try {
-      const [inquiriesResponse, topicsResponse, commentsResponse, logsResponse] =
-        await Promise.all([
-          api.get('/manage-api/inquiries'),
-          api.get('/manage-api/topics'),
-          api.get('/manage-api/comments'),
-          api.get('/manage-api/logs', { params: { limit: 5 } }),
-        ]);
+      const [
+        inquiriesResponse,
+        deletedInquiriesResponse,
+        deletedTopicsResponse,
+        deletedCommentsResponse,
+        logsResponse,
+      ] = await Promise.all([
+        api.get('/manage-api/inquiries'),
+        api.get('/manage-api/inquiries', { params: { status: 'deleted' } }),
+        api.get('/manage-api/topics', { params: { status: 'deleted' } }),
+        api.get('/manage-api/comments', { params: { status: 'deleted' } }),
+        api.get('/manage-api/logs', { params: { limit: 5 } }),
+      ]);
 
       setInquiries(inquiriesResponse.data);
-      setTopics(topicsResponse.data);
-      setComments(commentsResponse.data);
+      setDeletedInquiries(deletedInquiriesResponse.data);
+      setDeletedTopics(deletedTopicsResponse.data);
+      setDeletedComments(deletedCommentsResponse.data);
       setLogs(logsResponse.data);
     } catch {
       setMessage({ type: 'error', text: '관리자 대시보드를 불러오지 못했습니다.' });
@@ -80,10 +97,11 @@ const Admin = () => {
     return {
       pendingInquiries: inquiries.filter((inquiry) => inquiry.status === 'pending').length,
       resolvedInquiries: inquiries.filter((inquiry) => inquiry.status === 'resolved').length,
-      deletedTopics: topics.filter((topic) => topic.is_hidden).length,
-      deletedComments: comments.filter((comment) => comment.is_hidden).length,
+      deletedInquiries: deletedInquiries.length,
+      deletedTopics: deletedTopics.length,
+      deletedComments: deletedComments.length,
     };
-  }, [comments, inquiries, topics]);
+  }, [deletedComments, deletedInquiries, deletedTopics, inquiries]);
 
   const recentInquiries = useMemo(() => {
     return [...inquiries]
@@ -98,7 +116,7 @@ const Admin = () => {
           <p className="text-sm font-semibold text-blue-600">관리자</p>
           <h1 className="mt-3 break-words text-2xl font-bold text-slate-900 sm:text-3xl">운영 대시보드</h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            문의, 토픽, 댓글 처리 현황과 최근 관리자 작업을 확인합니다.
+            문의 처리 현황, 삭제 보관함, 최근 관리자 작업을 확인합니다.
           </p>
         </div>
         <button
@@ -113,11 +131,12 @@ const Admin = () => {
 
       {message && <p className="mb-4 text-sm font-semibold text-red-600">{message.text}</p>}
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <StatCard label="미처리 문의" value={stats.pendingInquiries} to="/manage/inquiries" />
         <StatCard label="완료 문의" value={stats.resolvedInquiries} to="/manage/inquiries" />
-        <StatCard label="삭제 처리 토픽" value={stats.deletedTopics} to="/manage/topics" />
-        <StatCard label="삭제 처리 댓글" value={stats.deletedComments} to="/manage/comments" />
+        <StatCard label="문의 보관함" value={stats.deletedInquiries} to="/manage/inquiries/archive" />
+        <StatCard label="토픽 보관함" value={stats.deletedTopics} to="/manage/topics/archive" />
+        <StatCard label="댓글 보관함" value={stats.deletedComments} to="/manage/comments/archive" />
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
@@ -192,30 +211,13 @@ const Admin = () => {
       <section className="mt-5 rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
         <h2 className="text-base font-semibold text-slate-900">빠른 이동</h2>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Link
-            to="/manage/inquiries"
-            className="min-h-11 rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-          >
-            문의 관리
-          </Link>
-          <Link
-            to="/manage/topics"
-            className="min-h-11 rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-          >
-            토픽 관리
-          </Link>
-          <Link
-            to="/manage/comments"
-            className="min-h-11 rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-          >
-            댓글 관리
-          </Link>
-          <Link
-            to="/manage/logs"
-            className="min-h-11 rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-          >
-            감사 로그
-          </Link>
+          <QuickLink to="/manage/inquiries">문의 관리</QuickLink>
+          <QuickLink to="/manage/inquiries/archive">문의 삭제 보관함</QuickLink>
+          <QuickLink to="/manage/topics">토픽 관리</QuickLink>
+          <QuickLink to="/manage/topics/archive">토픽 삭제 보관함</QuickLink>
+          <QuickLink to="/manage/comments">댓글 관리</QuickLink>
+          <QuickLink to="/manage/comments/archive">댓글 삭제 보관함</QuickLink>
+          <QuickLink to="/manage/logs">감사 로그</QuickLink>
         </div>
       </section>
     </section>

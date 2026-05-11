@@ -186,6 +186,22 @@ async def test_admin_can_filter_inquiries_by_status(
 
 
 @pytest.mark.asyncio
+async def test_admin_inquiry_list_excludes_deleted_by_default(
+    client: AsyncClient,
+    db_session,
+    set_auth_cookies,
+):
+    await create_inquiry(db_session, title="visible", status="pending")
+    await create_inquiry(db_session, title="deleted", status="deleted")
+    await _set_admin_cookies(client, db_session, set_auth_cookies)
+
+    response = await client.get("/manage-api/inquiries")
+
+    assert response.status_code == 200
+    assert [item["title"] for item in response.json()] == ["visible"]
+
+
+@pytest.mark.asyncio
 async def test_deleted_inquiry_is_excluded_from_my_inquiries(
     authenticated_client: AsyncClient,
     db_session,

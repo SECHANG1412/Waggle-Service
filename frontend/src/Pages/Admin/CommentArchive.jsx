@@ -1,10 +1,10 @@
 import ContentModerationPage from './ContentModerationPage';
 
-const AdminComments = () => (
+const AdminCommentArchive = () => (
   <ContentModerationPage
-    title="댓글 관리"
-    description="댓글을 날짜와 상태별로 확인하고, 문제가 있는 댓글을 삭제 또는 복구합니다."
-    archiveMode={false}
+    title="댓글 삭제 보관함"
+    description="삭제 처리된 댓글을 확인하고 필요하면 복구합니다."
+    archiveMode
     archivePath="/manage/comments/archive"
     listPath="/manage/comments"
     listEndpoint="/manage-api/comments"
@@ -21,4 +21,4 @@ const AdminComments = () => (
   />
 );
 
-export default AdminComments;
+export default AdminCommentArchive;

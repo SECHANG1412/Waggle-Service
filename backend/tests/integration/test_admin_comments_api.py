@@ -36,7 +36,7 @@ async def test_admin_comment_list_rejects_regular_user(
 
 
 @pytest.mark.asyncio
-async def test_admin_can_list_comments_including_hidden(
+async def test_admin_comment_list_excludes_deleted_by_default(
     client: AsyncClient,
     db_session,
     set_auth_cookies,
@@ -62,10 +62,7 @@ async def test_admin_can_list_comments_including_hidden(
 
     assert response.status_code == 200
     payload = response.json()
-    assert {item["content"] for item in payload} == {
-        "public-comment",
-        "hidden-comment",
-    }
+    assert [item["content"] for item in payload] == ["public-comment"]
 
 
 @pytest.mark.asyncio

@@ -36,6 +36,8 @@ class InquiryCrud:
         query = select(Inquiry)
         if status:
             query = query.where(Inquiry.status == status)
+        else:
+            query = query.where(Inquiry.status != "deleted")
         if start_at:
             query = query.where(Inquiry.created_at >= start_at)
         if end_at:

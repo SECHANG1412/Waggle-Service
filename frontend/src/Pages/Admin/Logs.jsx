@@ -39,6 +39,19 @@ const TARGET_TYPE_LABELS = Object.fromEntries(
   TARGET_TYPE_OPTIONS.filter((option) => option.value).map((option) => [option.value, option.label])
 );
 
+const STATUS_LABELS = {
+  pending: '미처리',
+  in_progress: '처리중',
+  resolved: '완료',
+  deleted: '삭제됨',
+};
+
+const FIELD_LABELS = {
+  status: '상태',
+  is_hidden: '노출 상태',
+  hidden_by: '처리 관리자',
+};
+
 const formatDate = (value) => {
   if (!value) return '-';
   return new Intl.DateTimeFormat('ko-KR', {
@@ -66,18 +79,48 @@ const getDateParams = (dateFilter) => {
   };
 };
 
+const formatValue = (key, value) => {
+  if (key === 'status') return STATUS_LABELS[value] || value || '-';
+  if (key === 'is_hidden') return value ? '삭제 보관' : '공개';
+  if (value === null || value === undefined) return '-';
+  return String(value);
+};
+
 const buildLogSentence = (log) => {
   const actionLabel = ACTION_LABELS[log.action] || log.action;
   const targetLabel = TARGET_TYPE_LABELS[log.target_type] || log.target_type;
   return `관리자 ID ${log.admin_user_id}이 ${targetLabel} #${log.target_id}을 ${actionLabel} 처리`;
 };
 
-const JsonPreview = ({ label, value }) => (
-  <details className="min-w-0 rounded-md bg-slate-50 p-3">
-    <summary className="cursor-pointer text-xs font-semibold text-slate-700">{label}</summary>
-    <pre className="mt-2 max-h-40 max-w-full overflow-auto text-xs leading-5 text-slate-700">
-      {JSON.stringify(value, null, 2)}
-    </pre>
+const buildChangeSummary = (log) => {
+  const keys = Array.from(
+    new Set([
+      ...Object.keys(log.before_value || {}),
+      ...Object.keys(log.after_value || {}),
+    ])
+  );
+
+  if (keys.length === 0) return ['변경 상세 없음'];
+
+  return keys.map((key) => {
+    const label = FIELD_LABELS[key] || key;
+    const beforeValue = formatValue(key, log.before_value?.[key]);
+    const afterValue = formatValue(key, log.after_value?.[key]);
+    return `${label}: ${beforeValue} -> ${afterValue}`;
+  });
+};
+
+const RawJsonPreview = ({ log }) => (
+  <details className="rounded-md bg-slate-50 p-3">
+    <summary className="cursor-pointer text-xs font-semibold text-slate-700">원본 데이터 보기</summary>
+    <div className="mt-3 grid gap-3 lg:grid-cols-2">
+      <pre className="max-h-44 overflow-auto rounded-md bg-white p-3 text-xs leading-5 text-slate-700">
+        {JSON.stringify(log.before_value, null, 2)}
+      </pre>
+      <pre className="max-h-44 overflow-auto rounded-md bg-white p-3 text-xs leading-5 text-slate-700">
+        {JSON.stringify(log.after_value, null, 2)}
+      </pre>
+    </div>
   </details>
 );
 
@@ -135,7 +178,7 @@ const AdminLogs = () => {
         </Link>
         <h1 className="mt-3 break-words text-2xl font-bold text-slate-900 sm:text-3xl">감사 로그</h1>
         <p className="mt-2 text-sm leading-6 text-slate-600">
-          관리자 작업 내역을 문장형으로 확인하고 날짜, 작업, 대상 기준으로 필터링합니다.
+          관리자 작업을 문장과 변경 요약 중심으로 확인합니다.
         </p>
       </div>
 
@@ -238,15 +281,21 @@ const AdminLogs = () => {
                   <p className="text-xs text-slate-500">로그 ID {log.log_id}</p>
                 </div>
 
-                <div className="mb-3 break-words rounded-md bg-white text-sm leading-6 text-slate-700">
+                <div className="mb-3 break-words text-sm leading-6 text-slate-700">
                   <span className="font-semibold text-slate-900">사유: </span>
                   {log.reason}
                 </div>
 
-                <div className="grid gap-3 lg:grid-cols-2">
-                  <JsonPreview label="변경 전 상세" value={log.before_value} />
-                  <JsonPreview label="변경 후 상세" value={log.after_value} />
+                <div className="mb-3 rounded-md border border-slate-200 bg-slate-50 p-3">
+                  <p className="mb-2 text-xs font-semibold text-slate-700">변경 요약</p>
+                  <ul className="space-y-1 text-sm text-slate-700">
+                    {buildChangeSummary(log).map((summary) => (
+                      <li key={summary}>{summary}</li>
+                    ))}
+                  </ul>
                 </div>
+
+                <RawJsonPreview log={log} />
               </li>
             ))}
           </ul>

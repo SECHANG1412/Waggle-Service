@@ -9,8 +9,11 @@ import { useAuth } from './hooks/auth-context';
 import { AuthProvider } from './hooks/useAuth';
 import Admin from './Pages/Admin';
 import AdminComments from './Pages/Admin/Comments';
+import AdminCommentArchive from './Pages/Admin/CommentArchive';
 import AdminInquiries from './Pages/Admin/Inquiries';
+import AdminInquiryArchive from './Pages/Admin/InquiryArchive';
 import AdminLogs from './Pages/Admin/Logs';
+import AdminTopicArchive from './Pages/Admin/TopicArchive';
 import AdminTopics from './Pages/Admin/Topics';
 import Contact from './Pages/Contact';
 import CreateTopic from './Pages/CreateTopic';
@@ -209,8 +212,11 @@ const router = createBrowserRouter([
             children: [
               { index: true, element: <Admin /> },
               { path: 'inquiries', element: <AdminInquiries /> },
+              { path: 'inquiries/archive', element: <AdminInquiryArchive /> },
               { path: 'topics', element: <AdminTopics /> },
+              { path: 'topics/archive', element: <AdminTopicArchive /> },
               { path: 'comments', element: <AdminComments /> },
+              { path: 'comments/archive', element: <AdminCommentArchive /> },
               { path: 'logs', element: <AdminLogs /> },
             ],
           },
