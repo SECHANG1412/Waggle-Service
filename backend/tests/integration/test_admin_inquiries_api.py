@@ -51,6 +51,37 @@ async def test_admin_can_list_inquiries(client: AsyncClient, db_session, set_aut
 
 
 @pytest.mark.asyncio
+async def test_admin_inquiry_list_excludes_legacy_deleted_status(
+    client: AsyncClient,
+    db_session,
+    set_auth_cookies,
+):
+    await create_inquiry(db_session, title="visible", status="pending")
+    await create_inquiry(db_session, title="legacy-deleted", status="deleted")
+    await _set_admin_cookies(client, db_session, set_auth_cookies)
+
+    response = await client.get("/manage-api/inquiries")
+
+    assert response.status_code == 200
+    assert [item["title"] for item in response.json()] == ["visible"]
+
+
+@pytest.mark.asyncio
+async def test_admin_deleted_status_filter_returns_empty_list(
+    client: AsyncClient,
+    db_session,
+    set_auth_cookies,
+):
+    await create_inquiry(db_session, title="legacy-deleted", status="deleted")
+    await _set_admin_cookies(client, db_session, set_auth_cookies)
+
+    response = await client.get("/manage-api/inquiries", params={"status": "deleted"})
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+@pytest.mark.asyncio
 async def test_admin_can_get_inquiry_detail(client: AsyncClient, db_session, set_auth_cookies):
     inquiry = await create_inquiry(db_session, title="detail")
     await _set_admin_cookies(client, db_session, set_auth_cookies)
@@ -60,6 +91,20 @@ async def test_admin_can_get_inquiry_detail(client: AsyncClient, db_session, set
     assert response.status_code == 200
     assert response.json()["inquiry_id"] == inquiry.inquiry_id
     assert response.json()["title"] == "detail"
+
+
+@pytest.mark.asyncio
+async def test_admin_inquiry_detail_returns_404_for_legacy_deleted_inquiry(
+    client: AsyncClient,
+    db_session,
+    set_auth_cookies,
+):
+    inquiry = await create_inquiry(db_session, title="legacy-deleted", status="deleted")
+    await _set_admin_cookies(client, db_session, set_auth_cookies)
+
+    response = await client.get(f"/manage-api/inquiries/{inquiry.inquiry_id}")
+
+    assert response.status_code == 404
 
 
 @pytest.mark.asyncio
@@ -197,3 +242,29 @@ async def test_admin_can_filter_inquiries_by_status(
 
     assert response.status_code == 200
     assert [item["title"] for item in response.json()] == ["resolved"]
+
+
+@pytest.mark.asyncio
+async def test_legacy_deleted_inquiry_is_excluded_from_my_inquiries(
+    authenticated_client: AsyncClient,
+    db_session,
+    auth_user,
+):
+    await create_inquiry(
+        db_session,
+        user_id=auth_user.user_id,
+        title="legacy deleted inquiry",
+        status="deleted",
+    )
+    await create_inquiry(
+        db_session,
+        user_id=auth_user.user_id,
+        title="visible inquiry",
+        status="pending",
+    )
+    await db_session.commit()
+
+    response = await authenticated_client.get("/inquiries/me")
+
+    assert response.status_code == 200
+    assert [item["title"] for item in response.json()] == ["visible inquiry"]

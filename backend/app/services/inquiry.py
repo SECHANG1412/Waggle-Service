@@ -39,6 +39,8 @@ class InquiryService:
         start_at=None,
         end_at=None,
     ) -> list[Inquiry]:
+        if status == "deleted":
+            return []
         return await InquiryCrud.get_all(
             db,
             status=status,
@@ -67,7 +69,7 @@ class InquiryService:
     @staticmethod
     async def get_by_id_for_admin(db: AsyncSession, inquiry_id: int) -> Inquiry:
         inquiry = await InquiryCrud.get_by_id(db, inquiry_id)
-        if not inquiry:
+        if not inquiry or inquiry.status == "deleted":
             raise HTTPException(status_code=404, detail="Inquiry not found")
         return inquiry
 

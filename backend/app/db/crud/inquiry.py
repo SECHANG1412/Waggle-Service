@@ -36,6 +36,8 @@ class InquiryCrud:
         query = select(Inquiry)
         if status:
             query = query.where(Inquiry.status == status)
+        else:
+            query = query.where(Inquiry.status != "deleted")
         if start_at:
             query = query.where(Inquiry.created_at >= start_at)
         if end_at:
@@ -48,7 +50,7 @@ class InquiryCrud:
     async def get_all_by_user_id(db: AsyncSession, user_id: int) -> list[Inquiry]:
         result = await db.execute(
             select(Inquiry)
-            .where(Inquiry.user_id == user_id)
+            .where(Inquiry.user_id == user_id, Inquiry.status != "deleted")
             .order_by(desc(Inquiry.created_at), desc(Inquiry.inquiry_id))
         )
         return list(result.scalars().all())
