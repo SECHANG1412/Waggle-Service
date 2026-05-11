@@ -92,7 +92,10 @@ async def test_admin_can_delete_comment_and_record_snapshot_log(
     assert response.status_code == 200
     assert response.json() == {"deleted": True}
 
-    deleted_comment = await db_session.get(Comment, comment_id)
+    result = await db_session.execute(
+        select(Comment).where(Comment.comment_id == comment_id)
+    )
+    deleted_comment = result.scalar_one_or_none()
     assert deleted_comment is None
 
     result = await db_session.execute(select(AdminActionLog))

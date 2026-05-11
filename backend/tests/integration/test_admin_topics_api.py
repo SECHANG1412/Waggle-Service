@@ -83,7 +83,10 @@ async def test_admin_can_delete_topic_and_record_snapshot_log(
     assert response.status_code == 200
     assert response.json() == {"deleted": True}
 
-    deleted_topic = await db_session.get(Topic, topic_id)
+    result = await db_session.execute(
+        select(Topic).where(Topic.topic_id == topic_id)
+    )
+    deleted_topic = result.scalar_one_or_none()
     assert deleted_topic is None
 
     result = await db_session.execute(select(AdminActionLog))

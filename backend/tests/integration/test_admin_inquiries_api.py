@@ -162,7 +162,10 @@ async def test_admin_can_delete_inquiry_and_record_snapshot_log(
     assert response.status_code == 200
     assert response.json() == {"deleted": True}
 
-    deleted_inquiry = await db_session.get(Inquiry, inquiry_id)
+    result = await db_session.execute(
+        select(Inquiry).where(Inquiry.inquiry_id == inquiry_id)
+    )
+    deleted_inquiry = result.scalar_one_or_none()
     assert deleted_inquiry is None
 
     result = await db_session.execute(select(AdminActionLog))
