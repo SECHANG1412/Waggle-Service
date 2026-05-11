@@ -41,7 +41,7 @@ async def test_admin_topic_list_includes_legacy_hidden_topics(
     db_session,
     set_auth_cookies,
 ):
-    owner = await create_user(db_session, username="topic-author")
+    owner = await create_user(db_session)
     await create_topic(db_session, user_id=owner.user_id, title="public-topic")
     await create_topic(
         db_session,
@@ -63,7 +63,7 @@ async def test_admin_can_delete_topic_and_record_snapshot_log(
     db_session,
     set_auth_cookies,
 ):
-    owner = await create_user(db_session)
+    owner = await create_user(db_session, username="topic-author")
     topic = await create_topic(
         db_session,
         user_id=owner.user_id,

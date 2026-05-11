@@ -41,7 +41,7 @@ async def test_admin_comment_list_includes_legacy_hidden_comments(
     db_session,
     set_auth_cookies,
 ):
-    owner = await create_user(db_session, username="comment-author")
+    owner = await create_user(db_session)
     topic = await create_topic(db_session, user_id=owner.user_id)
     await create_comment(
         db_session,
@@ -73,7 +73,7 @@ async def test_admin_can_delete_comment_and_record_snapshot_log(
     db_session,
     set_auth_cookies,
 ):
-    owner = await create_user(db_session)
+    owner = await create_user(db_session, username="comment-author")
     topic = await create_topic(db_session, user_id=owner.user_id)
     comment = await create_comment(
         db_session,
