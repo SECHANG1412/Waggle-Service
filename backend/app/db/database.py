@@ -4,7 +4,12 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from app.core.settings import settings
 from app.perf import register_async_engine_perf_hooks
 
-async_engine = create_async_engine(settings.database_url, echo=False)
+async_engine = create_async_engine(
+    settings.database_url,
+    echo=False,
+    pool_pre_ping=True,
+    pool_recycle=1800,
+)
 register_async_engine_perf_hooks(async_engine)
 AsyncSessionLocal = sessionmaker(
     autocommit=False, autoflush=False, bind=async_engine, class_=AsyncSession
