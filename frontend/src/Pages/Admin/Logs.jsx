@@ -143,10 +143,10 @@ const RawJsonPreview = ({ log }) => (
   <details className="rounded-md bg-slate-50 p-3">
     <summary className="cursor-pointer text-xs font-semibold text-slate-700">원본 기록 보기</summary>
     <div className="mt-3 grid gap-3 lg:grid-cols-2">
-      <pre className="max-h-44 overflow-auto rounded-md bg-white p-3 text-xs leading-5 text-slate-700">
+      <pre className="rounded-md bg-white p-3 text-xs leading-5 text-slate-700">
         {JSON.stringify(log.before_value, null, 2)}
       </pre>
-      <pre className="max-h-44 overflow-auto rounded-md bg-white p-3 text-xs leading-5 text-slate-700">
+      <pre className="rounded-md bg-white p-3 text-xs leading-5 text-slate-700">
         {JSON.stringify(log.after_value, null, 2)}
       </pre>
     </div>
