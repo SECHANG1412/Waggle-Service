@@ -57,13 +57,13 @@ Waggle은 다양한 주제에 대해 투표하고 댓글로 의견을 나눌 수
 - 시간대별 투표 비율 차트 제공
 - 댓글과 답글을 통한 의견 교환
 
-[PC 화면]
+#### [PC 화면]
 <p>
   <img src="assets/readme/topic-detail.png" width="620" alt="Waggle 토픽 상세 페이지" />
 </p>
 
 
-[모바일 화면]
+#### [모바일 화면]
 <p>
   <img src="assets/readme/mobile-topic-detail.jpg" width="180" alt="Waggle 모바일 토픽 상세 페이지" />
 </p>
@@ -125,7 +125,7 @@ Waggle은 다양한 주제에 대해 투표하고 댓글로 의견을 나눌 수
 ![Grafana](https://img.shields.io/badge/Grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white)
 ![k6](https://img.shields.io/badge/k6-7D64FF?style=for-the-badge&logo=k6&logoColor=white)
 <br>
-
+<br>
 
 ## 시스템 아키텍처
 
