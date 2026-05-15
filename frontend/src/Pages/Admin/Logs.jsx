@@ -123,7 +123,7 @@ const buildSummaryRows = (log) => {
       { label: '처리 내용', value: '댓글 영구 삭제' },
       { label: '댓글 내용', value: snapshot.content || '-' },
       { label: '작성자', value: getAuthorName(snapshot) },
-      { label: '토픽 ID', value: snapshot.topic_id ?? '-' },
+      { label: '토픽 번호', value: snapshot.topic_id ?? '-' },
     ];
   }
 
@@ -259,7 +259,7 @@ const AdminLogs = () => {
           </label>
 
           <label className="text-sm font-semibold text-slate-700">
-            관리자 ID
+            관리자 번호
             <input
               value={filters.adminUserId}
               onChange={(event) => updateFilter('adminUserId', event.target.value)}
@@ -307,7 +307,7 @@ const AdminLogs = () => {
                     </p>
                     <p className="mt-1 text-xs text-slate-500">{formatDate(log.created_at)}</p>
                   </div>
-                  <p className="text-xs text-slate-500">로그 ID {log.log_id}</p>
+                  <p className="text-xs text-slate-500">로그 번호 {log.log_id}</p>
                 </div>
 
                 <div className="mb-3 break-words text-sm leading-6 text-slate-700">
