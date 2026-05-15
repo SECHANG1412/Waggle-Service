@@ -9,8 +9,8 @@ const AdminTopics = () => (
     getItemTitle={(topic) => topic.title}
     getItemDescription={(topic) => topic.description || '설명 없음'}
     getItemMeta={(topic) => [
-      { label: '토픽 ID', value: topic.topic_id },
-      { label: '작성자 ID', value: topic.user_id },
+      { label: '토픽 번호', value: topic.topic_id },
+      { label: '작성자 번호', value: topic.user_id },
       { label: '카테고리', value: topic.category },
     ]}
     deleteEndpoint={(topicId) => `/manage-api/topics/${topicId}/delete`}

@@ -181,7 +181,7 @@ const Admin = () => {
                   </div>
                   <p className="mt-2 break-words text-sm leading-6 text-slate-700">{log.reason}</p>
                   <p className="mt-1 text-xs text-slate-500">
-                    관리자 ID {log.admin_user_id} · {formatDate(log.created_at)}
+                    관리자 번호 {log.admin_user_id} · {formatDate(log.created_at)}
                   </p>
                 </li>
               ))}
