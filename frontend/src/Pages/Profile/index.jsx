@@ -27,7 +27,7 @@ const CONTENT_STATUS_LABELS = {
 };
 
 const CONTENT_STATUS_NOTICE =
-  '숨김 처리된 콘텐츠는 관리자 검토 사유를 확인할 수 있습니다. 추가 확인이 필요하면 문의를 남겨주세요.';
+  '관리자 조치가 적용된 콘텐츠입니다. 추가 확인이 필요하면 문의를 남겨주세요.';
 
 const Profile = () => {
   const { isAuthenticated } = useAuth();
@@ -156,7 +156,7 @@ const Profile = () => {
       } catch (err) {
         setContentStatus([]);
         if (!(await handleAuthError(err))) {
-          showErrorAlert(err, '콘텐츠 상태를 불러오지 못했습니다.');
+          showErrorAlert(err, '콘텐츠 조치 내역을 불러오지 못했습니다.');
         }
       } finally {
         setLoadingContentStatus(false);
@@ -541,12 +541,12 @@ const InquiryHistoryItem = ({ inquiry }) => {
 
 const ContentStatusSection = ({ items, loading, onContact }) => (
   <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-    <SectionHeader title="내 콘텐츠 상태" description="숨김 처리된 토픽과 댓글을 확인할 수 있습니다." />
+    <SectionHeader title="콘텐츠 조치 내역" description="관리자 조치가 적용된 토픽과 댓글을 확인할 수 있습니다." />
 
     {loading ? (
-      <p className="mt-5 text-sm text-slate-500">콘텐츠 상태를 불러오는 중입니다.</p>
+      <p className="mt-5 text-sm text-slate-500">콘텐츠 조치 내역을 불러오는 중입니다.</p>
     ) : items.length === 0 ? (
-      <EmptyState icon={FaShieldAlt} title="숨김 처리된 콘텐츠가 없습니다" description="현재 제한된 토픽이나 댓글이 없습니다." />
+      <EmptyState icon={FaShieldAlt} title="조치된 콘텐츠가 없습니다" description="현재 관리자 조치가 적용된 토픽이나 댓글이 없습니다." />
     ) : (
       <div className="mt-5 space-y-3">
         {items.slice(0, 3).map((item) => (
@@ -565,7 +565,7 @@ const ContentStatusItem = ({ item, onContact }) => {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <span className="inline-flex rounded-md border border-red-100 bg-red-50 px-2 py-1 text-xs font-bold text-red-700">
-            숨김 처리
+            관리자 조치
           </span>
           <h3 className="mt-2 line-clamp-1 text-sm font-bold text-slate-900">
             {typeLabel}: {item.title}
