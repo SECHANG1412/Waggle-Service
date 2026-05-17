@@ -194,7 +194,7 @@ const ContentModerationPage = ({
                         value={reason}
                         onChange={(event) => setReason(itemId, event.target.value)}
                         rows={3}
-                        placeholder="필요하면 상세 사유를 입력하세요."
+                        placeholder="삭제 사유를 입력하세요."
                         className="mt-2 w-full resize-y rounded-md border border-slate-200 px-3 py-2 text-sm leading-6"
                       />
                       <button
