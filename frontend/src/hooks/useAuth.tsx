@@ -1,19 +1,37 @@
-import { useCallback, useEffect, useState } from 'react';
+import { isAxiosError } from 'axios';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AUTH_MESSAGES } from '../constants/messages';
+import type { UserRead, UserSignupRequest } from '../types';
 import api from '../utils/api';
 import { AuthContext } from './auth-context';
 
-export const AuthProvider = ({ children }) => {
+type AuthProviderProps = {
+  children: ReactNode;
+};
+
+type AuthErrorResponse = {
+  detail?: string;
+};
+
+const getAuthErrorMessage = (error: unknown, fallback: string) => {
+  if (!isAxiosError<AuthErrorResponse>(error)) {
+    return fallback;
+  }
+
+  return error.response?.data.detail || fallback;
+};
+
+export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [error, setError] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<UserRead | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const navigate = useNavigate();
 
   const verifyJWT = useCallback(async () => {
     try {
-      const response = await api.get('/users/me', {
+      const response = await api.get<UserRead>('/users/me', {
         skipAuthRefresh: true,
         suppressAuthAlert: true,
       });
@@ -29,10 +47,10 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (email: string, password: string) => {
     setError('');
     try {
-      const response = await api.post('/users/login', { email, password });
+      const response = await api.post<UserRead>('/users/login', { email, password });
 
       if (response.status === 200) {
         setUser(response.data);
@@ -41,15 +59,16 @@ export const AuthProvider = ({ children }) => {
         await verifyJWT();
         return true;
       }
+      return false;
     } catch (error) {
       console.error(error);
-      setError(error.response?.data.detail || AUTH_MESSAGES.loginFailed);
+      setError(getAuthErrorMessage(error, AUTH_MESSAGES.loginFailed));
       setIsAuthenticated(false);
       return false;
     }
   };
 
-  const signup = async ({ email, username, password, confirmPassword }) => {
+  const signup = async ({ email, username, password, confirmPassword }: UserSignupRequest) => {
     setError('');
     if (!email.includes('@')) {
       setError(AUTH_MESSAGES.invalidEmail);
@@ -68,7 +87,7 @@ export const AuthProvider = ({ children }) => {
       return false;
     }
     try {
-      const response = await api.post('/users/signup', {
+      const response = await api.post<UserRead>('/users/signup', {
         email,
         username,
         password,
@@ -81,7 +100,7 @@ export const AuthProvider = ({ children }) => {
       return false;
     } catch (error) {
       console.error(error);
-      setError(error.response?.data.detail || AUTH_MESSAGES.signupFailed);
+      setError(getAuthErrorMessage(error, AUTH_MESSAGES.signupFailed));
       return false;
     }
   };
