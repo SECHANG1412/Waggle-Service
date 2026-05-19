@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { type ReactNode, useEffect, useState } from 'react';
 import { createBrowserRouter, Link, Navigate, Outlet, RouterProvider, useLocation } from 'react-router-dom';
+import { AxiosError } from 'axios';
 import AuthFeedbackProvider from './Components/Common/AuthFeedbackProvider';
 import ConfirmProvider from './Components/Common/ConfirmProvider';
 import ToastProvider from './Components/Common/ToastProvider';
@@ -21,7 +22,25 @@ import Signup from './Pages/Signup';
 import SingleTopic from './Pages/SingleTopic';
 import api from './utils/api';
 
-const ProtectedRoute = ({ children }) => {
+type AdminStatus = 'checking' | 'allowed' | 'login-required' | 'forbidden' | 'error';
+
+type ProtectedRouteProps = {
+  children: ReactNode;
+};
+
+type NavigateButtonProps = {
+  to: string;
+  children: ReactNode;
+};
+
+const getResponseStatus = (error: unknown) => {
+  if (error instanceof AxiosError) {
+    return error.response?.status;
+  }
+  return undefined;
+};
+
+const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isAuthenticated, isAuthLoading } = useAuth();
   const location = useLocation();
 
@@ -61,7 +80,7 @@ const RootLayout = () => (
 const AdminRoute = () => {
   const { isAuthenticated, isAuthLoading } = useAuth();
   const location = useLocation();
-  const [status, setStatus] = useState('checking');
+  const [status, setStatus] = useState<AdminStatus>('checking');
 
   useEffect(() => {
     let mounted = true;
@@ -80,11 +99,12 @@ const AdminRoute = () => {
         if (mounted) setStatus('allowed');
       } catch (error) {
         if (!mounted) return;
-        if (error.response?.status === 403) {
+        const responseStatus = getResponseStatus(error);
+        if (responseStatus === 403) {
           setStatus('forbidden');
           return;
         }
-        if (error.response?.status === 401) {
+        if (responseStatus === 401) {
           setStatus('login-required');
           return;
         }
@@ -148,7 +168,7 @@ const AdminRoute = () => {
   return <Outlet />;
 };
 
-const NavigateButton = ({ to, children }) => (
+const NavigateButton = ({ to, children }: NavigateButtonProps) => (
   <Link
     to={to}
     className="mt-6 inline-flex w-fit rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
