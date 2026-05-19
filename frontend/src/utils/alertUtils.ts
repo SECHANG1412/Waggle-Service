@@ -1,7 +1,34 @@
+import { isAxiosError } from 'axios';
 import { AUTH_MESSAGES, COMMON_MESSAGES } from '../constants/messages';
 import { AUTH_FEEDBACK_EVENT, FEEDBACK_TOAST_EVENT } from './toastEvents';
 
-const showFeedbackToast = ({ type = 'success', title, message }) => {
+type FeedbackToastType = 'success' | 'error' | 'warning';
+
+type FeedbackToastOptions = {
+  type?: FeedbackToastType;
+  title: string;
+  message: string;
+};
+
+type AuthFeedbackOptions = {
+  title: string;
+  message: string;
+};
+
+type ApiErrorResponse = {
+  error?: string;
+  detail?: string;
+};
+
+const getApiErrorMessage = (error: unknown, defaultMessage: string) => {
+  if (!isAxiosError<ApiErrorResponse>(error)) {
+    return defaultMessage;
+  }
+
+  return error.response?.data?.error || error.response?.data?.detail || defaultMessage;
+};
+
+const showFeedbackToast = ({ type = 'success', title, message }: FeedbackToastOptions) => {
   if (typeof window === 'undefined') return;
 
   window.dispatchEvent(
@@ -15,10 +42,10 @@ const showFeedbackToast = ({ type = 'success', title, message }) => {
   );
 };
 
-const showAuthFeedback = ({ title, message }) => {
+const showAuthFeedback = ({ title, message }: AuthFeedbackOptions) => {
   if (typeof window === 'undefined') return Promise.resolve();
 
-  return new Promise((resolve) => {
+  return new Promise<void>((resolve) => {
     window.dispatchEvent(
       new CustomEvent(AUTH_FEEDBACK_EVENT, {
         detail: {
@@ -32,8 +59,8 @@ const showAuthFeedback = ({ title, message }) => {
   });
 };
 
-export const handleAuthError = async (error) => {
-  if (error?.response?.status === 401) {
+export const handleAuthError = async (error: unknown) => {
+  if (isAxiosError(error) && error.response?.status === 401) {
     await showAuthFeedback({
       title: AUTH_MESSAGES.loginRequiredTitle,
       message: AUTH_MESSAGES.loginRequiredText,
@@ -53,20 +80,17 @@ export const showLoginRequiredAlert = async (
 };
 
 export const showErrorAlert = (
-  error,
+  error: unknown,
   defaultMessage = COMMON_MESSAGES.defaultError
 ) => {
   showFeedbackToast({
     type: 'error',
     title: COMMON_MESSAGES.defaultError,
-    message:
-      error?.response?.data?.error ||
-      error?.response?.data?.detail ||
-      defaultMessage,
+    message: getApiErrorMessage(error, defaultMessage),
   });
 };
 
-export const showWarningAlert = (title, text) => {
+export const showWarningAlert = (title: string, text: string) => {
   showFeedbackToast({
     type: 'warning',
     title,
@@ -74,7 +98,7 @@ export const showWarningAlert = (title, text) => {
   });
 };
 
-export const showSuccessAlert = (message) => {
+export const showSuccessAlert = (message: string) => {
   showFeedbackToast({
     type: 'success',
     title: COMMON_MESSAGES.success,

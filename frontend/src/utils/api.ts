@@ -1,13 +1,32 @@
-import axios from 'axios';
+import axios, { AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 import { AUTH_MESSAGES } from '../constants/messages';
 import { showLoginRequiredAlert } from './alertUtils';
+
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    skipAuthRefresh?: boolean;
+    suppressAuthAlert?: boolean;
+    _retry?: boolean;
+  }
+}
+
+type AuthRequestConfig = InternalAxiosRequestConfig & {
+  skipAuthRefresh?: boolean;
+  suppressAuthAlert?: boolean;
+  _retry?: boolean;
+};
+
+type RefreshQueueItem = {
+  resolve: (value: boolean | null) => void;
+  reject: (reason?: unknown) => void;
+};
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
 });
 
-const getCookie = (name) => {
+const getCookie = (name: string) => {
   if (typeof document === 'undefined') return null;
 
   const cookie = document.cookie
@@ -18,9 +37,9 @@ const getCookie = (name) => {
 };
 
 let isRefreshing = false;
-let refreshQueue = [];
+let refreshQueue: RefreshQueueItem[] = [];
 
-const processQueue = (error, tokenRefreshed) => {
+const processQueue = (error: unknown, tokenRefreshed: boolean | null) => {
   refreshQueue.forEach((promise) => {
     if (error) {
       promise.reject(error);
@@ -36,8 +55,8 @@ api.interceptors.request.use((config) => {
   if (method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
     const csrfToken = getCookie('csrf_token');
     if (csrfToken) {
-      config.headers = config.headers ?? {};
-      config.headers['X-CSRF-Token'] = csrfToken;
+      config.headers = AxiosHeaders.from(config.headers);
+      config.headers.set('X-CSRF-Token', csrfToken);
     }
   }
 
@@ -47,7 +66,7 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
+    const originalRequest = error.config as AuthRequestConfig | undefined;
     const isRefreshRequest = originalRequest?.url?.includes('/users/refresh');
     const shouldSkipAuthRefresh = originalRequest?.skipAuthRefresh;
 
