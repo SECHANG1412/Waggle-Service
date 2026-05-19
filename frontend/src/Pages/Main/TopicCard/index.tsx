@@ -12,9 +12,10 @@ type TopicCardProps = {
   topic: MainTopic;
   onVote: MainVoteHandler;
   onPinToggle: MainPinToggleHandler;
+  isAuthLoading: boolean;
 };
 
-const TopicCard = ({ topic, onVote, onPinToggle }: TopicCardProps) => {
+const TopicCard = ({ topic, onVote, onPinToggle, isAuthLoading }: TopicCardProps) => {
   const navigate = useNavigate();
   const formattedDate = useMemo(() => {
     return formatDateTime(topic.created_at, 'ko-KR', {
@@ -77,10 +78,11 @@ const TopicCard = ({ topic, onVote, onPinToggle }: TopicCardProps) => {
           )}
         </div>
         <button
+          disabled={isAuthLoading}
           onClick={() => {
             onPinToggle(topic.topic_id, topic.is_pinned);
           }}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-slate-400 hover:text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-300"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-slate-400 hover:text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-300 disabled:cursor-not-allowed disabled:opacity-60"
           aria-label={pinLabel}
           title={pinLabel}
         >
@@ -109,7 +111,14 @@ const TopicCard = ({ topic, onVote, onPinToggle }: TopicCardProps) => {
       <div className="mt-3 border-t border-slate-200 pt-3">
         <div className="space-y-2">
           {visibleOptions.map((opt, idx) => (
-            <OptionButton key={idx} index={idx} option={opt} topic={topic} onVote={onVote} />
+            <OptionButton
+              key={idx}
+              index={idx}
+              option={opt}
+              topic={topic}
+              onVote={onVote}
+              isAuthLoading={isAuthLoading}
+            />
           ))}
         </div>
       </div>

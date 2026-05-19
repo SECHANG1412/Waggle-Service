@@ -12,6 +12,7 @@ type HeaderProps = {
   liked: boolean;
   likes: number;
   onLikeClick: () => void;
+  likeDisabled?: boolean;
   actions?: ReactNode;
 };
 
@@ -25,6 +26,7 @@ const Header = ({
   liked,
   likes,
   onLikeClick,
+  likeDisabled = false,
   actions,
 }: HeaderProps) => {
   const formattedDate = formatDateTime(createdAt, 'ko-KR', {
@@ -55,7 +57,8 @@ const Header = ({
           {actions}
           <button
             onClick={onLikeClick}
-            className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition hover:border-rose-200 hover:text-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-200"
+            disabled={likeDisabled}
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition hover:border-rose-200 hover:text-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
             aria-label="좋아요"
           >
             <FaHeart className={`h-4 w-4 ${liked ? 'text-rose-500' : 'text-slate-300'}`} />

@@ -22,7 +22,7 @@ export type MainPinToggleHandler = (topicId: number, isPinned: boolean) => Promi
 const Main = () => {
   const { loading, fetchTopics, countAllTopics, pinTopic, unpinTopic } = useTopic();
   const { submitVote } = useVote();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAuthLoading } = useAuth();
   const { confirm } = useConfirm();
   const [topics, setTopics] = useState<MainTopic[]>([]);
   const [totalTopics, setTotalTopics] = useState(0);
@@ -75,6 +75,12 @@ const Main = () => {
   };
 
   const onVote: MainVoteHandler = async (topic_id, index) => {
+    if (isAuthLoading) return;
+    if (!isAuthenticated) {
+      await showLoginRequiredAlert();
+      return;
+    }
+
     const confirmed = await confirm({
       title: '선택한 항목으로 투표할까요?',
       description: '투표 후에는 선택을 변경할 수 없어요.',
@@ -113,6 +119,7 @@ const Main = () => {
     );
 
   const onPinToggle: MainPinToggleHandler = async (topic_id, is_pinned) => {
+    if (isAuthLoading) return;
     if (!isAuthenticated) {
       await showLoginRequiredAlert('토픽을 고정하려면 로그인해 주세요.');
       return;
@@ -137,7 +144,14 @@ const Main = () => {
   return (
     <div className="w-full px-0 pt-4 pb-10">
       <div className="container mx-auto px-0">
-        <Grid topics={topics} loading={loading} onVote={onVote} onPinToggle={onPinToggle} isAuthenticated={isAuthenticated} />
+        <Grid
+          topics={topics}
+          loading={loading}
+          onVote={onVote}
+          onPinToggle={onPinToggle}
+          isAuthenticated={isAuthenticated}
+          isAuthLoading={isAuthLoading}
+        />
         <Pagination currentPage={page} total={totalTopics} perPage={topicsPerPage} onPageChange={onPageChange} />
       </div>
     </div>
