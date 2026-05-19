@@ -1,14 +1,15 @@
 import { useCallback } from 'react';
 import { COMMENT_MESSAGES, COMMON_MESSAGES } from '../constants/messages';
+import type { CommentRead } from '../types';
 import api from '../utils/api';
 import { handleAuthError, showErrorAlert, showSuccessAlert } from '../utils/alertUtils';
 
 export const useComment = () => {
-  const isSuccess = (status) => status >= 200 && status < 300;
+  const isSuccess = (status: number) => status >= 200 && status < 300;
 
-  const createComment = useCallback(async (topicId, content) => {
+  const createComment = useCallback(async (topicId: number | string, content: string) => {
     try {
-      const response = await api.post('/comments', {
+      const response = await api.post<CommentRead>('/comments', {
         topic_id: topicId,
         content,
       });
@@ -25,9 +26,9 @@ export const useComment = () => {
     }
   }, []);
 
-  const getComments = useCallback(async (topicId) => {
+  const getComments = useCallback(async (topicId: number | string) => {
     try {
-      const response = await api.get(`/comments/by-topic/${topicId}`);
+      const response = await api.get<CommentRead[]>(`/comments/by-topic/${topicId}`);
 
       if (isSuccess(response.status)) {
         return response.data;
@@ -41,9 +42,9 @@ export const useComment = () => {
     }
   }, []);
 
-  const deleteComment = useCallback(async (commentId) => {
+  const deleteComment = useCallback(async (commentId: number | string) => {
     try {
-      const response = await api.delete(`/comments/${commentId}`);
+      const response = await api.delete<CommentRead>(`/comments/${commentId}`);
 
       if (isSuccess(response.status)) {
         showSuccessAlert(COMMENT_MESSAGES.deleteSuccess);
@@ -58,9 +59,9 @@ export const useComment = () => {
     }
   }, []);
 
-  const updateComment = useCallback(async (commentId, content) => {
+  const updateComment = useCallback(async (commentId: number | string, content: string) => {
     try {
-      const response = await api.put(`/comments/${commentId}`, { content });
+      const response = await api.put<CommentRead>(`/comments/${commentId}`, { content });
 
       if (isSuccess(response.status)) {
         showSuccessAlert(COMMENT_MESSAGES.updateSuccess);

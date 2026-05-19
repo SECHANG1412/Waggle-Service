@@ -1,4 +1,5 @@
 import { COMMON_MESSAGES, REPLY_MESSAGES } from '../constants/messages';
+import type { ReplyRead } from '../types';
 import { useConfirm } from './confirm-context';
 import api from '../utils/api';
 import {
@@ -8,11 +9,15 @@ import {
 
 export const useReply = () => {
   const { confirm } = useConfirm();
-  const isSuccess = (status) => status >= 200 && status < 300;
+  const isSuccess = (status: number) => status >= 200 && status < 300;
 
-  const createReply = async (commentId, content, parentReplyId = null) => {
+  const createReply = async (
+    commentId: number | string,
+    content: string,
+    parentReplyId: number | string | null = null
+  ) => {
     try {
-      const response = await api.post('/replies', {
+      const response = await api.post<ReplyRead>('/replies', {
         comment_id: commentId,
         content,
         parent_reply_id: parentReplyId,
@@ -27,7 +32,7 @@ export const useReply = () => {
     }
   };
 
-  const deleteReply = async (replyId) => {
+  const deleteReply = async (replyId: number | string) => {
     try {
       const confirmed = await confirm({
         title: REPLY_MESSAGES.deleteConfirmTitle,
@@ -38,7 +43,7 @@ export const useReply = () => {
       });
       if (!confirmed) return false;
 
-      const response = await api.delete(`/replies/${replyId}`);
+      const response = await api.delete<ReplyRead>(`/replies/${replyId}`);
 
       if (isSuccess(response.status)) {
         return true;
@@ -51,9 +56,9 @@ export const useReply = () => {
     }
   };
 
-  const updateReply = async (replyId, content) => {
+  const updateReply = async (replyId: number | string, content: string) => {
     try {
-      const response = await api.put(`/replies/${replyId}`, { content });
+      const response = await api.put<ReplyRead>(`/replies/${replyId}`, { content });
 
       if (isSuccess(response.status)) return response.data;
       return null;

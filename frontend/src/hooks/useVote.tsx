@@ -1,5 +1,7 @@
+import { isAxiosError } from 'axios';
 import { useCallback } from 'react';
 import { VOTE_MESSAGES } from '../constants/messages';
+import type { VoteChartPoint, VoteRead, VoteStatsResponse } from '../types';
 import api from '../utils/api';
 import { parseApiDate } from '../utils/date';
 import { useAuth } from './auth-context';
@@ -10,7 +12,16 @@ import {
   showSuccessAlert,
 } from '../utils/alertUtils';
 
-const getIntervalForTimeRange = (timeRange) => {
+type TopicId = number | string;
+
+type TimeRange = '1H' | '6H' | '1D' | '1W' | '1M' | 'ALL' | string;
+
+type SubmitVoteParams = {
+  topicId: TopicId;
+  voteIndex: number;
+};
+
+const getIntervalForTimeRange = (timeRange: TimeRange) => {
   switch (timeRange) {
     case '1H':
     case '6H':
@@ -28,7 +39,7 @@ const getIntervalForTimeRange = (timeRange) => {
   }
 };
 
-const getFormattedTime = (date, timeRange) => {
+const getFormattedTime = (date: Date, timeRange: TimeRange) => {
   const MM = String(date.getMonth() + 1).padStart(2, '0');
   const DD = String(date.getDate()).padStart(2, '0');
   const HH = String(date.getHours()).padStart(2, '0');
@@ -49,14 +60,14 @@ export const useVote = () => {
   const { isAuthenticated, isAuthLoading } = useAuth();
 
   const submitVote = useCallback(
-    async ({ topicId, voteIndex }) => {
+    async ({ topicId, voteIndex }: SubmitVoteParams) => {
       if (!isAuthLoading && !isAuthenticated) {
         await showLoginRequiredAlert();
         return false;
       }
 
       try {
-        const response = await api.post('/votes', {
+        const response = await api.post<VoteRead>('/votes', {
           topic_id: topicId,
           vote_index: voteIndex,
         });
@@ -67,7 +78,7 @@ export const useVote = () => {
         }
         return null;
       } catch (error) {
-        if (error.response?.status === 403) {
+        if (isAxiosError(error) && error.response?.status === 403) {
           showErrorAlert(error, VOTE_MESSAGES.alreadyVoted);
           return false;
         }
@@ -79,7 +90,7 @@ export const useVote = () => {
     [isAuthenticated, isAuthLoading]
   );
 
-  const getTopicVotes = useCallback(async (topicId, timeRange = 'ALL') => {
+  const getTopicVotes = useCallback(async (topicId: TopicId, timeRange: TimeRange = 'ALL') => {
     try {
       const convertedTimeRange = timeRange === '1M' ? '30d' : timeRange;
       const isAllTime = convertedTimeRange === 'ALL';
@@ -88,17 +99,17 @@ export const useVote = () => {
         interval: getIntervalForTimeRange(timeRange),
         time_range: isAllTime ? 'all' : convertedTimeRange.toLowerCase(),
       };
-      const response = await api.get(`/votes/topic/${topicId}`, { params });
+      const response = await api.get<VoteStatsResponse>(`/votes/topic/${topicId}`, { params });
 
       if (response.status === 200) {
         return Object.entries(response.data).map(([timeStamp, voteData]) => {
-          const date = parseApiDate(timeStamp);
+          const date = parseApiDate(timeStamp) ?? new Date(timeStamp);
           return {
             timestamp: timeStamp,
             label: getFormattedTime(date, timeRange),
             ...Object.entries(voteData).reduce(
               (acc, [key, value]) =>
-                typeof value === 'object'
+                typeof value === 'object' && value !== null
                   ? {
                       ...acc,
                       [`count_${key}`]: value.count || 0,
@@ -107,7 +118,7 @@ export const useVote = () => {
                   : acc,
               {}
             ),
-          };
+          } as VoteChartPoint;
         });
       }
       return null;

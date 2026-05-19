@@ -1,12 +1,16 @@
+import { isAxiosError } from 'axios';
 import { useCallback, useState } from 'react';
 import { TOPIC_MESSAGES } from '../constants/messages';
+import type { TopicCreateRequest, TopicListParams, TopicRead } from '../types';
 import api from '../utils/api';
 import { handleAuthError, showErrorAlert, showSuccessAlert } from '../utils/alertUtils';
+
+type TopicId = number | string;
 
 export const useTopic = () => {
   const [loading, setLoading] = useState(false);
 
-  const fetchTopics = useCallback(async ({ sort, limit, offset, category, search }) => {
+  const fetchTopics = useCallback(async ({ sort, limit, offset, category, search }: TopicListParams) => {
     setLoading(true);
     try {
       const params = {
@@ -16,7 +20,7 @@ export const useTopic = () => {
         category,
         ...(search && { search }),
       };
-      const response = await api.get('/topics', {
+      const response = await api.get<TopicRead[]>('/topics', {
         params,
       });
 
@@ -32,9 +36,9 @@ export const useTopic = () => {
     }
   }, []);
 
-  const pinTopic = useCallback(async (topicId) => {
+  const pinTopic = useCallback(async (topicId: TopicId) => {
     try {
-      const response = await api.post(`/topics/${topicId}/pin`);
+      const response = await api.post<boolean>(`/topics/${topicId}/pin`);
       return response.status === 200;
     } catch (error) {
       if (await handleAuthError(error)) return false;
@@ -43,9 +47,9 @@ export const useTopic = () => {
     }
   }, []);
 
-  const unpinTopic = useCallback(async (topicId) => {
+  const unpinTopic = useCallback(async (topicId: TopicId) => {
     try {
-      const response = await api.delete(`/topics/${topicId}/pin`);
+      const response = await api.delete<boolean>(`/topics/${topicId}/pin`);
       return response.status === 200;
     } catch (error) {
       if (await handleAuthError(error)) return false;
@@ -54,14 +58,14 @@ export const useTopic = () => {
     }
   }, []);
 
-  const countAllTopics = useCallback(async (category, search) => {
+  const countAllTopics = useCallback(async (category?: string, search?: string) => {
     setLoading(true);
     try {
       const params = {
         category,
         ...(search && { search }),
       };
-      const response = await api.get('/topics/count', {
+      const response = await api.get<number>('/topics/count', {
         params,
       });
 
@@ -77,10 +81,10 @@ export const useTopic = () => {
     }
   }, []);
 
-  const addTopic = useCallback(async (topicData) => {
+  const addTopic = useCallback(async (topicData: TopicCreateRequest) => {
     setLoading(true);
     try {
-      const response = await api.post('/topics', topicData);
+      const response = await api.post<TopicRead>('/topics', topicData);
 
       if (response.status === 200) {
         showSuccessAlert(TOPIC_MESSAGES.createSuccess);
@@ -96,17 +100,17 @@ export const useTopic = () => {
     }
   }, []);
 
-  const getTopicById = useCallback(async (topicId) => {
+  const getTopicById = useCallback(async (topicId: TopicId) => {
     setLoading(true);
     try {
-      const response = await api.get(`/topics/${topicId}`);
+      const response = await api.get<TopicRead>(`/topics/${topicId}`);
 
       if (response.status === 200) {
         return response.data;
       }
       return null;
     } catch (error) {
-      if (error.response?.status === 404) return null;
+      if (isAxiosError(error) && error.response?.status === 404) return null;
       if (await handleAuthError(error)) return undefined;
       showErrorAlert(error, TOPIC_MESSAGES.detailFetchFailed);
       return undefined;
@@ -115,10 +119,10 @@ export const useTopic = () => {
     }
   }, []);
 
-  const deleteTopic = useCallback(async (topicId) => {
+  const deleteTopic = useCallback(async (topicId: TopicId) => {
     setLoading(true);
     try {
-      const response = await api.delete(`/topics/${topicId}`);
+      const response = await api.delete<boolean>(`/topics/${topicId}`);
       if (response.status === 200) {
         showSuccessAlert(TOPIC_MESSAGES.deleteSuccess);
         return true;
