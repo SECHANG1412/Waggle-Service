@@ -11,13 +11,14 @@ import { useAuth } from '../../hooks/auth-context';
 const Navbar = () => {
   const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { logout, isAuthenticated, user } = useAuth();
+  const { logout, isAuthenticated, isAuthLoading, user } = useAuth();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const search = searchParams.get('search') || '';
   const [searchInput, setSearchInput] = useState(search);
   const category = searchParams.get('category') || '';
-  const isAdmin = Boolean(user?.is_admin);
+  const canShowAuthenticatedNav = !isAuthLoading && isAuthenticated;
+  const isAdmin = canShowAuthenticatedNav && Boolean(user?.is_admin);
 
   const onLogoutClick = () => {
     logout();
@@ -62,7 +63,7 @@ const Navbar = () => {
             />
           </div>
           <div className="ml-auto flex items-center gap-3">
-            {isAuthenticated && (
+            {canShowAuthenticatedNav && (
               <Link
                 to="/create-topic"
                 className="hidden lg:inline-flex items-center rounded-lg border border-slate-300 bg-white/90 px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:border-slate-400 hover:bg-white hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-200"
@@ -73,6 +74,7 @@ const Navbar = () => {
             <DesktopAuthButtons
               userName={user?.username || 'User'}
               isAuthenticated={isAuthenticated}
+              isAuthLoading={isAuthLoading}
               isAdmin={isAdmin}
               isOpen={isDesktopMenuOpen}
               setIsOpen={setIsDesktopMenuOpen}
@@ -101,7 +103,8 @@ const Navbar = () => {
       <MobileMenu
         isOpen={isMobileMenuOpen}
         setIsOpen={setIsMobileMenuOpen}
-        isAuthenticated={isAuthenticated}
+        isAuthenticated={canShowAuthenticatedNav}
+        isAuthLoading={isAuthLoading}
         isAdmin={isAdmin}
         onLogoutClick={onLogoutClick}
       />
