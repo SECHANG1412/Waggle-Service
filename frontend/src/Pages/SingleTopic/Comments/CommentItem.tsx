@@ -1,12 +1,27 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import EditableContent from './EditableContent';
 import CommentActions from './CommentActions';
 import ReplyForm from './ReplyForm';
 import { useAuth } from '../../../hooks/auth-context';
 import { formatDateTime } from '../../../utils/date';
+import type { CommentRead, ReplyRead } from '../../../types';
+import type { CommentItemActions } from '.';
 
-const CommentItem = ({ item, isReply = false, actions, refresh, depth = 0 }) => {
-  const id = isReply ? item.reply_id : item.comment_id;
+type CommentTreeItem = (CommentRead | ReplyRead) & {
+  is_deleted?: boolean;
+  reply_id?: number;
+};
+
+type CommentItemProps = {
+  item: CommentTreeItem;
+  isReply?: boolean;
+  actions: CommentItemActions;
+  refresh: () => void | Promise<void>;
+  depth?: number;
+};
+
+const CommentItem = ({ item, isReply = false, actions, refresh, depth = 0 }: CommentItemProps) => {
+  const id = isReply ? item.reply_id ?? item.comment_id : item.comment_id;
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(item.content);
   const [replying, setReplying] = useState(false);
@@ -33,9 +48,9 @@ const CommentItem = ({ item, isReply = false, actions, refresh, depth = 0 }) => 
     }
   };
 
-  const onReplySubmit = async (content) => {
+  const onReplySubmit = async (content: string) => {
     // ReplyForm already prefixes with @username, so just forward.
-    const parentReplyId = isReply ? item.reply_id : null;
+    const parentReplyId = isReply ? item.reply_id ?? null : null;
     const success = await actions.onReply(item.comment_id, content, parentReplyId);
     if (success) {
       setReplying(false);

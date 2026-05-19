@@ -1,8 +1,34 @@
-import React from 'react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { formatDateTime } from '../../../utils/date';
+import type { VoteChartPoint } from '../../../types';
+import type { TimeFrame } from '.';
 
-const formatTooltipTimestamp = (timestamp) => {
+type ChartMetric = 'percent' | 'count';
+
+type TooltipPayloadItem = {
+  color?: string;
+  dataKey?: string | number;
+  name?: string | number;
+  value?: string | number;
+  payload?: Partial<VoteChartPoint>;
+};
+
+type CustomTooltipProps = {
+  active?: boolean;
+  payload?: TooltipPayloadItem[];
+  metric: ChartMetric;
+  options: string[];
+};
+
+type ChartCanvasProps = {
+  data: VoteChartPoint[];
+  metric: ChartMetric;
+  options: string[];
+  colors: string[];
+  timeFrame: TimeFrame;
+};
+
+const formatTooltipTimestamp = (timestamp: string) => {
   const formatted = formatDateTime(timestamp, 'ko-KR', {
     year: 'numeric',
     month: '2-digit',
@@ -14,7 +40,7 @@ const formatTooltipTimestamp = (timestamp) => {
   return formatted || timestamp;
 };
 
-const CustomTooltip = ({ active, payload, metric, options }) => {
+const CustomTooltip = ({ active, payload, metric, options }: CustomTooltipProps) => {
   if (!active || !payload?.length) return null;
 
   const rawTimestamp = payload[0]?.payload?.timestamp || payload[0]?.payload?.label || '';
@@ -48,8 +74,8 @@ const CustomTooltip = ({ active, payload, metric, options }) => {
   );
 };
 
-const ChartCanvas = ({ data, metric, options, colors, timeFrame }) => {
-  const tickFormatter = (value) => {
+const ChartCanvas = ({ data, metric, options, colors, timeFrame }: ChartCanvasProps) => {
+  const tickFormatter = (value: string | number) => {
     if (typeof value !== 'string') return value;
     return value;
   };
@@ -62,7 +88,7 @@ const ChartCanvas = ({ data, metric, options, colors, timeFrame }) => {
           <XAxis
             dataKey="label"
             tick={{ fontSize: 12, fill: '#475569' }}
-            tickFormatter={tickFormatter}
+            tickFormatter={(value) => String(tickFormatter(value))}
             interval="preserveStartEnd"
             minTickGap={timeFrame === '1H' || timeFrame === '6H' ? 20 : 34}
           />

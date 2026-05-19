@@ -1,7 +1,11 @@
-import React from 'react';
 import { FaChartBar, FaShieldAlt, FaTag } from 'react-icons/fa';
 
-const InfoBar = ({ totalVotes, category }) => {
+type InfoBarProps = {
+  totalVotes: number;
+  category: string;
+};
+
+const InfoBar = ({ totalVotes, category }: InfoBarProps) => {
   const items = [
     {
       icon: <FaChartBar className="h-4 w-4 text-blue-600" />,

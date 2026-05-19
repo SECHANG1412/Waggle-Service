@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTopic } from '../../hooks/useTopic';
 import Pagination from './layout/Pagination';
@@ -7,18 +7,24 @@ import { useVote } from "../../hooks/useVote";
 import { useAuth } from "../../hooks/auth-context";
 import { useConfirm } from '../../hooks/confirm-context';
 import { showLoginRequiredAlert } from '../../utils/alertUtils';
+import type { TopicRead } from '../../types';
 
 const SORT_MAP = {
   recent: 'created_at',
   likes: 'like_count',
-};
+} as const;
+
+type SortParam = keyof typeof SORT_MAP;
+export type MainTopic = TopicRead & { originalIndex?: number };
+export type MainVoteHandler = (topicId: number, voteIndex: number) => Promise<void>;
+export type MainPinToggleHandler = (topicId: number, isPinned: boolean) => Promise<void>;
 
 const Main = () => {
   const { loading, fetchTopics, countAllTopics, pinTopic, unpinTopic } = useTopic();
   const { submitVote } = useVote();
   const { isAuthenticated } = useAuth();
   const { confirm } = useConfirm();
-  const [topics, setTopics] = useState([]);
+  const [topics, setTopics] = useState<MainTopic[]>([]);
   const [totalTopics, setTotalTopics] = useState(0);
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -31,7 +37,7 @@ const Main = () => {
       : rawSort === 'like_count'
         ? 'likes'
         : rawSort || 'recent';
-  const sort = SORT_MAP[sortParam] ? sortParam : 'recent';
+  const sort: SortParam = sortParam in SORT_MAP ? (sortParam as SortParam) : 'recent';
   const search = searchParams.get('search') || '';
   const page = parseInt(searchParams.get('page') || '1', 10);
   const topicsPerPage = 16;
@@ -62,13 +68,13 @@ const Main = () => {
     loadTopics();
   }, [category, search, countAllTopics, loadTopics]);
 
-  const onPageChange = (p) => {
+  const onPageChange = (p: number) => {
     const updated = new URLSearchParams(searchParams);
-    updated.set('page', p);
+    updated.set('page', String(p));
     setSearchParams(updated);
   };
 
-  const onVote = async (topic_id, index) => {
+  const onVote: MainVoteHandler = async (topic_id, index) => {
     const confirmed = await confirm({
       title: '선택한 항목으로 투표할까요?',
       description: '투표 후에는 선택을 변경할 수 없어요.',
@@ -99,14 +105,14 @@ const Main = () => {
     );
   };
 
-  const sortByPinnedThenOriginal = (list) =>
+  const sortByPinnedThenOriginal = (list: MainTopic[]) =>
     [...list].sort(
       (a, b) =>
         (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0) ||
         (a.originalIndex ?? 0) - (b.originalIndex ?? 0)
     );
 
-  const onPinToggle = async (topic_id, is_pinned) => {
+  const onPinToggle: MainPinToggleHandler = async (topic_id, is_pinned) => {
     if (!isAuthenticated) {
       await showLoginRequiredAlert('토픽을 고정하려면 로그인해 주세요.');
       return;

@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import type { FormEvent } from 'react';
 import { FaRegCommentDots } from 'react-icons/fa';
 import { COMMENT_MESSAGES, COMMON_MESSAGES, REPLY_MESSAGES } from '../../../constants/messages';
 import { useAuth } from '../../../hooks/auth-context';
@@ -9,15 +10,32 @@ import { useReply } from '../../../hooks/useReply';
 import { showLoginRequiredAlert } from '../../../utils/alertUtils';
 import CommentItem from './CommentItem';
 import PaginationControls from './PaginationControls';
+import type { CommentRead } from '../../../types';
 
-const Comments = ({ topicId }) => {
+type TopicId = number | string;
+
+export type CommentItemActions = {
+  onEdit: (commentId: TopicId, content: string) => Promise<unknown>;
+  onDelete: (commentId: TopicId) => Promise<unknown>;
+  onLike: (commentId: TopicId) => Promise<unknown>;
+  onReply: (commentId: TopicId, content: string, parentReplyId?: TopicId | null) => Promise<unknown>;
+  onReplyEdit: (replyId: TopicId, content: string) => Promise<unknown>;
+  onReplyDelete: (replyId: TopicId) => Promise<unknown>;
+  onReplyLike: (replyId: TopicId) => Promise<unknown>;
+};
+
+type CommentsProps = {
+  topicId: TopicId;
+};
+
+const Comments = ({ topicId }: CommentsProps) => {
   const { getComments, createComment, updateComment, deleteComment } = useComment();
   const { createReply, updateReply, deleteReply } = useReply();
   const { toggleCommentLike, toggleReplyLike } = useLike();
   const { isAuthenticated, isAuthLoading } = useAuth();
   const { confirm } = useConfirm();
 
-  const [comments, setComments] = useState([]);
+  const [comments, setComments] = useState<CommentRead[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,7 +52,7 @@ const Comments = ({ topicId }) => {
     setCurrentPage(1);
   }, [topicId, fetchComment]);
 
-  const ensureAuth = async (message) => {
+  const ensureAuth = async (message: string) => {
     if (isAuthLoading) return false;
     if (!isAuthenticated) {
       await showLoginRequiredAlert(message);
@@ -43,7 +61,7 @@ const Comments = ({ topicId }) => {
     return true;
   };
 
-  const onCreateComment = async (e) => {
+  const onCreateComment = async (e?: FormEvent<HTMLFormElement>) => {
     e?.preventDefault();
     if (!(await ensureAuth(COMMENT_MESSAGES.loginRequiredCreate))) return;
     if (!newComment.trim()) return;
@@ -56,7 +74,7 @@ const Comments = ({ topicId }) => {
     }
   };
 
-  const onDeleteComment = async (commentId) => {
+  const onDeleteComment = async (commentId: TopicId) => {
     const confirmed = await confirm({
       title: COMMENT_MESSAGES.deleteConfirmTitle,
       description: COMMENT_MESSAGES.deleteConfirmText,
@@ -71,12 +89,12 @@ const Comments = ({ topicId }) => {
     if (success) fetchComment();
   };
 
-  const guardedAction = async (action, message) => {
+  const guardedAction = async <T,>(action: () => Promise<T>, message: string) => {
     if (!(await ensureAuth(message))) return null;
     return action();
   };
 
-  const onCommentActions = {
+  const onCommentActions: CommentItemActions = {
     onEdit: (commentId, content) =>
       guardedAction(() => updateComment(commentId, content), COMMENT_MESSAGES.loginRequiredEdit),
     onDelete: (commentId) =>

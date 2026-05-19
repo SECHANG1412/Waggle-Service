@@ -1,11 +1,20 @@
-import React from 'react';
 import { FiChevronRight } from 'react-icons/fi';
 import { voteColors } from '../../../constants/voteColors';
+import type { MainTopic, MainVoteHandler } from '..';
 
-const OptionButton = ({ option, index, topic, onVote }) => {
+type VoteColorKey = keyof typeof voteColors;
+
+type OptionButtonProps = {
+  option: string;
+  index: number;
+  topic: MainTopic;
+  onVote: MainVoteHandler;
+};
+
+const OptionButton = ({ option, index, topic, onVote }: OptionButtonProps) => {
   const optionCount = topic.vote_options.length;
   const isSelected = topic.has_voted && topic.user_vote_index === index;
-  const baseColor = voteColors[optionCount]?.[index] || voteColors[2][index] || '#64748b';
+  const baseColor = voteColors[optionCount as VoteColorKey]?.[index] || voteColors[2][index] || '#64748b';
   const voteCount = topic.vote_results[index] ?? 0;
   const percent = topic.total_vote > 0 ? Math.round((voteCount / topic.total_vote) * 100) : 0;
   const inactiveBg = index === 0 ? '#f0fdf4' : '#fff1f2';

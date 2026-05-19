@@ -1,12 +1,20 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
+import type { KeyboardEvent, MouseEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BsBookmark, BsBookmarkFill } from 'react-icons/bs';
 import { FaRegUserCircle } from 'react-icons/fa';
 import OptionButton from './OptionButton';
 import VoteInfo from './VoteInfo';
 import { formatDateTime } from '../../../utils/date';
+import type { MainPinToggleHandler, MainTopic, MainVoteHandler } from '..';
 
-const TopicCard = ({ topic, onVote, onPinToggle }) => {
+type TopicCardProps = {
+  topic: MainTopic;
+  onVote: MainVoteHandler;
+  onPinToggle: MainPinToggleHandler;
+};
+
+const TopicCard = ({ topic, onVote, onPinToggle }: TopicCardProps) => {
   const navigate = useNavigate();
   const formattedDate = useMemo(() => {
     return formatDateTime(topic.created_at, 'ko-KR', {
@@ -23,19 +31,20 @@ const TopicCard = ({ topic, onVote, onPinToggle }) => {
   const detailPath = `/topic/${topic.topic_id}`;
   const visibleOptions = topic.vote_options.slice(0, 2);
 
-  const isInteractiveElement = (target) =>
+  const isInteractiveElement = (target: EventTarget | null) =>
+    target instanceof Element &&
     Boolean(target.closest('a, button, input, select, textarea, [role="button"]'));
 
   const openDetail = () => {
     navigate(detailPath);
   };
 
-  const onCardClick = (event) => {
+  const onCardClick = (event: MouseEvent<HTMLElement>) => {
     if (isInteractiveElement(event.target)) return;
     openDetail();
   };
 
-  const onCardKeyDown = (event) => {
+  const onCardKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (isInteractiveElement(event.target)) return;
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();

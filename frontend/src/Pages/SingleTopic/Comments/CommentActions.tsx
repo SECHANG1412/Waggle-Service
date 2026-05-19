@@ -1,5 +1,14 @@
-import React from 'react';
 import { FaEdit, FaHeart, FaRegComment, FaTrash } from 'react-icons/fa';
+
+type CommentActionsProps = {
+  hasLiked: boolean;
+  likeCount: number;
+  onLikeClick?: () => void | Promise<void>;
+  onReplyClick?: () => void;
+  onEditClick?: () => void;
+  onDeleteClick?: () => void | Promise<void>;
+  hideOwnerActions?: boolean;
+};
 
 const CommentActions = ({
   hasLiked,
@@ -9,7 +18,7 @@ const CommentActions = ({
   onEditClick,
   onDeleteClick,
   hideOwnerActions = false,
-}) => {
+}: CommentActionsProps) => {
   return (
     <div className="mt-2 flex flex-wrap items-center gap-1.5 text-sm text-gray-500 sm:gap-2">
       <button

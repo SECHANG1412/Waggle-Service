@@ -1,6 +1,13 @@
-import React from 'react';
+import type { ChangeEvent } from 'react';
 
-const Header = ({ title, total, sort, onSortChange }) => {
+type HeaderProps = {
+  title: string;
+  total: number;
+  sort: string;
+  onSortChange: (event: ChangeEvent<HTMLSelectElement>) => void;
+};
+
+const Header = ({ title, total, sort, onSortChange }: HeaderProps) => {
   return (
     <div className="flex flex-col gap-3 mb-3">
       <div className="flex items-start justify-between gap-3">

@@ -1,7 +1,13 @@
-import React from 'react';
 import { FaHeart, FaCommentDots } from 'react-icons/fa';
 
-const VoteInfo = ({ createdAt, likeCount, totalVote, commentCount }) => {
+type VoteInfoProps = {
+  createdAt: string;
+  likeCount: number;
+  totalVote: number;
+  commentCount: number;
+};
+
+const VoteInfo = ({ createdAt, likeCount, totalVote, commentCount }: VoteInfoProps) => {
   return (
     <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-2.5 text-[11px] text-slate-500">
       <span className="whitespace-nowrap">{createdAt}</span>

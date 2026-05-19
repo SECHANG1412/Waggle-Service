@@ -1,6 +1,13 @@
-import React from 'react';
+import type { TimeFrame } from '.';
 
-function TimeFrameButtons({ selected, onChange, loading, options }) {
+type TimeFrameButtonsProps = {
+  selected: TimeFrame;
+  onChange: (frame: TimeFrame) => void;
+  loading: boolean;
+  options: TimeFrame[];
+};
+
+function TimeFrameButtons({ selected, onChange, loading, options }: TimeFrameButtonsProps) {
   return (
     <div className="-mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0 sm:pb-0">
       {options.map((frames, idx) => (

@@ -1,24 +1,33 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useVote } from '../../../hooks/useVote';
 import ChartHeader from './ChartHeader';
 import ChartCanvas from './ChartCanvas';
 import ChartLegend from './ChartLegend';
 import { voteColors } from '../../../constants/voteColors';
 import TimeFrameButtons from './TimeFrameButtons';
+import type { VoteChartPoint } from '../../../types';
 
-const timeFrames = ['1H', '6H', '1D', '1W', 'ALL'];
+export type TimeFrame = '1H' | '6H' | '1D' | '1W' | 'ALL';
+type VoteColorKey = keyof typeof voteColors;
 
-const Chart = ({ topicId, voteOptions }) => {
+const timeFrames: TimeFrame[] = ['1H', '6H', '1D', '1W', 'ALL'];
+
+type ChartProps = {
+  topicId: number | string;
+  voteOptions: string[];
+};
+
+const Chart = ({ topicId, voteOptions }: ChartProps) => {
   const { getTopicVotes } = useVote();
-  const [selectedTimeFrame, setSelectedTimeFrame] = useState('1D');
+  const [selectedTimeFrame, setSelectedTimeFrame] = useState<TimeFrame>('1D');
   const [loading, setLoading] = useState(false);
-  const [voteData, setVoteData] = useState([]);
+  const [voteData, setVoteData] = useState<VoteChartPoint[]>([]);
   const [hasLoaded, setHasLoaded] = useState(false);
-  const colors = voteColors[voteOptions.length] || [];
+  const colors = voteColors[voteOptions.length as VoteColorKey] || [];
   const chartMetric = 'percent';
 
   const fetchTopicVotes = useCallback(
-    async (frame) => {
+    async (frame: TimeFrame) => {
       if (!topicId) return;
       setLoading(true);
 
@@ -37,7 +46,7 @@ const Chart = ({ topicId, voteOptions }) => {
     fetchTopicVotes('1D');
   }, [fetchTopicVotes]);
 
-  const onTimeFrameChange = (frame) => {
+  const onTimeFrameChange = (frame: TimeFrame) => {
     if (frame !== selectedTimeFrame) {
       setSelectedTimeFrame(frame);
       fetchTopicVotes(frame);

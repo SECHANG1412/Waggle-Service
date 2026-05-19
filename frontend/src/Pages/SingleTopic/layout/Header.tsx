@@ -1,6 +1,19 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import { FaHeart, FaRegCalendarAlt, FaRegCommentDots, FaRegUser } from 'react-icons/fa';
 import { formatDateTime } from '../../../utils/date';
+
+type HeaderProps = {
+  title: string;
+  description: string | null;
+  category: string;
+  authorName: string | null;
+  createdAt: string;
+  commentCount: number;
+  liked: boolean;
+  likes: number;
+  onLikeClick: () => void;
+  actions?: ReactNode;
+};
 
 const Header = ({
   title,
@@ -13,7 +26,7 @@ const Header = ({
   likes,
   onLikeClick,
   actions,
-}) => {
+}: HeaderProps) => {
   const formattedDate = formatDateTime(createdAt, 'ko-KR', {
     year: 'numeric',
     month: 'long',

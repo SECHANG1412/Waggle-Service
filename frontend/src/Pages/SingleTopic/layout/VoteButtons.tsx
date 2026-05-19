@@ -1,7 +1,16 @@
-import React from 'react';
 import { FaCheckCircle } from 'react-icons/fa';
 
-const VoteButtons = ({ voteOptions, voteResults, totalVotes, hasVoted, useVoteIndex, onVote, colors }) => {
+type VoteButtonsProps = {
+  voteOptions: string[];
+  voteResults: number[];
+  totalVotes: number;
+  hasVoted: boolean;
+  useVoteIndex: number | null;
+  onVote: (index: number) => void;
+  colors: string[];
+};
+
+const VoteButtons = ({ voteOptions, voteResults, totalVotes, hasVoted, useVoteIndex, onVote, colors }: VoteButtonsProps) => {
   return (
     <div className="space-y-2.5 sm:space-y-3">
       {voteOptions.map((option, idx) => {

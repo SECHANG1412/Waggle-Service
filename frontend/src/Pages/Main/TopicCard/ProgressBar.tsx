@@ -1,7 +1,13 @@
-import React from 'react';
 import { voteColors } from '../../../constants/voteColors';
 
-const ProgressBar = ({ voteResults, totalVote }) => {
+type VoteColorKey = keyof typeof voteColors;
+
+type ProgressBarProps = {
+  voteResults: number[];
+  totalVote: number;
+};
+
+const ProgressBar = ({ voteResults, totalVote }: ProgressBarProps) => {
   const optionCount = voteResults.length;
   let accumulated = 0;
 
@@ -19,7 +25,7 @@ const ProgressBar = ({ voteResults, totalVote }) => {
             style={{
               width: `${width}%`,
               left: `${left}%`,
-              backgroundColor: voteColors[optionCount][idx],
+              backgroundColor: voteColors[optionCount as VoteColorKey]?.[idx] || '#64748b',
             }}
           />
         );

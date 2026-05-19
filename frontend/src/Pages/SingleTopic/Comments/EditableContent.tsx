@@ -1,4 +1,14 @@
-import React from 'react';
+import type { Dispatch, SetStateAction } from 'react';
+
+type EditableContentProps = {
+  isEditing: boolean;
+  content: string;
+  editContent: string;
+  setEditContent: Dispatch<SetStateAction<string>>;
+  onEdit: () => void | Promise<void>;
+  setIsEditing: Dispatch<SetStateAction<boolean>>;
+  isReply?: boolean;
+};
 
 const EditableContent = ({
   isEditing,
@@ -8,7 +18,7 @@ const EditableContent = ({
   onEdit,
   setIsEditing,
   isReply = false,
-}) => {
+}: EditableContentProps) => {
   if (isEditing) {
     return (
       <div className="mt-2">

@@ -1,6 +1,18 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import TopicCard from '../TopicCard';
+import type { MainPinToggleHandler, MainTopic, MainVoteHandler } from '..';
+
+type EmptyStateProps = {
+  isAuthenticated: boolean;
+};
+
+type GridProps = {
+  topics: MainTopic[];
+  loading: boolean;
+  onVote: MainVoteHandler;
+  onPinToggle: MainPinToggleHandler;
+  isAuthenticated: boolean;
+};
 
 const TopicSkeletonCard = () => (
   <div className="h-full min-h-[240px] rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
@@ -32,7 +44,7 @@ const LoadingGrid = () => (
   </div>
 );
 
-const EmptyState = ({ isAuthenticated }) => (
+const EmptyState = ({ isAuthenticated }: EmptyStateProps) => (
   <div className="flex min-h-[320px] flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
     <p className="text-lg font-semibold text-slate-800">조건에 맞는 토픽이 없습니다.</p>
     <p className="mt-2 text-sm text-slate-500">
@@ -51,7 +63,7 @@ const EmptyState = ({ isAuthenticated }) => (
   </div>
 );
 
-const Grid = ({ topics, loading, onVote, onPinToggle, isAuthenticated }) => {
+const Grid = ({ topics, loading, onVote, onPinToggle, isAuthenticated }: GridProps) => {
   if (loading) {
     return <LoadingGrid />;
   }
@@ -67,7 +79,6 @@ const Grid = ({ topics, loading, onVote, onPinToggle, isAuthenticated }) => {
           topic={topic}
           onVote={onVote}
           onPinToggle={onPinToggle}
-          isAuthenticated={isAuthenticated}
           key={topic.topic_id}
         />
       ))}

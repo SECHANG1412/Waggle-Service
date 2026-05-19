@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { COMMON_MESSAGES, TOPIC_MESSAGES } from '../../constants/messages';
 import { voteColors } from '../../constants/voteColors';
@@ -12,6 +12,10 @@ import Comments from './Comments';
 import Header from './layout/Header';
 import InfoBar from './layout/InfoBar';
 import VoteButtons from './layout/VoteButtons';
+import type { TopicRead } from '../../types';
+
+type FetchState = 'idle' | 'loading' | 'not-found' | 'error' | 'ready';
+type VoteColorKey = keyof typeof voteColors;
 
 const SingleTopic = () => {
   const { id } = useParams();
@@ -22,11 +26,17 @@ const SingleTopic = () => {
   const { user: authUser } = useAuth();
   const { confirm } = useConfirm();
 
-  const [topic, setTopic] = useState(null);
+  const [topic, setTopic] = useState<TopicRead | null>(null);
   const [loading, setLoading] = useState(false);
-  const [fetchState, setFetchState] = useState('idle');
+  const [fetchState, setFetchState] = useState<FetchState>('idle');
 
   const fetchTopic = useCallback(async () => {
+    if (!id) {
+      setTopic(null);
+      setFetchState('not-found');
+      return;
+    }
+
     setLoading(true);
     setFetchState('loading');
 
@@ -56,18 +66,20 @@ const SingleTopic = () => {
   }, [fetchTopic]);
 
   const onLikeClick = async () => {
+    if (!id) return;
     const result = await toggleTopicLike(id);
     if (result !== null) {
-      setTopic((prev) => ({
+      setTopic((prev) => prev ? ({
         ...prev,
         has_liked: !prev.has_liked,
         like_count: prev.has_liked ? prev.like_count - 1 : prev.like_count + 1,
-      }));
+      }) : prev);
     }
   };
 
-  const onVote = async (index) => {
+  const onVote = async (index: number) => {
     if (topic?.has_voted) return;
+    if (!id) return;
     const confirmed = await confirm({
       title: '투표하시겠습니까?',
       description: '투표는 한 번만 가능하며 선택 후 변경할 수 없습니다.',
@@ -82,6 +94,7 @@ const SingleTopic = () => {
   };
 
   const onDelete = async () => {
+    if (!id) return;
     const confirmed = await confirm({
       title: TOPIC_MESSAGES.deleteConfirmTitle,
       description: TOPIC_MESSAGES.deleteConfirmText,
@@ -122,7 +135,7 @@ const SingleTopic = () => {
   if (!topic) return null;
 
   const commentCount = topic.comment_count ?? topic.comments_count ?? 0;
-  const colors = voteColors[topic.vote_options.length] || [];
+  const colors = voteColors[topic.vote_options.length as VoteColorKey] || [];
   const votePanel = (
     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
       <h2 className="mb-3 text-lg font-bold text-slate-950 sm:mb-4 sm:text-xl">
@@ -175,7 +188,7 @@ const SingleTopic = () => {
           <div className="lg:hidden">
             <InfoBar totalVotes={topic.total_vote} category={topic.category} />
           </div>
-          <Comments topicId={id} />
+          <Comments topicId={topic.topic_id} />
         </main>
 
         <aside className="hidden space-y-4 lg:sticky lg:top-6 lg:block">

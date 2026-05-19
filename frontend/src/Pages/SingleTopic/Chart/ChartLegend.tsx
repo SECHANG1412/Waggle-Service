@@ -1,6 +1,9 @@
-import React from 'react';
+type ChartLegendProps = {
+  options: string[];
+  colors: string[];
+};
 
-const ChartLegend = ({ options, colors }) => {
+const ChartLegend = ({ options, colors }: ChartLegendProps) => {
   if (!options?.length || !colors?.length) return null;
 
   return (

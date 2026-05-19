@@ -1,6 +1,10 @@
-import React from 'react';
+type PaginationControlsProps = {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+};
 
-const PaginationControls = ({ currentPage, totalPages, onPageChange }) => {
+const PaginationControls = ({ currentPage, totalPages, onPageChange }: PaginationControlsProps) => {
   return (
     <div className="mt-6 flex items-center justify-center gap-2">
       <button

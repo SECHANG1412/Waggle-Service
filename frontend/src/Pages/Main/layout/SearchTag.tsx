@@ -1,6 +1,9 @@
-import React from 'react';
+type SearchTagProps = {
+  search: string;
+  onClear: () => void;
+};
 
-const SearchTag = ({ search, onClear }) => {
+const SearchTag = ({ search, onClear }: SearchTagProps) => {
   if (!search) return null;
   return (
     <div className="mb-4 flex items-center">

@@ -1,6 +1,13 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 
-const Pagination = ({ currentPage, total, perPage, onPageChange }) => {
+type PaginationProps = {
+  currentPage: number;
+  total: number;
+  perPage: number;
+  onPageChange: (page: number) => void;
+};
+
+const Pagination = ({ currentPage, total, perPage, onPageChange }: PaginationProps) => {
   const totalPages = Math.ceil(total / perPage);
   const delta = 1;
 
@@ -9,7 +16,7 @@ const Pagination = ({ currentPage, total, perPage, onPageChange }) => {
 
     const left = Math.max(2, currentPage - delta);
     const right = Math.min(totalPages - 1, currentPage + delta);
-    const range = [];
+    const range: Array<number | '...'> = [];
 
     range.push(1);
     if (left > 2) range.push('...');

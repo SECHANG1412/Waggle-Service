@@ -1,5 +1,3 @@
-import React from 'react';
-
 const ChartHeader = () => {
   return (
     <div className="mb-4 flex items-center justify-between">

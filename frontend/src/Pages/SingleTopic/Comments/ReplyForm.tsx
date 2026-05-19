@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 import { FiSend, FiX } from 'react-icons/fi';
 
-const ReplyForm = ({ onSubmit, onCancel, lockedPrefix = '' }) => {
+type ReplyFormProps = {
+  onSubmit: (content: string) => void | Promise<void>;
+  onCancel: () => void;
+  lockedPrefix?: string;
+};
+
+const ReplyForm = ({ onSubmit, onCancel, lockedPrefix = '' }: ReplyFormProps) => {
   const prefix = lockedPrefix?.trim() || '';
   const [body, setBody] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const trimmedBody = body.trim();
     if (!trimmedBody) return;
