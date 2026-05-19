@@ -8,9 +8,19 @@ type VoteButtonsProps = {
   useVoteIndex: number | null;
   onVote: (index: number) => void;
   colors: string[];
+  isAuthLoading: boolean;
 };
 
-const VoteButtons = ({ voteOptions, voteResults, totalVotes, hasVoted, useVoteIndex, onVote, colors }: VoteButtonsProps) => {
+const VoteButtons = ({
+  voteOptions,
+  voteResults,
+  totalVotes,
+  hasVoted,
+  useVoteIndex,
+  onVote,
+  colors,
+  isAuthLoading,
+}: VoteButtonsProps) => {
   return (
     <div className="space-y-2.5 sm:space-y-3">
       {voteOptions.map((option, idx) => {
@@ -56,8 +66,9 @@ const VoteButtons = ({ voteOptions, voteResults, totalVotes, hasVoted, useVoteIn
 
               {!hasVoted && (
                 <button
+                  disabled={isAuthLoading}
                   onClick={() => onVote(idx)}
-                  className="min-h-10 shrink-0 rounded-lg px-3 py-2 text-xs font-bold text-white transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:px-4 sm:text-sm"
+                  className="min-h-10 shrink-0 rounded-lg px-3 py-2 text-xs font-bold text-white transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:px-4 sm:text-sm"
                   style={{ backgroundColor: baseColor }}
                 >
                   투표하기

@@ -9,9 +9,10 @@ type OptionButtonProps = {
   index: number;
   topic: MainTopic;
   onVote: MainVoteHandler;
+  isAuthLoading: boolean;
 };
 
-const OptionButton = ({ option, index, topic, onVote }: OptionButtonProps) => {
+const OptionButton = ({ option, index, topic, onVote, isAuthLoading }: OptionButtonProps) => {
   const optionCount = topic.vote_options.length;
   const isSelected = topic.has_voted && topic.user_vote_index === index;
   const baseColor = voteColors[optionCount as VoteColorKey]?.[index] || voteColors[2][index] || '#64748b';
@@ -27,10 +28,10 @@ const OptionButton = ({ option, index, topic, onVote }: OptionButtonProps) => {
 
   return (
     <button
-      disabled={topic.has_voted}
+      disabled={topic.has_voted || isAuthLoading}
       onClick={(event) => {
         event.stopPropagation();
-        if (!topic.has_voted) onVote(topic.topic_id, index);
+        if (!topic.has_voted && !isAuthLoading) onVote(topic.topic_id, index);
       }}
       style={styles}
       className="group flex min-h-[44px] w-full cursor-pointer items-center justify-between gap-2.5 rounded-lg border border-l-4 px-3 py-1.5 text-left transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-300 disabled:cursor-not-allowed"

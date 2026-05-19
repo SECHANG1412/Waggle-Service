@@ -4,6 +4,7 @@ import type { MainPinToggleHandler, MainTopic, MainVoteHandler } from '..';
 
 type EmptyStateProps = {
   isAuthenticated: boolean;
+  isAuthLoading: boolean;
 };
 
 type GridProps = {
@@ -12,6 +13,7 @@ type GridProps = {
   onVote: MainVoteHandler;
   onPinToggle: MainPinToggleHandler;
   isAuthenticated: boolean;
+  isAuthLoading: boolean;
 };
 
 const TopicSkeletonCard = () => (
@@ -44,13 +46,15 @@ const LoadingGrid = () => (
   </div>
 );
 
-const EmptyState = ({ isAuthenticated }: EmptyStateProps) => (
+const EmptyState = ({ isAuthenticated, isAuthLoading }: EmptyStateProps) => (
   <div className="flex min-h-[320px] flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
     <p className="text-lg font-semibold text-slate-800">조건에 맞는 토픽이 없습니다.</p>
     <p className="mt-2 text-sm text-slate-500">
       검색어 또는 카테고리 조건을 바꿔보거나 새로운 토픽을 만들어 보세요.
     </p>
-    {isAuthenticated ? (
+    {isAuthLoading ? (
+      <div className="mt-5 h-10 w-32 animate-pulse rounded-lg bg-slate-100" />
+    ) : isAuthenticated ? (
       <Link
         to="/create-topic"
         className="mt-5 inline-flex h-10 items-center justify-center rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
@@ -63,13 +67,13 @@ const EmptyState = ({ isAuthenticated }: EmptyStateProps) => (
   </div>
 );
 
-const Grid = ({ topics, loading, onVote, onPinToggle, isAuthenticated }: GridProps) => {
+const Grid = ({ topics, loading, onVote, onPinToggle, isAuthenticated, isAuthLoading }: GridProps) => {
   if (loading) {
     return <LoadingGrid />;
   }
 
   if (topics.length === 0) {
-    return <EmptyState isAuthenticated={isAuthenticated} />;
+    return <EmptyState isAuthenticated={isAuthenticated} isAuthLoading={isAuthLoading} />;
   }
 
   return (
@@ -79,6 +83,7 @@ const Grid = ({ topics, loading, onVote, onPinToggle, isAuthenticated }: GridPro
           topic={topic}
           onVote={onVote}
           onPinToggle={onPinToggle}
+          isAuthLoading={isAuthLoading}
           key={topic.topic_id}
         />
       ))}

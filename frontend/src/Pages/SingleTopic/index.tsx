@@ -7,6 +7,7 @@ import { useLike } from '../../hooks/useLike';
 import { useTopic } from '../../hooks/useTopic';
 import { useVote } from '../../hooks/useVote';
 import { useConfirm } from '../../hooks/confirm-context';
+import { showLoginRequiredAlert } from '../../utils/alertUtils';
 import Chart from './Chart';
 import Comments from './Comments';
 import Header from './layout/Header';
@@ -23,7 +24,7 @@ const SingleTopic = () => {
   const { getTopicById, deleteTopic } = useTopic();
   const { toggleTopicLike } = useLike();
   const { submitVote } = useVote();
-  const { user: authUser } = useAuth();
+  const { user: authUser, isAuthenticated, isAuthLoading } = useAuth();
   const { confirm } = useConfirm();
 
   const [topic, setTopic] = useState<TopicRead | null>(null);
@@ -67,6 +68,12 @@ const SingleTopic = () => {
 
   const onLikeClick = async () => {
     if (!id) return;
+    if (isAuthLoading) return;
+    if (!isAuthenticated) {
+      await showLoginRequiredAlert();
+      return;
+    }
+
     const result = await toggleTopicLike(id);
     if (result !== null) {
       setTopic((prev) => prev ? ({
@@ -80,6 +87,12 @@ const SingleTopic = () => {
   const onVote = async (index: number) => {
     if (topic?.has_voted) return;
     if (!id) return;
+    if (isAuthLoading) return;
+    if (!isAuthenticated) {
+      await showLoginRequiredAlert();
+      return;
+    }
+
     const confirmed = await confirm({
       title: '투표하시겠습니까?',
       description: '투표는 한 번만 가능하며 선택 후 변경할 수 없습니다.',
@@ -149,6 +162,7 @@ const SingleTopic = () => {
         useVoteIndex={topic.user_vote_index}
         onVote={onVote}
         colors={colors}
+        isAuthLoading={isAuthLoading}
       />
       <p className="mt-3 text-center text-xs font-medium text-slate-500 sm:mt-4 sm:text-sm">
         한 번 투표하면 변경할 수 없습니다.
@@ -170,6 +184,7 @@ const SingleTopic = () => {
             liked={topic.has_liked}
             likes={topic.like_count}
             onLikeClick={onLikeClick}
+            likeDisabled={isAuthLoading}
             actions={
               authUser?.user_id === topic.user_id ? (
                 <button
