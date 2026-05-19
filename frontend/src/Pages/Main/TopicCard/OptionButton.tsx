@@ -1,0 +1,65 @@
+import { FiChevronRight } from 'react-icons/fi';
+import { voteColors } from '../../../constants/voteColors';
+import type { MainTopic, MainVoteHandler } from '..';
+
+type VoteColorKey = keyof typeof voteColors;
+
+type OptionButtonProps = {
+  option: string;
+  index: number;
+  topic: MainTopic;
+  onVote: MainVoteHandler;
+};
+
+const OptionButton = ({ option, index, topic, onVote }: OptionButtonProps) => {
+  const optionCount = topic.vote_options.length;
+  const isSelected = topic.has_voted && topic.user_vote_index === index;
+  const baseColor = voteColors[optionCount as VoteColorKey]?.[index] || voteColors[2][index] || '#64748b';
+  const voteCount = topic.vote_results[index] ?? 0;
+  const percent = topic.total_vote > 0 ? Math.round((voteCount / topic.total_vote) * 100) : 0;
+  const inactiveBg = index === 0 ? '#f0fdf4' : '#fff1f2';
+
+  const styles = {
+    backgroundColor: topic.has_voted && isSelected ? baseColor : inactiveBg,
+    borderColor: topic.has_voted && isSelected ? baseColor : `${baseColor}33`,
+    borderLeftColor: baseColor,
+  };
+
+  return (
+    <button
+      disabled={topic.has_voted}
+      onClick={(event) => {
+        event.stopPropagation();
+        if (!topic.has_voted) onVote(topic.topic_id, index);
+      }}
+      style={styles}
+      className="group flex min-h-[44px] w-full cursor-pointer items-center justify-between gap-2.5 rounded-lg border border-l-4 px-3 py-1.5 text-left transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-300 disabled:cursor-not-allowed"
+    >
+      <span
+        className="min-w-0 flex-1 break-words text-sm font-bold leading-snug"
+        style={{ color: topic.has_voted && isSelected ? '#ffffff' : baseColor }}
+      >
+        {option}
+      </span>
+      <span className="flex shrink-0 items-center gap-2">
+        <span className={`text-right ${topic.has_voted && isSelected ? 'text-white' : 'text-slate-500'}`}>
+          <span
+            className="block text-sm font-bold leading-tight"
+            style={{ color: topic.has_voted && isSelected ? '#ffffff' : baseColor }}
+          >
+            {percent}%
+          </span>
+          <span className="block text-xs font-medium leading-tight">{voteCount}표</span>
+        </span>
+        <FiChevronRight
+          className={`h-4 w-4 transition group-hover:translate-x-0.5 ${
+            topic.has_voted && isSelected ? 'text-white' : 'text-slate-500'
+          }`}
+          aria-hidden="true"
+        />
+      </span>
+    </button>
+  );
+};
+
+export default OptionButton;
