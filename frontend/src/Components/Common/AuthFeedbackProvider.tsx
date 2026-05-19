@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { COMMON_MESSAGES } from '../../constants/messages';
 import { AUTH_FEEDBACK_EVENT } from '../../utils/toastEvents';
@@ -9,10 +9,21 @@ const defaultOptions = {
   confirmText: COMMON_MESSAGES.confirm,
 };
 
-const AuthFeedbackProvider = ({ children }) => {
+type AuthFeedbackEventDetail = {
+  title?: string;
+  message?: string;
+  confirmText?: string;
+  resolve?: () => void;
+};
+
+type AuthFeedbackProviderProps = {
+  children: ReactNode;
+};
+
+const AuthFeedbackProvider = ({ children }: AuthFeedbackProviderProps) => {
   const [open, setOpen] = useState(false);
   const [options, setOptions] = useState(defaultOptions);
-  const resolverRef = useRef(null);
+  const resolverRef = useRef<(() => void) | null>(null);
 
   const resolve = useCallback(() => {
     resolverRef.current?.();
@@ -21,8 +32,8 @@ const AuthFeedbackProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    const handleAuthFeedback = (event) => {
-      const { resolve: resolver, ...nextOptions } = event.detail || {};
+    const handleAuthFeedback = (event: Event) => {
+      const { resolve: resolver, ...nextOptions } = (event as CustomEvent<AuthFeedbackEventDetail>).detail || {};
 
       resolverRef.current?.();
       resolverRef.current = typeof resolver === 'function' ? resolver : null;

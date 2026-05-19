@@ -1,6 +1,13 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 
-const ModalLayout = ({ isOpen, onClose, children, title }) => {
+type ModalLayoutProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  children: ReactNode;
+  title?: string;
+};
+
+const ModalLayout = ({ isOpen, onClose, children, title }: ModalLayoutProps) => {
   if (!isOpen) return null;
 
   const titleId = title ? 'modal-title' : undefined;

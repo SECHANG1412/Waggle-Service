@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { type ChangeEvent, useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import Logo from './layout/Logo';
 import DesktopAuthButtons from './auth/DesktopAuthButtons';
@@ -23,7 +23,7 @@ const Navbar = () => {
     logout();
   };
 
-  const onCategoryClick = (newCategory) => {
+  const onCategoryClick = (newCategory: string) => {
     const updated = new URLSearchParams(searchParams);
     updated.set('category', newCategory === '전체' ? '' : newCategory);
     updated.set('page', '1');
@@ -57,7 +57,7 @@ const Navbar = () => {
           <div className="hidden w-full lg:block lg:w-1/2">
             <SearchMenu
               searchValue={searchInput}
-              onSearchInputChange={(e) => setSearchInput(e.target.value)}
+              onSearchInputChange={(e: ChangeEvent<HTMLInputElement>) => setSearchInput(e.target.value)}
               onSearchSubmit={onSearchSubmit}
             />
           </div>
@@ -88,7 +88,7 @@ const Navbar = () => {
         <div className="mt-3 lg:hidden">
           <SearchMenu
             searchValue={searchInput}
-            onSearchInputChange={(e) => setSearchInput(e.target.value)}
+            onSearchInputChange={(e: ChangeEvent<HTMLInputElement>) => setSearchInput(e.target.value)}
             onSearchSubmit={onSearchSubmit}
           />
         </div>

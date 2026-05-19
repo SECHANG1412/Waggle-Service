@@ -1,6 +1,15 @@
-import React from 'react';
+import type { ChangeEventHandler, HTMLInputTypeAttribute } from 'react';
 
-const FormInput = ({ type, name, value, onChange, placeholder, required = true }) => {
+type FormInputProps = {
+  type: HTMLInputTypeAttribute;
+  name: string;
+  value: string;
+  onChange: ChangeEventHandler<HTMLInputElement>;
+  placeholder: string;
+  required?: boolean;
+};
+
+const FormInput = ({ type, name, value, onChange, placeholder, required = true }: FormInputProps) => {
   return (
     <div>
       <input

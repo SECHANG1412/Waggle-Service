@@ -1,8 +1,14 @@
-import React, { useCallback, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { ConfirmContext } from '../../hooks/confirm-context';
+import { ConfirmContext, type ConfirmOptions, type ConfirmVariant } from '../../hooks/confirm-context';
 
-const defaultOptions = {
+type ConfirmProviderProps = {
+  children: ReactNode;
+};
+
+type ConfirmProviderOptions = Required<ConfirmOptions>;
+
+const defaultOptions: ConfirmProviderOptions = {
   title: '',
   description: '',
   confirmText: '확인',
@@ -11,7 +17,7 @@ const defaultOptions = {
   actionOrder: 'cancel-first',
 };
 
-const variantStyles = {
+const variantStyles: Record<ConfirmVariant, { icon: string; confirm: string }> = {
   primary: {
     icon: 'bg-blue-50 text-blue-700 ring-blue-100',
     confirm: 'bg-blue-600 text-white hover:bg-blue-700 focus-visible:outline-blue-300',
@@ -22,28 +28,28 @@ const variantStyles = {
   },
 };
 
-const ConfirmProvider = ({ children }) => {
+const ConfirmProvider = ({ children }: ConfirmProviderProps) => {
   const [open, setOpen] = useState(false);
   const [options, setOptions] = useState(defaultOptions);
-  const resolverRef = useRef(null);
+  const resolverRef = useRef<((value: boolean) => void) | null>(null);
 
-  const resolve = useCallback((value) => {
+  const resolve = useCallback((value: boolean) => {
     resolverRef.current?.(value);
     resolverRef.current = null;
     setOpen(false);
   }, []);
 
-  const confirm = useCallback((nextOptions) => {
+  const confirm = useCallback((nextOptions: ConfirmOptions) => {
     setOptions({ ...defaultOptions, ...nextOptions });
     setOpen(true);
 
-    return new Promise((resolver) => {
+    return new Promise<boolean>((resolver) => {
       resolverRef.current = resolver;
     });
   }, []);
 
   const handleOpenChange = useCallback(
-    (nextOpen) => {
+    (nextOpen: boolean) => {
       if (!nextOpen) {
         resolve(false);
       }

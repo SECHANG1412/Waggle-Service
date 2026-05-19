@@ -1,6 +1,10 @@
-import React from 'react';
+type SwitchAuthLinkProps = {
+  message: string;
+  buttonText: string;
+  onClick: () => void;
+};
 
-const SwitchAuthLink = ({ message, buttonText, onClick }) => {
+const SwitchAuthLink = ({ message, buttonText, onClick }: SwitchAuthLinkProps) => {
   return (
     <div className="mt-4 text-center text-sm text-gray-600">
       {message}{' '}

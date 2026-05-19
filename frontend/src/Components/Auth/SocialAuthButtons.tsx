@@ -1,8 +1,11 @@
-import React from 'react';
 import { FcGoogle } from 'react-icons/fc';
 import { SiKakaotalk, SiNaver } from 'react-icons/si';
 
-const SocialAuthButtons = ({ baseUrl }) => (
+type SocialAuthButtonsProps = {
+  baseUrl: string;
+};
+
+const SocialAuthButtons = ({ baseUrl }: SocialAuthButtonsProps) => (
   <div className="grid grid-cols-3 gap-3 w-full">
     <button
       type="button"

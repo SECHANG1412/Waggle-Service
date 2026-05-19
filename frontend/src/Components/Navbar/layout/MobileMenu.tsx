@@ -1,6 +1,13 @@
-import React from 'react';
 import SharedNavLinks from '../shared/SharedNavLinks';
 import MobileAuthButtons from '../auth/MobileAuthButtons';
+
+type MobileMenuProps = {
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+  isAuthenticated: boolean;
+  isAdmin: boolean;
+  onLogoutClick: () => void;
+};
 
 const MobileMenu = ({
   isOpen,
@@ -8,7 +15,7 @@ const MobileMenu = ({
   isAuthenticated,
   isAdmin,
   onLogoutClick,
-}) => {
+}: MobileMenuProps) => {
   return (
     <div
       className={`lg:hidden transform transition-all duration-300 ease-in-out ${

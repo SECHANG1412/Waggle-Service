@@ -1,8 +1,14 @@
-import React, { useCallback, useState } from 'react';
-import { ModalLayout, FormButton, FormInput, ErrorMessage, SwitchAuthLink } from '../Ui';
+import { type ChangeEvent, type FormEvent, useCallback, useState } from 'react';
+import { ModalLayout, FormButton, FormInput, ErrorMessage, SwitchAuthLink } from '../UI';
 import { useAuth } from '../../../hooks/auth-context';
 
-const SignupModal = ({ isOpen, onClose, onLoginClick }) => {
+type SignupModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  onLoginClick: () => void;
+};
+
+const SignupModal = ({ isOpen, onClose, onLoginClick }: SignupModalProps) => {
   const [formData, setFormData] = useState({
     email: '',
     username: '',
@@ -12,12 +18,12 @@ const SignupModal = ({ isOpen, onClose, onLoginClick }) => {
 
   const { error, signup } = useAuth();
 
-  const handleChange = useCallback((e) => {
+  const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }, []);
 
   const handleSubmit = useCallback(
-    async (e) => {
+    async (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
 
       try {

@@ -1,4 +1,9 @@
-const MobileToggleButton = ({ isOpen, toggle }) => (
+type MobileToggleButtonProps = {
+  isOpen: boolean;
+  toggle: () => void;
+};
+
+const MobileToggleButton = ({ isOpen, toggle }: MobileToggleButtonProps) => (
   <div className="lg:hidden">
     <button
       onClick={toggle}

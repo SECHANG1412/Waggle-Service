@@ -1,14 +1,20 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { ModalLayout, ErrorMessage, FormButton, FormInput, SwitchAuthLink } from '../Ui';
+import { type ChangeEvent, type FormEvent, useCallback, useMemo, useState } from 'react';
+import { ModalLayout, ErrorMessage, FormButton, FormInput, SwitchAuthLink } from '../UI';
 import { useAuth } from '../../../hooks/auth-context';
 import SocialAuthButtons from '../../Auth/SocialAuthButtons';
 
-const LoginModal = ({ isOpen, onClose, onSignupClick }) => {
+type LoginModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  onSignupClick: () => void;
+};
+
+const LoginModal = ({ isOpen, onClose, onSignupClick }: LoginModalProps) => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const { error, login } = useAuth();
   const baseUrl = useMemo(() => import.meta.env.VITE_API_URL || '', []);
 
-  const handleChange = useCallback((e) => {
+  const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
@@ -16,7 +22,7 @@ const LoginModal = ({ isOpen, onClose, onSignupClick }) => {
   }, []);
 
   const handleSubmit = useCallback(
-    async (e) => {
+    async (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
 
       try {

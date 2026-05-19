@@ -1,5 +1,24 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { FEEDBACK_TOAST_EVENT } from '../../utils/toastEvents';
+
+type ToastType = 'success' | 'error' | 'warning';
+
+type Toast = {
+  id: string;
+  title?: string;
+  message?: string;
+  type: ToastType;
+};
+
+type ToastEventDetail = {
+  title?: string;
+  message?: string;
+  type?: ToastType;
+};
+
+type ToastProviderProps = {
+  children: ReactNode;
+};
 
 const TOAST_DURATION = {
   success: 2600,
@@ -34,11 +53,11 @@ const TOAST_STYLES = {
   },
 };
 
-const ToastProvider = ({ children }) => {
-  const [toasts, setToasts] = useState([]);
-  const timersRef = useRef(new Map());
+const ToastProvider = ({ children }: ToastProviderProps) => {
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const timersRef = useRef(new Map<string, ReturnType<typeof setTimeout>>());
 
-  const removeToast = useCallback((id) => {
+  const removeToast = useCallback((id: string) => {
     const timers = timersRef.current;
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
     const timer = timers.get(id);
@@ -51,9 +70,9 @@ const ToastProvider = ({ children }) => {
   useEffect(() => {
     const timers = timersRef.current;
 
-    const handleFeedbackToast = (event) => {
+    const handleFeedbackToast = (event: Event) => {
       const id = `${Date.now()}-${Math.random()}`;
-      const { title, message, type = 'success' } = event.detail || {};
+      const { title, message, type = 'success' } = (event as CustomEvent<ToastEventDetail>).detail || {};
       const toastType = TOAST_STYLES[type] ? type : 'success';
 
       setToasts((prev) => [

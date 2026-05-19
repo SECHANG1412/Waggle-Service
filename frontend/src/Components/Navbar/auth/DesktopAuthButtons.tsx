@@ -1,10 +1,23 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
-const AvatarPlaceholder = ({ name }) => {
+type AvatarPlaceholderProps = {
+  name: string;
+};
+
+type DesktopAuthButtonsProps = {
+  userName: string;
+  isAuthenticated: boolean;
+  isAdmin: boolean;
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+  onLogoutClick: () => void;
+};
+
+const AvatarPlaceholder = ({ name }: AvatarPlaceholderProps) => {
   const initials = name
     .split(' ')
-    .map((part) => part[0])
+    .map((part: string) => part[0])
     .join('')
     .toUpperCase();
 
@@ -15,13 +28,13 @@ const AvatarPlaceholder = ({ name }) => {
   );
 };
 
-const DesktopAuthButtons = ({ userName, isAuthenticated, isAdmin, isOpen, setIsOpen, onLogoutClick }) => {
-  const containerRef = useRef(null);
+const DesktopAuthButtons = ({ userName, isAuthenticated, isAdmin, isOpen, setIsOpen, onLogoutClick }: DesktopAuthButtonsProps) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
-    const handleClickOutside = (e) => {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node | null)) {
         setIsOpen(false);
       }
     };

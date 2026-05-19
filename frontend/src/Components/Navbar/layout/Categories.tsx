@@ -1,7 +1,11 @@
-import React from 'react';
 import { CATEGORIES } from '../../../constants/categories';
 
-const Categories = ({ activeCategory, onClick }) => {
+type CategoriesProps = {
+  activeCategory: string;
+  onClick: (category: string) => void;
+};
+
+const Categories = ({ activeCategory, onClick }: CategoriesProps) => {
   return (
     <div className="flex overflow-x-auto scrollbar-hide max-w-full">
       <div className="flex items-center space-x-4 py-1 whitespace-nowrap">

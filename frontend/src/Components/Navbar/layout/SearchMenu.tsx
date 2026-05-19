@@ -1,7 +1,13 @@
-import React from 'react';
+import type { ChangeEventHandler } from 'react';
 import { BiSearch } from 'react-icons/bi';
 
-const SearchMenu = ({ searchValue, onSearchInputChange, onSearchSubmit }) => {
+type SearchMenuProps = {
+  searchValue: string;
+  onSearchInputChange: ChangeEventHandler<HTMLInputElement>;
+  onSearchSubmit?: () => void;
+};
+
+const SearchMenu = ({ searchValue, onSearchInputChange, onSearchSubmit }: SearchMenuProps) => {
   return (
     <form
       className="relative w-full"
