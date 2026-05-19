@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
+import type { AdminActionLogRead, CommentAdminRead, InquiryRead, InquiryStatus, TopicAdminRead } from '../../types';
 
 const ACTION_LABELS = {
   UPDATE_INQUIRY_STATUS: '문의 상태 변경',
@@ -8,6 +10,7 @@ const ACTION_LABELS = {
   DELETE_TOPIC: '토픽 삭제',
   DELETE_COMMENT: '댓글 삭제',
 };
+const ADMIN_ACTION_LABELS: Record<string, string> = ACTION_LABELS;
 
 const STATUS_LABELS = {
   pending: '미처리',
@@ -15,7 +18,9 @@ const STATUS_LABELS = {
   resolved: '완료',
 };
 
-const formatDate = (value) => {
+type Message = { type: 'success' | 'error'; text: string };
+
+const formatDate = (value?: string | null) => {
   if (!value) return '-';
   return new Intl.DateTimeFormat('ko-KR', {
     dateStyle: 'medium',
@@ -23,7 +28,13 @@ const formatDate = (value) => {
   }).format(new Date(value));
 };
 
-const StatCard = ({ label, value, to }) => (
+type StatCardProps = {
+  label: string;
+  value: number;
+  to: string;
+};
+
+const StatCard = ({ label, value, to }: StatCardProps) => (
   <Link
     to={to}
     className="rounded-lg border border-slate-200 bg-white p-4 transition hover:border-blue-300 hover:bg-blue-50 sm:p-5"
@@ -33,7 +44,12 @@ const StatCard = ({ label, value, to }) => (
   </Link>
 );
 
-const QuickLink = ({ to, children }) => (
+type QuickLinkProps = {
+  to: string;
+  children: ReactNode;
+};
+
+const QuickLink = ({ to, children }: QuickLinkProps) => (
   <Link
     to={to}
     className="min-h-11 rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
@@ -43,11 +59,11 @@ const QuickLink = ({ to, children }) => (
 );
 
 const Admin = () => {
-  const [inquiries, setInquiries] = useState([]);
-  const [topics, setTopics] = useState([]);
-  const [comments, setComments] = useState([]);
-  const [logs, setLogs] = useState([]);
-  const [message, setMessage] = useState(null);
+  const [inquiries, setInquiries] = useState<InquiryRead[]>([]);
+  const [topics, setTopics] = useState<TopicAdminRead[]>([]);
+  const [comments, setComments] = useState<CommentAdminRead[]>([]);
+  const [logs, setLogs] = useState<AdminActionLogRead[]>([]);
+  const [message, setMessage] = useState<Message | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadDashboard = useCallback(async () => {
@@ -56,10 +72,10 @@ const Admin = () => {
     try {
       const [inquiriesResponse, topicsResponse, commentsResponse, logsResponse] =
         await Promise.all([
-          api.get('/manage-api/inquiries'),
-          api.get('/manage-api/topics'),
-          api.get('/manage-api/comments'),
-          api.get('/manage-api/logs', { params: { limit: 5 } }),
+          api.get<InquiryRead[]>('/manage-api/inquiries'),
+          api.get<TopicAdminRead[]>('/manage-api/topics'),
+          api.get<CommentAdminRead[]>('/manage-api/comments'),
+          api.get<AdminActionLogRead[]>('/manage-api/logs', { params: { limit: 5 } }),
         ]);
 
       setInquiries(inquiriesResponse.data);
@@ -88,7 +104,7 @@ const Admin = () => {
 
   const recentInquiries = useMemo(() => {
     return [...inquiries]
-      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, 5);
   }, [inquiries]);
 
@@ -173,7 +189,7 @@ const Admin = () => {
                 <li key={log.log_id} className="px-4 py-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-md bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">
-                      {ACTION_LABELS[log.action] || log.action}
+                      {ADMIN_ACTION_LABELS[log.action] || log.action}
                     </span>
                     <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
                       {log.target_type} #{log.target_id}

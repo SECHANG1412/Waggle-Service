@@ -1,7 +1,8 @@
 import ContentModerationPage from './ContentModerationPage';
+import type { CommentAdminRead } from '../../types';
 
 const AdminComments = () => (
-  <ContentModerationPage
+  <ContentModerationPage<CommentAdminRead>
     title="댓글 관리"
     description="운영 기준에 맞지 않는 댓글을 영구 삭제합니다."
     listEndpoint="/manage-api/comments"

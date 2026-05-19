@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
 
@@ -11,7 +12,28 @@ const DATE_OPTIONS = [
 
 const DELETE_REASONS = ['스팸', '욕설/비방', '개인정보', '광고', '기타'];
 
-const formatDate = (value) => {
+type DateFilter = 'all' | 'today' | '7d' | '30d';
+type Id = number | string;
+type DateParams = Partial<Record<'start_at' | 'end_at', string>>;
+type Message = { type: 'success' | 'error'; text: string };
+type ModerationMeta = { label: string; value: ReactNode };
+
+export type ContentModerationItem = {
+  created_at?: string | null;
+};
+
+export type ContentModerationPageProps<TItem extends ContentModerationItem> = {
+  title: string;
+  description: string;
+  listEndpoint: string;
+  getItemId: (item: TItem) => Id;
+  getItemTitle: (item: TItem) => ReactNode;
+  getItemDescription: (item: TItem) => ReactNode;
+  getItemMeta: (item: TItem) => ModerationMeta[];
+  deleteEndpoint: (itemId: Id) => string;
+};
+
+const formatDate = (value?: string | null) => {
   if (!value) return '-';
   return new Intl.DateTimeFormat('ko-KR', {
     dateStyle: 'medium',
@@ -19,7 +41,7 @@ const formatDate = (value) => {
   }).format(new Date(value));
 };
 
-const getDateParams = (dateFilter) => {
+const getDateParams = (dateFilter: DateFilter): DateParams => {
   if (dateFilter === 'all') return {};
   const now = new Date();
   const start = new Date(now);
@@ -38,7 +60,7 @@ const getDateParams = (dateFilter) => {
   };
 };
 
-const ContentModerationPage = ({
+const ContentModerationPage = <TItem extends ContentModerationItem>({
   title,
   description,
   listEndpoint,
@@ -47,13 +69,13 @@ const ContentModerationPage = ({
   getItemDescription,
   getItemMeta,
   deleteEndpoint,
-}) => {
-  const [items, setItems] = useState([]);
-  const [dateFilter, setDateFilter] = useState('all');
-  const [reasonById, setReasonById] = useState({});
-  const [message, setMessage] = useState(null);
+}: ContentModerationPageProps<TItem>) => {
+  const [items, setItems] = useState<TItem[]>([]);
+  const [dateFilter, setDateFilter] = useState<DateFilter>('all');
+  const [reasonById, setReasonById] = useState<Record<string, string>>({});
+  const [message, setMessage] = useState<Message | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [actionItemId, setActionItemId] = useState(null);
+  const [actionItemId, setActionItemId] = useState<Id | null>(null);
 
   const params = useMemo(() => getDateParams(dateFilter), [dateFilter]);
 
@@ -61,7 +83,7 @@ const ContentModerationPage = ({
     setIsLoading(true);
     setMessage(null);
     try {
-      const response = await api.get(listEndpoint, { params });
+      const response = await api.get<TItem[]>(listEndpoint, { params });
       setItems(response.data);
     } catch {
       setMessage({ type: 'error', text: '목록을 불러오지 못했습니다.' });
@@ -74,17 +96,17 @@ const ContentModerationPage = ({
     loadItems();
   }, [loadItems]);
 
-  const setReason = (itemId, value) => {
+  const setReason = (itemId: Id, value: string) => {
     setReasonById((prev) => ({ ...prev, [itemId]: value }));
   };
 
-  const removeItem = (itemId) => {
+  const removeItem = (itemId: Id) => {
     setItems((prev) => prev.filter((item) => getItemId(item) !== itemId));
   };
 
-  const handleDelete = async (item) => {
+  const handleDelete = async (item: TItem) => {
     const itemId = getItemId(item);
-    const reason = (reasonById[itemId] || '').trim();
+    const reason = (reasonById[String(itemId)] || '').trim();
 
     if (!reason) {
       setMessage({ type: 'error', text: '삭제 사유를 입력해주세요.' });
@@ -125,7 +147,7 @@ const ContentModerationPage = ({
           기간
           <select
             value={dateFilter}
-            onChange={(event) => setDateFilter(event.target.value)}
+            onChange={(event) => setDateFilter(event.target.value as DateFilter)}
             className="mt-2 block min-h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
           >
             {DATE_OPTIONS.map((option) => (
@@ -149,7 +171,7 @@ const ContentModerationPage = ({
             {items.map((item) => {
               const itemId = getItemId(item);
               const isActionLoading = actionItemId === itemId;
-              const reason = reasonById[itemId] || '';
+              const reason = reasonById[String(itemId)] || '';
               return (
                 <li key={itemId} className="p-3 sm:p-4">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

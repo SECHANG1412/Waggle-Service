@@ -1,7 +1,8 @@
 import ContentModerationPage from './ContentModerationPage';
+import type { TopicAdminRead } from '../../types';
 
 const AdminTopics = () => (
-  <ContentModerationPage
+  <ContentModerationPage<TopicAdminRead>
     title="토픽 관리"
     description="운영 기준에 맞지 않는 토픽을 영구 삭제합니다."
     listEndpoint="/manage-api/topics"

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
+import type { AdminActionLogRead } from '../../types';
 
 const ACTION_OPTIONS = [
   { value: '', label: '전체' },
@@ -38,7 +39,34 @@ const STATUS_LABELS = {
   resolved: '완료',
 };
 
-const formatDate = (value) => {
+const LOG_STATUS_LABELS: Record<string, string> = STATUS_LABELS;
+
+type DateFilter = 'all' | 'today' | '7d' | '30d';
+type Message = { type: 'success' | 'error'; text: string };
+type LogFilters = {
+  action: string;
+  targetType: string;
+  adminUserId: string;
+  date: DateFilter;
+};
+type LogParams = {
+  limit: number;
+  start_at?: string;
+  end_at?: string;
+  action?: string;
+  target_type?: string;
+  admin_user_id?: string;
+};
+type Snapshot = Record<string, string | number | null | undefined>;
+
+const getString = (value: unknown) => (typeof value === 'string' ? value : '');
+const getDisplayValue = (value: unknown) => {
+  if (typeof value === 'string' || typeof value === 'number') return value;
+  if (value === null || value === undefined) return '-';
+  return String(value);
+};
+
+const formatDate = (value?: string | null) => {
   if (!value) return '-';
   return new Intl.DateTimeFormat('ko-KR', {
     dateStyle: 'medium',
@@ -47,7 +75,7 @@ const formatDate = (value) => {
   }).format(new Date(value));
 };
 
-const getDateParams = (dateFilter) => {
+const getDateParams = (dateFilter: DateFilter): Partial<Pick<LogParams, 'start_at' | 'end_at'>> => {
   if (dateFilter === 'all') return {};
   const now = new Date();
   const start = new Date(now);
@@ -66,15 +94,15 @@ const getDateParams = (dateFilter) => {
   };
 };
 
-const getTargetName = (log) => {
-  const snapshot = log.before_value || {};
+const getTargetName = (log: AdminActionLogRead) => {
+  const snapshot = (log.before_value || {}) as Snapshot;
   if (log.target_type === 'Topic') return snapshot.title || `토픽 #${log.target_id}`;
   if (log.target_type === 'Comment') return snapshot.content || `댓글 #${log.target_id}`;
   if (log.target_type === 'Inquiry') return snapshot.title || `문의 #${log.target_id}`;
   return `${log.target_type} #${log.target_id}`;
 };
 
-const getAuthorName = (snapshot) => {
+const getAuthorName = (snapshot: Snapshot) => {
   if (snapshot.author_name) return snapshot.author_name;
   if (snapshot.name) return snapshot.name;
   if (snapshot.author_id !== undefined && snapshot.author_id !== null) {
@@ -83,7 +111,7 @@ const getAuthorName = (snapshot) => {
   return '-';
 };
 
-const buildLogSentence = (log) => {
+const buildLogSentence = (log: AdminActionLogRead) => {
   const targetLabel = TARGET_TYPE_LABELS[log.target_type] || log.target_type;
   const targetName = getTargetName(log);
 
@@ -96,14 +124,14 @@ const buildLogSentence = (log) => {
   return `관리자가 ${targetLabel} "${targetName}"을 처리`;
 };
 
-const buildSummaryRows = (log) => {
-  const snapshot = log.before_value || {};
+const buildSummaryRows = (log: AdminActionLogRead) => {
+  const snapshot = (log.before_value || {}) as Snapshot;
   if (log.action === 'UPDATE_INQUIRY_STATUS') {
     return [
       {
         label: '상태 변경',
-        value: `${STATUS_LABELS[snapshot.status] || snapshot.status || '-'} -> ${
-          STATUS_LABELS[log.after_value?.status] || log.after_value?.status || '-'
+        value: `${LOG_STATUS_LABELS[getString(snapshot.status)] || getDisplayValue(snapshot.status)} -> ${
+          LOG_STATUS_LABELS[getString(log.after_value?.status)] || getDisplayValue(log.after_value?.status)
         }`,
       },
     ];
@@ -139,7 +167,11 @@ const buildSummaryRows = (log) => {
   return [{ label: '처리 내용', value: ACTION_LABELS[log.action] || log.action }];
 };
 
-const RawJsonPreview = ({ log }) => (
+type RawJsonPreviewProps = {
+  log: AdminActionLogRead;
+};
+
+const RawJsonPreview = ({ log }: RawJsonPreviewProps) => (
   <details className="rounded-md bg-slate-50 p-3">
     <summary className="cursor-pointer text-xs font-semibold text-slate-700">원본 기록 보기</summary>
     <div className="mt-3 grid gap-3 lg:grid-cols-2">
@@ -154,18 +186,18 @@ const RawJsonPreview = ({ log }) => (
 );
 
 const AdminLogs = () => {
-  const [logs, setLogs] = useState([]);
-  const [filters, setFilters] = useState({
+  const [logs, setLogs] = useState<AdminActionLogRead[]>([]);
+  const [filters, setFilters] = useState<LogFilters>({
     action: '',
     targetType: '',
     adminUserId: '',
     date: 'all',
   });
-  const [message, setMessage] = useState(null);
+  const [message, setMessage] = useState<Message | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const params = useMemo(() => {
-    const nextParams = { limit: 100, ...getDateParams(filters.date) };
+    const nextParams: LogParams = { limit: 100, ...getDateParams(filters.date) };
     if (filters.action) nextParams.action = filters.action;
     if (filters.targetType) nextParams.target_type = filters.targetType;
     if (filters.adminUserId.trim()) {
@@ -178,7 +210,7 @@ const AdminLogs = () => {
     setIsLoading(true);
     setMessage(null);
     try {
-      const response = await api.get('/manage-api/logs', { params });
+      const response = await api.get<AdminActionLogRead[]>('/manage-api/logs', { params });
       setLogs(response.data);
     } catch {
       setMessage({ type: 'error', text: '감사 로그를 불러오지 못했습니다.' });
@@ -191,7 +223,7 @@ const AdminLogs = () => {
     loadLogs();
   }, [loadLogs]);
 
-  const updateFilter = (name, value) => {
+  const updateFilter = (name: keyof LogFilters, value: string) => {
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 

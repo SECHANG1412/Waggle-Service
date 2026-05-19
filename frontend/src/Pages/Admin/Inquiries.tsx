@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
+import type { InquiryRead, InquiryStatus } from '../../types';
 
 const STATUS_OPTIONS = [
   { value: '', label: '전체' },
@@ -28,7 +30,12 @@ const STATUS_STYLES = {
   resolved: 'bg-emerald-50 text-emerald-700 border-emerald-200',
 };
 
-const formatDate = (value) => {
+type DateFilter = 'all' | 'today' | '7d' | '30d';
+type StatusFilter = '' | InquiryStatus;
+type Message = { type: 'success' | 'error'; text: string };
+type InquiryParams = Partial<Record<'start_at' | 'end_at' | 'status', string>>;
+
+const formatDate = (value?: string | null) => {
   if (!value) return '-';
   return new Intl.DateTimeFormat('ko-KR', {
     dateStyle: 'medium',
@@ -36,7 +43,7 @@ const formatDate = (value) => {
   }).format(new Date(value));
 };
 
-const getDateParams = (dateFilter) => {
+const getDateParams = (dateFilter: DateFilter): InquiryParams => {
   if (dateFilter === 'all') return {};
   const now = new Date();
   const start = new Date(now);
@@ -55,7 +62,11 @@ const getDateParams = (dateFilter) => {
   };
 };
 
-const StatusBadge = ({ status }) => (
+type StatusBadgeProps = {
+  status: InquiryStatus;
+};
+
+const StatusBadge = ({ status }: StatusBadgeProps) => (
   <span
     className={`inline-flex rounded-md border px-2 py-1 text-xs font-semibold ${
       STATUS_STYLES[status] || 'border-slate-200 bg-slate-50 text-slate-600'
@@ -66,14 +77,14 @@ const StatusBadge = ({ status }) => (
 );
 
 const AdminInquiries = () => {
-  const [inquiries, setInquiries] = useState([]);
-  const [selectedId, setSelectedId] = useState(null);
-  const [selectedInquiry, setSelectedInquiry] = useState(null);
-  const [statusFilter, setStatusFilter] = useState('');
-  const [dateFilter, setDateFilter] = useState('all');
-  const [nextStatus, setNextStatus] = useState('resolved');
+  const [inquiries, setInquiries] = useState<InquiryRead[]>([]);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedInquiry, setSelectedInquiry] = useState<InquiryRead | null>(null);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('');
+  const [dateFilter, setDateFilter] = useState<DateFilter>('all');
+  const [nextStatus, setNextStatus] = useState<InquiryStatus>('resolved');
   const [reason, setReason] = useState('');
-  const [message, setMessage] = useState(null);
+  const [message, setMessage] = useState<Message | null>(null);
   const [isListLoading, setIsListLoading] = useState(true);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,7 +99,7 @@ const AdminInquiries = () => {
     setIsListLoading(true);
     setMessage(null);
     try {
-      const response = await api.get('/manage-api/inquiries', { params });
+      const response = await api.get<InquiryRead[]>('/manage-api/inquiries', { params });
       setInquiries(response.data);
       setSelectedId((current) => {
         if (current && response.data.some((inquiry) => inquiry.inquiry_id === current)) {
@@ -103,7 +114,7 @@ const AdminInquiries = () => {
     }
   }, [params]);
 
-  const loadInquiryDetail = useCallback(async (inquiryId) => {
+  const loadInquiryDetail = useCallback(async (inquiryId: number | null) => {
     if (!inquiryId) {
       setSelectedInquiry(null);
       return;
@@ -112,7 +123,7 @@ const AdminInquiries = () => {
     setIsDetailLoading(true);
     setMessage(null);
     try {
-      const response = await api.get(`/manage-api/inquiries/${inquiryId}`);
+      const response = await api.get<InquiryRead>(`/manage-api/inquiries/${inquiryId}`);
       setSelectedInquiry(response.data);
       setNextStatus(response.data.status);
       setReason('');
@@ -131,7 +142,7 @@ const AdminInquiries = () => {
     loadInquiryDetail(selectedId);
   }, [loadInquiryDetail, selectedId]);
 
-  const removeInquiry = (inquiryId) => {
+  const removeInquiry = (inquiryId: number) => {
     setInquiries((prev) => prev.filter((inquiry) => inquiry.inquiry_id !== inquiryId));
     if (selectedId === inquiryId) {
       setSelectedId(null);
@@ -139,7 +150,7 @@ const AdminInquiries = () => {
     }
   };
 
-  const replaceInquiry = (updated) => {
+  const replaceInquiry = (updated: InquiryRead) => {
     setSelectedInquiry(updated);
     setInquiries((prev) =>
       prev.map((inquiry) =>
@@ -148,7 +159,7 @@ const AdminInquiries = () => {
     );
   };
 
-  const handleStatusChange = async (event) => {
+  const handleStatusChange = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const trimmedReason = reason.trim();
@@ -160,7 +171,7 @@ const AdminInquiries = () => {
     setIsSubmitting(true);
     setMessage(null);
     try {
-      const response = await api.patch(
+      const response = await api.patch<InquiryRead>(
         `/manage-api/inquiries/${selectedInquiry.inquiry_id}/status`,
         {
           status: nextStatus,
@@ -221,7 +232,7 @@ const AdminInquiries = () => {
             상태
             <select
               value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value)}
+              onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
               className="mt-2 block min-h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
             >
               {STATUS_OPTIONS.map((option) => (
@@ -236,7 +247,7 @@ const AdminInquiries = () => {
             기간
             <select
               value={dateFilter}
-              onChange={(event) => setDateFilter(event.target.value)}
+              onChange={(event) => setDateFilter(event.target.value as DateFilter)}
               className="mt-2 block min-h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
             >
               {DATE_OPTIONS.map((option) => (
@@ -339,7 +350,7 @@ const AdminInquiries = () => {
                   처리 상태
                   <select
                     value={nextStatus}
-                    onChange={(event) => setNextStatus(event.target.value)}
+                    onChange={(event) => setNextStatus(event.target.value as InquiryStatus)}
                     className="mt-2 block min-h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
                   >
                     {STATUS_OPTIONS.filter((option) => option.value).map((option) => (
