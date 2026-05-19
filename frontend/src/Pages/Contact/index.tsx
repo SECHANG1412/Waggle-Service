@@ -1,4 +1,5 @@
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/auth-context';
 import api from '../../utils/api';
@@ -8,20 +9,25 @@ const initialForm = {
   content: '',
 };
 
+type ContactMessage = {
+  type: 'success' | 'error';
+  text: string;
+};
+
 const Contact = () => {
   const { isAuthenticated, isAuthLoading, user } = useAuth();
   const location = useLocation();
   const [formData, setFormData] = useState(initialForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState(null);
+  const [message, setMessage] = useState<ContactMessage | null>(null);
 
-  const handleChange = useCallback((event) => {
+  const handleChange = useCallback((event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   }, []);
 
   const handleSubmit = useCallback(
-    async (event) => {
+    async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       setIsSubmitting(true);
       setMessage(null);

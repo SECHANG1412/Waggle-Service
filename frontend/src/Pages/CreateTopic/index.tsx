@@ -1,4 +1,5 @@
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CATEGORIES } from '../../constants/categories';
 import { CREATE_TOPIC_MESSAGES } from '../../constants/messages';
@@ -12,24 +13,31 @@ import VoteOptionInputs from './layout/VoteOptionInputs';
 const TITLE_MAX_LENGTH = 80;
 const OPTION_COUNT = 2;
 
+export type CreateTopicFormData = {
+  title: string;
+  description: string;
+  vote_options: string[];
+  category: string;
+};
+
 const CreateTopic = () => {
   const { addTopic } = useTopic();
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CreateTopicFormData>({
     title: '',
     description: '',
     vote_options: ['', ''],
     category: '',
   });
 
-  const onChange = useCallback((e) => {
+  const onChange = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   }, []);
 
   const onSubmit = useCallback(
-    async (e) => {
+    async (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       const title = formData.title.trim();
       const validVoteOptions = formData.vote_options.map((opt) => opt.trim());
@@ -67,7 +75,7 @@ const CreateTopic = () => {
     [formData, addTopic, navigate]
   );
 
-  const onOptionChange = useCallback((index, value) => {
+  const onOptionChange = useCallback((index: number, value: string) => {
     setFormData((prev) => {
       const updated = [...prev.vote_options];
       updated[index] = value;

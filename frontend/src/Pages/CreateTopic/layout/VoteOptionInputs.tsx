@@ -1,6 +1,11 @@
-import React from 'react';
+import type { CreateTopicFormData } from '..';
 
-const VoteOptionInputs = ({ formData, onOptionChange }) => {
+type VoteOptionInputsProps = {
+  formData: CreateTopicFormData;
+  onOptionChange: (index: number, value: string) => void;
+};
+
+const VoteOptionInputs = ({ formData, onOptionChange }: VoteOptionInputsProps) => {
   const voteOptions = formData.vote_options;
 
   return (

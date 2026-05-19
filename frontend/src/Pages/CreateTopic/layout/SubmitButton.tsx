@@ -1,6 +1,8 @@
-import React from 'react';
+type SubmitButtonProps = {
+  label: string;
+};
 
-const SubmitButton = ({ label }) => {
+const SubmitButton = ({ label }: SubmitButtonProps) => {
   return (
     <div className="flex justify-end">
       <button

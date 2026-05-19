@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/auth-context';
 import SocialAuthButtons from '../Components/Auth/SocialAuthButtons';
@@ -9,15 +10,16 @@ const Login = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const baseUrl = useMemo(() => import.meta.env.VITE_API_URL || '', []);
-  const signupSuccess = Boolean(location.state?.signupSuccess);
-  const authRequired = Boolean(location.state?.authRequired);
-  const rawReturnTo = location.state?.from;
+  const locationState = location.state as { signupSuccess?: boolean; authRequired?: boolean; from?: unknown } | null;
+  const signupSuccess = Boolean(locationState?.signupSuccess);
+  const authRequired = Boolean(locationState?.authRequired);
+  const rawReturnTo = locationState?.from;
   const returnTo =
     typeof rawReturnTo === 'string' && rawReturnTo.startsWith('/') && !rawReturnTo.startsWith('//')
       ? rawReturnTo
       : '/';
 
-  const handleChange = useCallback((e) => {
+  const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }, []);
 
@@ -28,7 +30,7 @@ const Login = () => {
   }, [authRequired, signupSuccess]);
 
   const handleSubmit = useCallback(
-    async (e) => {
+    async (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       const success = await login(formData.email, formData.password);
       if (success) {

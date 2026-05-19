@@ -1,6 +1,12 @@
-import React from 'react';
+import type { ChangeEvent } from 'react';
 
-const CategorySelect = ({ categories, value, onChange }) => {
+type CategorySelectProps = {
+  categories: string[];
+  value: string;
+  onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
+};
+
+const CategorySelect = ({ categories, value, onChange }: CategorySelectProps) => {
   return (
     <div>
       <label className="mb-2 block text-sm font-semibold text-slate-700">

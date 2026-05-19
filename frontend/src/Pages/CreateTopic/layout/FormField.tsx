@@ -1,4 +1,16 @@
-import React from 'react';
+import type { ChangeEvent } from 'react';
+
+type FormFieldProps = {
+  label: string;
+  name: string;
+  value: string;
+  onChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  placeholder: string;
+  required?: boolean;
+  type?: string;
+  maxLength?: number;
+  helperText?: string;
+};
 
 const FormField = ({
   label,
@@ -10,7 +22,7 @@ const FormField = ({
   type = 'text',
   maxLength,
   helperText,
-}) => {
+}: FormFieldProps) => {
   return (
     <div>
       <label className="mb-2 block text-sm font-semibold text-slate-700">

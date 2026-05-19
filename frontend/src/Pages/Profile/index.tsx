@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { createElement, useEffect, useMemo, useState } from 'react';
+import type { ChangeEvent, ComponentType, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FaChevronRight,
@@ -14,6 +15,7 @@ import { useAuth } from '../../hooks/auth-context';
 import { handleAuthError, showErrorAlert, showSuccessAlert } from '../../utils/alertUtils';
 import api from '../../utils/api';
 import { formatDateOnly } from '../../utils/date';
+import type { InquiryStatus, MyInquiryRead, UserActivity, UserHiddenContent, UserRead, UserStats } from '../../types';
 
 const INQUIRY_STATUS_LABELS = {
   pending: '대기 중',
@@ -29,16 +31,36 @@ const CONTENT_STATUS_LABELS = {
 const CONTENT_STATUS_NOTICE =
   '관리자 조치가 적용된 콘텐츠입니다. 추가 확인이 필요하면 문의를 남겨주세요.';
 
+type ProfileUser = {
+  name: string;
+  email: string;
+  joinedAt: string;
+};
+
+type ProfileForm = {
+  name: string;
+  email: string;
+};
+
+type Tone = keyof typeof toneClasses;
+
+type StatItem = {
+  label: string;
+  value: number;
+  icon: ComponentType<{ 'aria-hidden'?: boolean }>;
+  tone: Tone;
+};
+
 const Profile = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  const [user, setUser] = useState(null);
-  const [form, setForm] = useState({ name: '', email: '' });
-  const [stats, setStats] = useState({ topics: 0, votes: 0, likes: 0 });
-  const [activities, setActivities] = useState([]);
-  const [inquiries, setInquiries] = useState([]);
-  const [contentStatus, setContentStatus] = useState([]);
+  const [user, setUser] = useState<ProfileUser | null>(null);
+  const [form, setForm] = useState<ProfileForm>({ name: '', email: '' });
+  const [stats, setStats] = useState<UserStats>({ topics: 0, votes: 0, likes: 0 });
+  const [activities, setActivities] = useState<UserActivity[]>([]);
+  const [inquiries, setInquiries] = useState<MyInquiryRead[]>([]);
+  const [contentStatus, setContentStatus] = useState<UserHiddenContent[]>([]);
   const [avatarUrl, setAvatarUrl] = useState(localStorage.getItem('avatar_url') || '');
   const [loading, setLoading] = useState(true);
   const [loadingStats, setLoadingStats] = useState(true);
@@ -62,7 +84,7 @@ const Profile = () => {
       }
       try {
         setLoading(true);
-        const res = await api.get('/users/me');
+        const res = await api.get<UserRead>('/users/me');
         const data = res.data;
         const mapped = {
           name: data.username,
@@ -90,7 +112,7 @@ const Profile = () => {
       }
       try {
         setLoadingStats(true);
-        const res = await api.get('/users/stats');
+        const res = await api.get<UserStats>('/users/stats');
         setStats({
           topics: res.data.topics ?? 0,
           votes: res.data.votes ?? 0,
@@ -113,7 +135,7 @@ const Profile = () => {
       }
       try {
         setLoadingActivity(true);
-        const res = await api.get('/users/activity');
+        const res = await api.get<UserActivity[]>('/users/activity');
         setActivities(res.data || []);
       } catch (err) {
         setActivities([]);
@@ -132,7 +154,7 @@ const Profile = () => {
       }
       try {
         setLoadingInquiries(true);
-        const res = await api.get('/inquiries/me');
+        const res = await api.get<MyInquiryRead[]>('/inquiries/me');
         setInquiries(res.data || []);
       } catch (err) {
         setInquiries([]);
@@ -151,7 +173,7 @@ const Profile = () => {
       }
       try {
         setLoadingContentStatus(true);
-        const res = await api.get('/users/content-status');
+        const res = await api.get<UserHiddenContent[]>('/users/content-status');
         setContentStatus(res.data || []);
       } catch (err) {
         setContentStatus([]);
@@ -170,7 +192,7 @@ const Profile = () => {
     fetchContentStatus();
   }, [isAuthenticated]);
 
-  const statItems = useMemo(
+  const statItems = useMemo<StatItem[]>(
     () => [
       { label: '작성한 토픽', value: stats.topics, icon: FaRegFileAlt, tone: 'blue' },
       { label: '투표 참여', value: stats.votes, icon: FaPoll, tone: 'emerald' },
@@ -179,7 +201,7 @@ const Profile = () => {
     [stats]
   );
 
-  const onChange = (e) => {
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
@@ -191,7 +213,7 @@ const Profile = () => {
     }
     try {
       setSaving(true);
-      const res = await api.put('/users/me', {
+      const res = await api.put<UserRead>('/users/me', {
         username: form.name,
         email: form.email,
       });
@@ -216,7 +238,7 @@ const Profile = () => {
     setEditMode(false);
   };
 
-  const onAvatarChange = (e) => {
+  const onAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
@@ -311,7 +333,13 @@ const toneClasses = {
   rose: 'bg-rose-50 text-rose-500',
 };
 
-const Avatar = ({ user, avatarUrl, size = 'md' }) => {
+type AvatarProps = {
+  user: ProfileUser | null;
+  avatarUrl: string;
+  size?: 'md' | 'lg';
+};
+
+const Avatar = ({ user, avatarUrl, size = 'md' }: AvatarProps) => {
   const sizeClass = size === 'lg' ? 'h-16 w-16 text-2xl sm:h-20 sm:w-20 sm:text-3xl' : 'h-12 w-12 text-lg';
 
   return (
@@ -327,13 +355,18 @@ const Avatar = ({ user, avatarUrl, size = 'md' }) => {
   );
 };
 
-const StatSummary = ({ item, loading }) => {
+type StatSummaryProps = {
+  item: StatItem;
+  loading: boolean;
+};
+
+const StatSummary = ({ item, loading }: StatSummaryProps) => {
   const Icon = item.icon;
 
   return (
     <div className="flex items-center gap-3 border-t border-slate-100 px-5 py-4 first:border-t-0 sm:border-l sm:border-t-0 sm:first:border-l-0">
       <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${toneClasses[item.tone]}`}>
-        <Icon aria-hidden="true" />
+        <Icon aria-hidden={true} />
       </span>
       <div>
         <p className="text-xs font-semibold text-slate-500">{item.label}</p>
@@ -343,7 +376,13 @@ const StatSummary = ({ item, loading }) => {
   );
 };
 
-const RecentActivityCard = ({ activities, loading, onView }) => (
+type RecentActivityCardProps = {
+  activities: UserActivity[];
+  loading: boolean;
+  onView: (topicId: number) => void;
+};
+
+const RecentActivityCard = ({ activities, loading, onView }: RecentActivityCardProps) => (
   <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
     <div className="flex items-center justify-between gap-3">
       <div>
@@ -375,6 +414,20 @@ const RecentActivityCard = ({ activities, loading, onView }) => (
   </section>
 );
 
+type AccountPanelProps = {
+  user: ProfileUser | null;
+  form: ProfileForm;
+  editMode: boolean;
+  saving: boolean;
+  avatarUrl: string;
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  onSave: () => void | Promise<void>;
+  onCancel: () => void;
+  onEdit: () => void;
+  onAvatarChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  onAvatarReset: () => void;
+};
+
 const AccountPanel = ({
   user,
   form,
@@ -387,7 +440,7 @@ const AccountPanel = ({
   onEdit,
   onAvatarChange,
   onAvatarReset,
-}) => (
+}: AccountPanelProps) => (
   <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
     <div className="flex items-start justify-between gap-3">
       <div>
@@ -462,14 +515,25 @@ const AccountPanel = ({
   </aside>
 );
 
-const Field = ({ label, children }) => (
+type FieldProps = {
+  label: string;
+  children: ReactNode;
+};
+
+const Field = ({ label, children }: FieldProps) => (
   <div>
     <span className="mb-1.5 block text-xs font-bold text-slate-500">{label}</span>
     {children}
   </div>
 );
 
-const ActivityRow = ({ title, date, onView }) => (
+type ActivityRowProps = {
+  title: string;
+  date: string;
+  onView?: () => void;
+};
+
+const ActivityRow = ({ title, date, onView }: ActivityRowProps) => (
   <button
     type="button"
     onClick={onView}
@@ -484,17 +548,28 @@ const ActivityRow = ({ title, date, onView }) => (
   </button>
 );
 
-const EmptyState = ({ icon, title, description }) => (
+type EmptyStateProps = {
+  icon: ComponentType<{ 'aria-hidden'?: boolean }>;
+  title: string;
+  description: string;
+};
+
+const EmptyState = ({ icon, title, description }: EmptyStateProps) => (
   <div className="mt-5 flex min-h-36 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center">
     <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm">
-      {React.createElement(icon, { 'aria-hidden': true })}
+      {createElement(icon, { 'aria-hidden': true })}
     </span>
     <p className="mt-3 text-sm font-bold text-slate-900">{title}</p>
     <p className="mt-1 text-sm text-slate-500">{description}</p>
   </div>
 );
 
-const InquiryHistorySection = ({ inquiries, loading }) => (
+type InquiryHistorySectionProps = {
+  inquiries: MyInquiryRead[];
+  loading: boolean;
+};
+
+const InquiryHistorySection = ({ inquiries, loading }: InquiryHistorySectionProps) => (
   <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
     <SectionHeader title="내 문의 내역" description="접수한 문의와 처리 상태를 확인할 수 있습니다." />
 
@@ -512,7 +587,11 @@ const InquiryHistorySection = ({ inquiries, loading }) => (
   </section>
 );
 
-const InquiryHistoryItem = ({ inquiry }) => {
+type InquiryHistoryItemProps = {
+  inquiry: MyInquiryRead;
+};
+
+const InquiryHistoryItem = ({ inquiry }: InquiryHistoryItemProps) => {
   const statusLabel = INQUIRY_STATUS_LABELS[inquiry.status] || inquiry.status;
 
   return (
@@ -539,7 +618,13 @@ const InquiryHistoryItem = ({ inquiry }) => {
   );
 };
 
-const ContentStatusSection = ({ items, loading, onContact }) => (
+type ContentStatusSectionProps = {
+  items: UserHiddenContent[];
+  loading: boolean;
+  onContact: () => void;
+};
+
+const ContentStatusSection = ({ items, loading, onContact }: ContentStatusSectionProps) => (
   <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
     <SectionHeader title="콘텐츠 조치 내역" description="관리자 조치가 적용된 토픽과 댓글을 확인할 수 있습니다." />
 
@@ -557,7 +642,12 @@ const ContentStatusSection = ({ items, loading, onContact }) => (
   </section>
 );
 
-const ContentStatusItem = ({ item, onContact }) => {
+type ContentStatusItemProps = {
+  item: UserHiddenContent;
+  onContact: () => void;
+};
+
+const ContentStatusItem = ({ item, onContact }: ContentStatusItemProps) => {
   const typeLabel = CONTENT_STATUS_LABELS[item.type] || item.type;
 
   return (
@@ -592,7 +682,12 @@ const ContentStatusItem = ({ item, onContact }) => {
   );
 };
 
-const SectionHeader = ({ title, description }) => (
+type SectionHeaderProps = {
+  title: string;
+  description: string;
+};
+
+const SectionHeader = ({ title, description }: SectionHeaderProps) => (
   <div>
     <h2 className="text-lg font-bold text-slate-950">{title}</h2>
     <p className="mt-1 text-sm text-slate-500">{description}</p>
