@@ -8,6 +8,7 @@ type AvatarPlaceholderProps = {
 type DesktopAuthButtonsProps = {
   userName: string;
   isAuthenticated: boolean;
+  isAuthLoading: boolean;
   isAdmin: boolean;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
@@ -28,7 +29,15 @@ const AvatarPlaceholder = ({ name }: AvatarPlaceholderProps) => {
   );
 };
 
-const DesktopAuthButtons = ({ userName, isAuthenticated, isAdmin, isOpen, setIsOpen, onLogoutClick }: DesktopAuthButtonsProps) => {
+const DesktopAuthButtons = ({
+  userName,
+  isAuthenticated,
+  isAuthLoading,
+  isAdmin,
+  isOpen,
+  setIsOpen,
+  onLogoutClick,
+}: DesktopAuthButtonsProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -44,7 +53,12 @@ const DesktopAuthButtons = ({ userName, isAuthenticated, isAdmin, isOpen, setIsO
 
   return (
     <div className="hidden lg:flex items-center">
-      {isAuthenticated ? (
+      {isAuthLoading ? (
+        <div className="flex min-w-[148px] justify-end space-x-3">
+          <div className="h-10 w-16 animate-pulse rounded-lg border border-gray-200 bg-gray-100" />
+          <div className="h-10 w-20 animate-pulse rounded-lg bg-gray-100" />
+        </div>
+      ) : isAuthenticated ? (
         <div className="relative ml-4" ref={containerRef}>
           <button
             onClick={() => setIsOpen(!isOpen)}

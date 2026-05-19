@@ -5,6 +5,7 @@ type MobileMenuProps = {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   isAuthenticated: boolean;
+  isAuthLoading: boolean;
   isAdmin: boolean;
   onLogoutClick: () => void;
 };
@@ -13,6 +14,7 @@ const MobileMenu = ({
   isOpen,
   setIsOpen,
   isAuthenticated,
+  isAuthLoading,
   isAdmin,
   onLogoutClick,
 }: MobileMenuProps) => {
@@ -35,6 +37,7 @@ const MobileMenu = ({
 
         <MobileAuthButtons
           isAuthenticated={isAuthenticated}
+          isAuthLoading={isAuthLoading}
           isAdmin={isAdmin}
           setIsOpen={setIsOpen}
           onLogoutClick={onLogoutClick}

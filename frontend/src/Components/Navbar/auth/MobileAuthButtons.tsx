@@ -2,15 +2,27 @@ import { Link } from 'react-router-dom';
 
 type MobileAuthButtonsProps = {
   isAuthenticated: boolean;
+  isAuthLoading: boolean;
   isAdmin: boolean;
   setIsOpen: (isOpen: boolean) => void;
   onLogoutClick: () => void;
 };
 
-const MobileAuthButtons = ({ isAuthenticated, isAdmin, setIsOpen, onLogoutClick }: MobileAuthButtonsProps) => {
+const MobileAuthButtons = ({
+  isAuthenticated,
+  isAuthLoading,
+  isAdmin,
+  setIsOpen,
+  onLogoutClick,
+}: MobileAuthButtonsProps) => {
   return (
     <div className="w-full space-y-2 pt-2">
-      {isAuthenticated ? (
+      {isAuthLoading ? (
+        <>
+          <div className="h-11 w-full animate-pulse rounded-md bg-gray-100" />
+          <div className="h-11 w-full animate-pulse rounded-md bg-gray-100" />
+        </>
+      ) : isAuthenticated ? (
         <>
           {isAdmin && (
             <Link
