@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { COMMON_MESSAGES, TOPIC_MESSAGES } from '../../constants/messages';
 import { voteColors } from '../../constants/voteColors';
@@ -8,15 +8,22 @@ import { useTopic } from '../../hooks/useTopic';
 import { useVote } from '../../hooks/useVote';
 import { useConfirm } from '../../hooks/confirm-context';
 import { showLoginRequiredAlert } from '../../utils/alertUtils';
-import Chart from './Chart';
 import Comments from './Comments';
 import Header from './layout/Header';
 import InfoBar from './layout/InfoBar';
 import VoteButtons from './layout/VoteButtons';
 import type { TopicRead } from '../../types';
 
+const Chart = lazy(() => import('./Chart'));
+
 type FetchState = 'idle' | 'loading' | 'not-found' | 'error' | 'ready';
 type VoteColorKey = keyof typeof voteColors;
+
+const ChartFallback = () => (
+  <section className="h-[260px] rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:h-[420px] sm:p-5">
+    <div className="h-full animate-pulse rounded-md bg-slate-100" aria-hidden="true" />
+  </section>
+);
 
 const SingleTopic = () => {
   const { id } = useParams();
@@ -199,7 +206,9 @@ const SingleTopic = () => {
 
           <div className="lg:hidden">{votePanel}</div>
 
-          <Chart topicId={topic.topic_id} voteOptions={topic.vote_options} />
+          <Suspense fallback={<ChartFallback />}>
+            <Chart topicId={topic.topic_id} voteOptions={topic.vote_options} />
+          </Suspense>
           <div className="lg:hidden">
             <InfoBar totalVotes={topic.total_vote} category={topic.category} />
           </div>
