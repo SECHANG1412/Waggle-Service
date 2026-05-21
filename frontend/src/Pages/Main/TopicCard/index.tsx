@@ -72,7 +72,7 @@ const TopicCard = ({ topic, onVote, onPinToggle, isAuthLoading }: TopicCardProps
             {topic.category || '카테고리 없음'}
           </span>
           {topic.has_voted && (
-            <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
               투표 완료
             </span>
           )}
