@@ -209,6 +209,7 @@ const Admin = () => {
       <section className="mt-5 rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
         <h2 className="text-base font-semibold text-slate-900">빠른 이동</h2>
         <div className="mt-4 flex flex-wrap gap-2">
+          <QuickLink to="/manage/users">회원 관리</QuickLink>
           <QuickLink to="/manage/inquiries">문의 관리</QuickLink>
           <QuickLink to="/manage/topics">토픽 관리</QuickLink>
           <QuickLink to="/manage/comments">댓글 관리</QuickLink>

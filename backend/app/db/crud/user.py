@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import desc, select
 from app.db.models import User
 from app.db.models.user import normalize_username
 from app.db.schemas.users import UserCreate, UserUpdate
@@ -18,6 +18,13 @@ class UserCrud:
 
         result = await db.execute(select(User).filter(User.user_id.in_(user_ids)))
         return {user.user_id: user for user in result.scalars().all()}
+
+    @staticmethod
+    async def get_all_for_admin(db: AsyncSession, limit: int = 100) -> list[User]:
+        result = await db.execute(
+            select(User).order_by(desc(User.created_at), desc(User.user_id)).limit(limit)
+        )
+        return list(result.scalars().all())
     
     @staticmethod
     async def create(db: AsyncSession, user: UserCreate) -> User:
