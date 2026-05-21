@@ -1,4 +1,4 @@
-import { FiChevronRight } from 'react-icons/fi';
+import { FiCheck } from 'react-icons/fi';
 import { voteColors } from '../../../constants/voteColors';
 import type { MainTopic, MainVoteHandler } from '..';
 
@@ -33,10 +33,10 @@ const OptionButton = ({ option, index, topic, onVote, isAuthLoading }: OptionBut
         if (!topic.has_voted && !isAuthLoading) onVote(topic.topic_id, index);
       }}
       style={styles}
-      className="group relative flex min-h-[44px] w-full cursor-pointer items-center justify-between gap-2.5 overflow-hidden rounded-lg border border-l-4 px-3 py-1.5 text-left transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-300 disabled:cursor-not-allowed"
+      className="group relative flex min-h-[44px] w-full cursor-pointer items-center justify-between gap-2.5 rounded-lg border border-l-4 px-3 py-1.5 text-left transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-300 disabled:cursor-not-allowed"
     >
       <span
-        className="absolute inset-y-0 left-0 transition-[width] duration-300"
+        className="absolute inset-y-0 left-0 rounded-l-md transition-[width] duration-300"
         style={{
           width: `${percent}%`,
           backgroundColor: baseColor,
@@ -50,7 +50,15 @@ const OptionButton = ({ option, index, topic, onVote, isAuthLoading }: OptionBut
       >
         {option}
       </span>
-      <span className="relative z-10 flex shrink-0 items-center gap-2">
+      {isSelected && (
+        <span
+          className="absolute -right-1.5 -top-1.5 z-20 flex h-4 w-4 items-center justify-center rounded"
+          style={{ backgroundColor: baseColor }}
+        >
+          <FiCheck className="h-3 w-3 text-white" aria-label="selected option" />
+        </span>
+      )}
+      <span className="relative z-10 shrink-0 text-right">
         <span className="text-right text-slate-500">
           <span
             className="block text-sm font-bold leading-tight"
@@ -60,10 +68,6 @@ const OptionButton = ({ option, index, topic, onVote, isAuthLoading }: OptionBut
           </span>
           <span className="block text-xs font-medium leading-tight">{voteCount}표</span>
         </span>
-        <FiChevronRight
-          className="h-4 w-4 text-slate-500 transition group-hover:translate-x-0.5"
-          aria-hidden="true"
-        />
       </span>
     </button>
   );
