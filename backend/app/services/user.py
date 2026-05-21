@@ -63,6 +63,11 @@ class UserService:
         return await UserService._build_user_read(db, db_user)
 
     @staticmethod
+    async def get_all_for_admin(db: AsyncSession, limit: int = 100) -> list[UserRead]:
+        users = await UserCrud.get_all_for_admin(db, limit=limit)
+        return [await UserService._build_user_read(db, user) for user in users]
+
+    @staticmethod
     async def signup(db: AsyncSession, user: UserCreate) -> UserRead:
         user.email = UserService._validate_email(user.email)
 

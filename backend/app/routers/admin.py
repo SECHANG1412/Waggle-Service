@@ -9,7 +9,14 @@ from app.db.schemas.admin_action_logs import AdminActionLogRead
 from app.db.schemas.comments import CommentAdminRead, CommentModerationUpdate
 from app.db.schemas.inquiries import InquiryDeleteUpdate, InquiryRead, InquiryStatusUpdate
 from app.db.schemas.topics import TopicAdminRead, TopicModerationUpdate
-from app.services import AdminActionLogService, CommentService, InquiryService, TopicService
+from app.db.schemas.users import UserRead
+from app.services import (
+    AdminActionLogService,
+    CommentService,
+    InquiryService,
+    TopicService,
+    UserService,
+)
 
 router = APIRouter(prefix="/manage-api", tags=["Admin"])
 
@@ -17,6 +24,15 @@ router = APIRouter(prefix="/manage-api", tags=["Admin"])
 @router.get("/me")
 async def get_admin_me(admin_user_id: int = Depends(require_admin_user_id)):
     return {"user_id": admin_user_id, "is_admin": True}
+
+
+@router.get("/users", response_model=list[UserRead])
+async def list_users_for_admin(
+    _admin_user_id: int = Depends(require_admin_user_id),
+    db: AsyncSession = Depends(get_db),
+    limit: int = Query(default=100, ge=1, le=200),
+):
+    return await UserService.get_all_for_admin(db, limit=limit)
 
 
 @router.get("/logs", response_model=list[AdminActionLogRead])
