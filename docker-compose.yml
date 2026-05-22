@@ -67,7 +67,6 @@
                                                                                                   
   volumes:                                                                                        
     db_data:                                                                                      
-    redis_data:                                                                                   
     grafana_data:                                                                                 
                                                                                                   
   networks:                                                                                       
