@@ -71,7 +71,7 @@ jobs:
             }
 
             echo "[10/10] Run topics smoke test"
-            curl -f "http://localhost:8000/topics?page=1&limit=10" > /dev/null || {
+            curl -f "http://localhost:8000/topics?limit=10&offset=0" > /dev/null || {
               echo "Topics API health check failed"
               exit 1
             }
