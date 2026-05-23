@@ -27,7 +27,7 @@ const TopicCard = ({ topic, onVote, onPinToggle, isAuthLoading }: TopicCardProps
     });
   }, [topic.created_at]);
 
-  const commentCount = topic.comment_count ?? topic.comments_count ?? 0;
+  const commentCount = topic.comment_count ?? 0;
   const pinLabel = topic.is_pinned ? '북마크 해제' : '북마크';
   const detailPath = `/topic/${topic.topic_id}`;
   const visibleOptions = topic.vote_options.slice(0, 2);

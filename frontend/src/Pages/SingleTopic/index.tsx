@@ -154,7 +154,7 @@ const SingleTopic = () => {
 
   if (!topic) return null;
 
-  const commentCount = topic.comment_count ?? topic.comments_count ?? 0;
+  const commentCount = topic.comment_count ?? 0;
   const colors = voteColors[topic.vote_options.length as VoteColorKey] || [];
   const votePanel = (
     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">

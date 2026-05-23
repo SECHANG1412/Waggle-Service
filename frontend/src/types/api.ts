@@ -37,7 +37,6 @@ export type TopicRead = TopicBase & {
   has_liked: boolean;
   is_pinned: boolean;
   comment_count: number;
-  comments_count?: number;
 };
 
 export type TopicAdminRead = TopicBase & {
