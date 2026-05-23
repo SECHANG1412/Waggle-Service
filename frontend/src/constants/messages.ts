@@ -82,8 +82,6 @@ export const CREATE_TOPIC_MESSAGES = {
   duplicateOptionText: '서로 다른 옵션을 입력해 주세요.',
   insufficientOptionsTitle: '투표 옵션 부족',
   insufficientOptionsText: '최소 2개 이상의 옵션이 필요합니다.',
-  optionLimitTitle: '옵션 개수 초과',
-  optionLimitText: '투표 옵션은 최대 4개까지 가능합니다.',
   retry: '다시 시도해 주세요.',
 };
 
