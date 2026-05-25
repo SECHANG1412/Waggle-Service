@@ -7,7 +7,7 @@ TOPIC_OPTION_COUNT = 2
 
 class TopicBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=TOPIC_TITLE_MAX_LENGTH)
-    category: str = "기타"
+    category: str = "자유"
     vote_options: list[str] = Field(..., min_length=TOPIC_OPTION_COUNT, max_length=TOPIC_OPTION_COUNT)
     description: str | None = None
 
