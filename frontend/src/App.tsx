@@ -195,10 +195,14 @@ const NotFound = () => (
 );
 
 const AuthLayout = () => (
-  <div className="flex min-h-screen items-center justify-center bg-[#f2f4f7] px-4 py-10">
-    <div className="w-full max-w-5xl">
-      <Outlet />
-    </div>
+  <div className="flex min-h-screen flex-col bg-[#f2f4f7]">
+    <Navbar />
+    <main className="flex flex-1 items-center justify-center px-4 py-10">
+      <div className="w-full max-w-5xl">
+        <Outlet />
+      </div>
+    </main>
+    <Footer />
   </div>
 );
 
