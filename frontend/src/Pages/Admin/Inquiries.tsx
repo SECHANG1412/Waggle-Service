@@ -2,7 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
-import type { InquiryRead, InquiryStatus } from '../../types';
+import type {
+  InquiryDeleteRequest,
+  InquiryRead,
+  InquiryStatus,
+  InquiryStatusUpdateRequest,
+} from '../../types';
 
 const STATUS_OPTIONS = [
   { value: '', label: '전체' },
@@ -171,12 +176,13 @@ const AdminInquiries = () => {
     setIsSubmitting(true);
     setMessage(null);
     try {
+      const payload: InquiryStatusUpdateRequest = {
+        status: nextStatus,
+        reason: trimmedReason,
+      };
       const response = await api.patch<InquiryRead>(
         `/manage-api/inquiries/${selectedInquiry.inquiry_id}/status`,
-        {
-          status: nextStatus,
-          reason: trimmedReason,
-        }
+        payload
       );
       replaceInquiry(response.data);
       setReason('');
@@ -198,9 +204,10 @@ const AdminInquiries = () => {
     setIsSubmitting(true);
     setMessage(null);
     try {
+      const payload: InquiryDeleteRequest = { reason: trimmedReason };
       await api.patch(
         `/manage-api/inquiries/${selectedInquiry.inquiry_id}/delete`,
-        { reason: trimmedReason }
+        payload
       );
       removeInquiry(selectedInquiry.inquiry_id);
       setReason('');
