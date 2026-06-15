@@ -15,7 +15,15 @@ import { useAuth } from '../../hooks/auth-context';
 import { handleAuthError, showErrorAlert, showSuccessAlert } from '../../utils/alertUtils';
 import api from '../../utils/api';
 import { formatDateOnly } from '../../utils/date';
-import type { InquiryStatus, MyInquiryRead, UserActivity, UserHiddenContent, UserRead, UserStats } from '../../types';
+import type {
+  InquiryStatus,
+  MyInquiryRead,
+  UserActivity,
+  UserHiddenContent,
+  UserRead,
+  UserStats,
+  UserUpdateRequest,
+} from '../../types';
 
 const INQUIRY_STATUS_LABELS = {
   pending: '대기 중',
@@ -213,10 +221,11 @@ const Profile = () => {
     }
     try {
       setSaving(true);
-      const res = await api.put<UserRead>('/users/me', {
+      const payload: UserUpdateRequest = {
         username: form.name,
         email: form.email,
-      });
+      };
+      const res = await api.put<UserRead>('/users/me', payload);
       setUser({
         name: res.data.username,
         email: res.data.email,

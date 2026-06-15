@@ -2,7 +2,7 @@ import { isAxiosError } from 'axios';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AUTH_MESSAGES } from '../constants/messages';
-import type { UserRead, UserSignupRequest } from '../types';
+import type { UserLoginRequest, UserRead, UserSignupRequest } from '../types';
 import api from '../utils/api';
 import { AuthContext } from './auth-context';
 
@@ -50,7 +50,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = async (email: string, password: string) => {
     setError('');
     try {
-      const response = await api.post<UserRead>('/users/login', { email, password });
+      const payload: UserLoginRequest = { email, password };
+      const response = await api.post<UserRead>('/users/login', payload);
 
       if (response.status === 200) {
         setUser(response.data);
