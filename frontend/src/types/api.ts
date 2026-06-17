@@ -72,6 +72,8 @@ export type UserSignupRequest = {
   confirmPassword: string;
 };
 
+export type UserSignupPayload = Omit<UserSignupRequest, 'confirmPassword'>;
+
 export type UserUpdateRequest = {
   email?: string | null;
   username?: string | null;
