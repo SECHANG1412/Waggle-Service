@@ -1,103 +1,50 @@
 # Waggle
 
-### 투표 기반 커뮤니티 서비스
+> 2지선다 투표를 생성하고, 투표 결과와 댓글 의견을 공유하는 투표 기반 커뮤니티 서비스
 
-Waggle은 다양한 주제에 대해 투표하고 댓글로 의견을 나눌 수 있는 커뮤니티 서비스입니다.  
-사용자는 토픽을 만들고, 두 가지 선택지 중 하나에 투표하며, 댓글과 답글로 의견을 이어갈 수 있습니다.
-
-- 서비스: [https://www.waggle.kr](https://www.waggle.kr)
-- GitHub: [https://github.com/SECHANG1412/Waggle-Service](https://github.com/SECHANG1412/Waggle-Service)
-
+- Service: [https://www.waggle.kr](https://www.waggle.kr)
+- Repository: [https://github.com/SECHANG1412/Waggle-Service](https://github.com/SECHANG1412/Waggle-Service)
 
 ## 목차
 
 1. [프로젝트 개요](#프로젝트-개요)
-2. [핵심 기능](#핵심-기능)
+2. [핵심 성과](#핵심-성과)
 3. [기술 스택](#기술-스택)
 4. [시스템 아키텍처](#시스템-아키텍처)
-5. [주요 개선 사항](#주요-개선-사항)
-6. [실행 방법](#실행-방법)
-7. [테스트](#테스트)
-8. [향후 개선 계획](#향후-개선-계획)
-<br>
+5. [주요 구현 및 개선 내용](#주요-구현-및-개선-내용)
+6. [핵심 기능](#핵심-기능)
+7. [실행 방법](#실행-방법)
+8. [테스트](#테스트)
+9. [향후 개선 계획](#향후-개선-계획)
 
 ## 프로젝트 개요
 
-- **목적**: 투표와 댓글을 중심으로 사용자들이 다양한 주제에 대해 의견을 나눌 수 있는 커뮤니티 제공
+Waggle은 사용자가 다양한 주제의 토픽을 만들고, 두 가지 선택지 중 하나에 투표하며, 댓글과 답글로 의견을 나눌 수 있는 커뮤니티 서비스입니다.
+
+단순 기능 구현을 넘어 실제 도메인에서 접근 가능한 운영 환경을 구성하고, 부하 테스트와 관측 지표를 기반으로 주요 API 병목을 개선했습니다. 또한 GitHub Actions 기반 CI/CD, HttpOnly 쿠키 기반 인증 구조, CSRF 방어 흐름을 적용해 운영과 보안 관점의 완성도를 높였습니다.
+
 - **진행 기간**: 2025.11 ~ 진행 중
 - **프로젝트 형태**: 개인 프로젝트
-- **주요 특징**: 토픽 생성, 2지선다 투표, 투표 트렌드 차트, 댓글/답글, 프로필, 문의, 관리자 운영 기능
-<br>
+- **주요 기능**: 토픽 생성, 2지선다 투표, 투표 결과 시각화, 댓글/답글, 좋아요, 문의, 관리자 운영 기능
+- **운영 환경**: AWS EC2, Nginx, Docker Compose, MySQL, GitHub Actions
 
-## 핵심 기능
+## 핵심 성과
 
-### 1. 토픽 목록 및 투표 카드
+- **AWS EC2, Docker Compose, Nginx 기반 운영 환경 구성**
+  - React 빌드 결과물은 Nginx에서 정적 파일로 서빙하고, `/api`, `/manage-api` 요청은 FastAPI 백엔드로 reverse proxy하도록 구성했습니다.
+  - FastAPI 백엔드와 MySQL은 Docker Compose로 실행하고, health check로 애플리케이션 실행 상태와 DB 연결 상태를 확인했습니다.
 
-- 카테고리별 토픽 목록 조회
-- 검색어 기반 토픽 탐색
-- 토픽 카드에서 투표 선택지와 현재 투표 비율 확인
-- PC/모바일 화면에 맞춘 반응형 카드 구성
+- **관측 지표 기반 `/topics` API 성능 개선**
+  - k6, Prometheus, Grafana, CloudWatch 지표를 함께 확인하며 `/topics` 목록 조회 병목을 분석했습니다.
+  - topic_id 기준 일괄 집계 구조와 인덱스 보강을 통해 300 VU 기준 처리량을 **37 req/s에서 95 req/s 수준으로 개선**했습니다.
 
-#### [PC 화면]
-<p>
-  <img src="assets/readme/main-page.png" width="620" alt="Waggle 메인 페이지" />
-</p>
+- **GitHub Actions 기반 CI/CD 및 운영 검증 자동화**
+  - Pull Request 기준 lint, integration test, typecheck, build를 자동화했습니다.
+  - main 브랜치 배포 시 EC2에서 백엔드 재빌드, Alembic migration, 프론트엔드 빌드, Nginx reload, health check가 순서대로 실행되도록 구성했습니다.
 
-
-#### [모바일 화면]
-<p>
-  <img src="assets/readme/mobile-main.jpg" width="180" alt="Waggle 모바일 메인 페이지" />
-</p>
-
-
-### 2. 토픽 상세 및 투표 트렌드
-
-- 토픽 상세 내용 확인
-- 찬성/반대 투표
-- 시간대별 투표 비율 차트 제공
-- 댓글과 답글을 통한 의견 교환
-
-#### [PC 화면]
-<p>
-  <img src="assets/readme/topic-detail.png" width="620" alt="Waggle 토픽 상세 페이지" />
-</p>
-
-
-#### [모바일 화면]
-<p>
-  <img src="assets/readme/mobile-topic-detail.jpg" width="180" alt="Waggle 모바일 토픽 상세 페이지" />
-</p>
-
-
-### 3. 토픽 생성
-
-- 제목, 설명, 카테고리 입력
-- 투표 선택지는 서비스 정책에 맞게 2개로 제한
-- 사용자가 쉽게 토픽을 작성할 수 있도록 입력 흐름 구성
-
-<img src="assets/readme/create-topic.png" width="800" alt="Waggle 토픽 생성 페이지" />
-
-
-### 4. 프로필 및 사용자 활동
-
-- 계정 정보 확인
-- 사용자가 작성한 토픽과 댓글 확인
-- 문의 처리 결과 확인
-
-<img src="assets/readme/profile-page.png" width="800" alt="Waggle 프로필 페이지" />
-
-
-### 5. 관리자 운영 시스템
-
-- 문의 처리 현황 확인
-- 토픽/댓글 관리
-- 관리자 조치 기록 확인
-- 감사 로그를 통해 조치 대상과 사유 추적
-
-<img src="assets/readme/admin-dashboard.png" width="800" alt="Waggle 관리자 운영 대시보드" />
-
-<img src="assets/readme/admin-audit-log.png" width="800" alt="Waggle 감사 로그 화면" />
-<br>
+- **HttpOnly 쿠키 기반 인증 구조와 CSRF 방어 적용**
+  - JWT 토큰을 HttpOnly 쿠키에 저장해 JavaScript 직접 노출 위험을 줄였습니다.
+  - 상태 변경 요청마다 쿠키의 `csrf_token`과 헤더의 `X-CSRF-Token`을 비교해 쿠키 인증 환경의 CSRF 위험을 보완했습니다.
 
 ## 기술 스택
 
@@ -117,54 +64,120 @@ Waggle은 다양한 주제에 대해 투표하고 댓글로 의견을 나눌 수
 
 ### Infra / DevOps / Monitoring
 
+![AWS EC2](https://img.shields.io/badge/AWS_EC2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![Nginx](https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white)
-![AWS EC2](https://img.shields.io/badge/AWS_EC2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
 ![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white)
 ![Grafana](https://img.shields.io/badge/Grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white)
 ![k6](https://img.shields.io/badge/k6-7D64FF?style=for-the-badge&logo=k6&logoColor=white)
-<br>
-<br>
 
 ## 시스템 아키텍처
 
-<img src="assets/readme/architecture.png" width="800" alt="Waggle 시스템 아키텍처" />
-<br>
+<img src="assets/readme/architecture.png" width="850" alt="Waggle 시스템 아키텍처" />
 
+## 주요 구현 및 개선 내용
 
-## 주요 개선 사항
+### 1. AWS EC2, Docker Compose, Nginx 기반 운영 환경 구성
 
-### 1. 목록 조회 API 성능 개선
+로컬 개발 환경에서 동작하던 서비스를 실제 사용자가 접근 가능한 운영 환경으로 구성했습니다.
 
-`/topics` 목록 조회에서 댓글 수, 답글 수, 투표 결과, 좋아요 수, pinned 여부를 topic별로 반복 조회하거나 계산하는 흐름이 있었습니다. 토픽 수가 늘어날수록 응답 생성 비용도 함께 증가할 수 있어, `topic_id` 기준 일괄 집계 구조로 개선했습니다.
+- AWS EC2 인스턴스에 서비스를 배포하고 Elastic IP와 `waggle.kr` 도메인 연결
+- Nginx에서 React 빌드 결과물(`/frontend/dist`) 정적 파일 서빙
+- SPA 라우팅을 위해 `try_files $uri $uri/ /index.html` 적용
+- `/api`, `/manage-api` 요청을 FastAPI 백엔드(`127.0.0.1:8000`)로 reverse proxy
+- FastAPI 백엔드와 MySQL 8.0을 Docker Compose로 실행
+- `/api/health`, `/api/health/db`로 배포 후 애플리케이션과 DB 연결 상태 확인
 
-- 댓글 수, 투표 결과, 좋아요 수를 `topic_id` 기준으로 한 번에 집계
-- pinned 목록은 한 번 조회한 뒤 set/map으로 재사용
-- 사용자별 상태값은 개인화 데이터로 분리
-- k6 기준 300 VU / 5분 조건에서 처리량 약 37 req/s -> 약 95 req/s로 개선
-- Redis 캐시도 고려했지만, 데이터 변경 빈도와 캐시 무효화 복잡도를 고려해 DB 조회 구조 개선을 우선 적용
+### 2. 관측 지표 기반 `/topics` API 성능 개선
 
-### 2. 관리자 운영 시스템
+`/topics` 목록 조회에서 댓글 수, 좋아요 수, 투표 결과, pinned 여부를 topic별로 반복 조회하거나 계산하던 흐름을 개선했습니다.
 
-사용자 문의, 콘텐츠 관리, 관리자 조치 기록을 하나의 운영 흐름으로 관리할 수 있도록 관리자 기능을 구성했습니다.
+- 댓글 수, 좋아요 수, pinned 여부를 `topic_id` 기준으로 일괄 집계
+- 투표 결과와 대댓글 수를 여러 topic 기준으로 한 번에 조회하도록 개선
+- `votes(topic_id, vote_index)`, `comments(topic_id, is_deleted)`, `replies(comment_id)` 인덱스 보강
+- MySQL Workbench `EXPLAIN`으로 주요 집계 쿼리의 인덱스 사용 여부 확인
+- k6 기준 300 VU / 5분 조건에서 처리량을 **37 req/s -> 95 req/s 수준으로 개선**
 
-- `/contact`에서 로그인 사용자 기준 문의 접수
-- 문의 상태를 미처리, 처리중, 완료로 관리
-- 관리자가 부적절한 토픽/댓글을 삭제 처리
-- 삭제 전 주요 정보를 감사 로그에 스냅샷으로 저장
-- 관리자 조치의 대상과 사유를 감사 로그로 추적
+### 3. GitHub Actions 기반 CI/CD 및 운영 검증 자동화
 
-### 3. CI/CD 및 운영 검증 자동화
+GitHub Actions를 통해 PR 검증과 main 브랜치 배포 흐름을 자동화했습니다.
 
-GitHub Actions를 통해 PR 단계의 검증과 main merge 이후 배포 흐름을 자동화했습니다.
+- PR 단계에서 backend lint, backend integration test, frontend lint, typecheck, build 실행
+- main 브랜치 배포 시 EC2에 SSH 접속 후 최신 코드 반영
+- 백엔드 컨테이너 재빌드, Alembic migration, 프론트엔드 빌드, Nginx reload 순서 구성
+- `/health`, `/health/db`, `/topics` smoke test로 배포 후 상태 확인
+- Markdown 문서 수정은 배포 workflow가 실행되지 않도록 `paths-ignore` 적용
 
-- PR 단계에서 backend test/lint, frontend lint/build 실행
-- main merge 이후 EC2 배포 자동화
-- Alembic migration, frontend build, Nginx reload, health check 실행
-- `/health`, `/health/db`, `/topics`로 배포 후 상태 확인
-- 운영 중 발생한 `/topics` 간헐적 500 오류를 EC2 로그로 추적하고 DB 커넥션 풀 설정 보완
-<br>
+### 4. HttpOnly 쿠키 기반 인증 구조와 CSRF 방어 적용
+
+JWT 인증 정보를 브라우저에 저장할 때 토큰 노출 위험과 쿠키 자동 전송으로 인한 CSRF 위험을 함께 고려했습니다.
+
+- `access_token`, `refresh_token`은 HttpOnly 쿠키에 저장
+- 로그인 또는 토큰 갱신 시 `csrf_token` 쿠키 발급
+- POST, PUT, PATCH, DELETE 요청마다 `X-CSRF-Token` 헤더 포함
+- 서버에서 쿠키의 `csrf_token`과 헤더의 `X-CSRF-Token` 비교
+- 누락 또는 불일치 시 `403 CSRF validation failed`로 차단
+- CSRF 토큰 누락, 불일치, 정상 요청 흐름을 통합 테스트로 검증
+
+## 핵심 기능
+
+### 1. 토픽 목록 및 투표 카드
+
+- 카테고리별 토픽 목록 조회
+- 검색어 기반 토픽 탐색
+- 토픽 카드에서 투표 선택지와 현재 투표 비율 확인
+- PC/모바일 화면에 맞춘 반응형 카드 구성
+
+<p>
+  <img src="assets/readme/main-page.png" width="620" alt="Waggle 메인 페이지" />
+</p>
+
+<p>
+  <img src="assets/readme/mobile-main.jpg" width="180" alt="Waggle 모바일 메인 페이지" />
+</p>
+
+### 2. 토픽 상세 및 투표 결과
+
+- 토픽 상세 내용 확인
+- 찬성/반대 투표
+- 시간대별 투표 비율 차트 제공
+- 댓글과 답글을 통한 의견 교환
+
+<p>
+  <img src="assets/readme/topic-detail.png" width="620" alt="Waggle 토픽 상세 페이지" />
+</p>
+
+<p>
+  <img src="assets/readme/mobile-topic-detail.jpg" width="180" alt="Waggle 모바일 토픽 상세 페이지" />
+</p>
+
+### 3. 토픽 생성
+
+- 제목, 설명, 카테고리 입력
+- 서비스 정책에 맞춘 2개 투표 선택지 구성
+- 사용자가 쉽게 토픽을 작성할 수 있는 입력 흐름 제공
+
+<img src="assets/readme/create-topic.png" width="800" alt="Waggle 토픽 생성 페이지" />
+
+### 4. 프로필 및 사용자 활동
+
+- 계정 정보 확인
+- 사용자가 작성한 토픽과 댓글 확인
+- 문의 처리 결과 확인
+
+<img src="assets/readme/profile-page.png" width="800" alt="Waggle 프로필 페이지" />
+
+### 5. 관리자 운영 기능
+
+- 문의 처리 상태 관리
+- 토픽/댓글 관리
+- 관리자 조치 이력과 감사 로그 확인
+- 삭제 전 주요 정보와 조치 사유 추적
+
+<img src="assets/readme/admin-dashboard.png" width="800" alt="Waggle 관리자 운영 대시보드" />
+
+<img src="assets/readme/admin-audit-log.png" width="800" alt="Waggle 감사 로그 화면" />
 
 ## 실행 방법
 
@@ -182,7 +195,7 @@ cp backend/.env.example backend/.env.local
 cp frontend/.env.example frontend/.env.local
 ```
 
-필요한 값은 각 환경에 맞게 수정합니다.
+필요한 값을 로컬 환경에 맞게 수정합니다.
 
 ### 3. Docker Compose 실행
 
@@ -190,7 +203,7 @@ cp frontend/.env.example frontend/.env.local
 docker compose up -d --build
 ```
 
-실행 후 기본 접속 주소:
+기본 접속 주소:
 
 - Frontend: `http://localhost:3000`
 - Backend: `http://localhost:8000`
@@ -220,11 +233,9 @@ Backend:
 
 ```bash
 cd backend
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 uvicorn main:app --reload
 ```
-<br>
-
 
 ## 테스트
 
@@ -233,6 +244,7 @@ uvicorn main:app --reload
 ```bash
 cd backend
 pytest -q tests/integration
+ruff check app main.py tests
 ```
 
 ### Frontend
@@ -240,6 +252,7 @@ pytest -q tests/integration
 ```bash
 cd frontend
 npm run lint
+npm run typecheck
 npm run build
 ```
 
@@ -247,12 +260,12 @@ npm run build
 
 ```bash
 k6 run k6/topics-list-smoke.js
+k6 run k6/topics-list-upper-load.js
 ```
-<br>
 
 ## 향후 개선 계획
 
-- 이메일 인증 및 비밀번호 재설정 흐름 추가
-- 신고 기반 콘텐츠 관리 흐름 추가
-- 검색/랭킹 기능 개선
-- 성능 테스트 시나리오와 운영 지표 기록 보강
+- 운영 환경 기준의 성능 테스트 시나리오와 결과 기록 체계 보강
+- Prometheus/Grafana 기반 알림 규칙 추가
+- GitHub Actions 배포 실패 원인 분류와 알림 흐름 개선
+- 관리자 운영 기능의 검색/필터링 사용성 개선
