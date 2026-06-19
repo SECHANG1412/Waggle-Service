@@ -99,6 +99,8 @@ const Main = () => {
 
   const onVote: MainVoteHandler = async (topic_id, index) => {
     if (isAuthLoading) return;
+    const targetTopic = topics.find((topic) => topic.topic_id === topic_id);
+    if (targetTopic?.is_closed) return;
     if (!isAuthenticated) {
       await showLoginRequiredAlert();
       return;
