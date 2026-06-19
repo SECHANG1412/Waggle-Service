@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
 import type { AdminActionLogListParams, AdminActionLogRead } from '../../types';
+import { formatDateTime } from '../../utils/date';
 
 const ACTION_OPTIONS = [
   { value: '', label: '전체' },
@@ -60,11 +61,11 @@ const getDisplayValue = (value: unknown) => {
 
 const formatDate = (value?: string | null) => {
   if (!value) return '-';
-  return new Intl.DateTimeFormat('ko-KR', {
+  return formatDateTime(value, 'ko-KR', {
     dateStyle: 'medium',
     timeStyle: 'short',
     timeZone: 'Asia/Seoul',
-  }).format(new Date(value));
+  });
 };
 
 const getDateParams = (dateFilter: DateFilter): AdminActionLogListParams => {

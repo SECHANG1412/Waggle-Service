@@ -2,15 +2,17 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { UserRead } from '../../types';
 import api from '../../utils/api';
+import { formatDateTime } from '../../utils/date';
 
 type Message = { type: 'error'; text: string };
 
 const formatDate = (value?: string | null) => {
   if (!value) return '-';
-  return new Intl.DateTimeFormat('ko-KR', {
+  return formatDateTime(value, 'ko-KR', {
     dateStyle: 'medium',
     timeStyle: 'short',
-  }).format(new Date(value));
+    timeZone: 'Asia/Seoul',
+  });
 };
 
 const AdminUsers = () => {

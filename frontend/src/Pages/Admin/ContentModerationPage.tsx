@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
 import type { AdminContentListParams, CommentModerationRequest, TopicModerationRequest } from '../../types';
+import { formatDateTime } from '../../utils/date';
 
 const DATE_OPTIONS = [
   { value: 'all', label: '전체 기간' },
@@ -35,10 +36,11 @@ export type ContentModerationPageProps<TItem extends ContentModerationItem> = {
 
 const formatDate = (value?: string | null) => {
   if (!value) return '-';
-  return new Intl.DateTimeFormat('ko-KR', {
+  return formatDateTime(value, 'ko-KR', {
     dateStyle: 'medium',
     timeStyle: 'short',
-  }).format(new Date(value));
+    timeZone: 'Asia/Seoul',
+  });
 };
 
 const getDateParams = (dateFilter: DateFilter): AdminContentListParams => {
