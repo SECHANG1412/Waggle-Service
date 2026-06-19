@@ -8,6 +8,7 @@ import { useTopic } from '../../hooks/useTopic';
 import { useVote } from '../../hooks/useVote';
 import { useConfirm } from '../../hooks/confirm-context';
 import { showLoginRequiredAlert } from '../../utils/alertUtils';
+import { formatDateTime } from '../../utils/date';
 import Comments from './Comments';
 import Header from './layout/Header';
 import InfoBar from './layout/InfoBar';
@@ -93,6 +94,7 @@ const SingleTopic = () => {
 
   const onVote = async (index: number) => {
     if (topic?.has_voted) return;
+    if (topic?.is_closed) return;
     if (!id) return;
     if (isAuthLoading) return;
     if (!isAuthenticated) {
@@ -156,10 +158,17 @@ const SingleTopic = () => {
 
   const commentCount = topic.comment_count ?? 0;
   const colors = voteColors[topic.vote_options.length as VoteColorKey] || [];
+  const formattedExpiresAt = formatDateTime(topic.expires_at, 'ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
   const votePanel = (
     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
       <h2 className="mb-3 text-lg font-bold text-slate-950 sm:mb-4 sm:text-xl">
-        {topic.has_voted ? '투표 결과' : '지금 투표하기'}
+        {topic.is_closed || topic.has_voted ? '투표 결과' : '지금 투표하기'}
       </h2>
       <VoteButtons
         voteOptions={topic.vote_options}
@@ -170,9 +179,10 @@ const SingleTopic = () => {
         onVote={onVote}
         colors={colors}
         isAuthLoading={isAuthLoading}
+        isClosed={topic.is_closed}
       />
       <p className="mt-3 text-center text-xs font-medium text-slate-500 sm:mt-4 sm:text-sm">
-        한 번 투표하면 변경할 수 없습니다.
+        {topic.is_closed ? '마감된 토픽은 더 이상 투표할 수 없습니다.' : '한 번 투표하면 변경할 수 없습니다.'}
       </p>
     </section>
   );
@@ -203,6 +213,16 @@ const SingleTopic = () => {
               ) : null
             }
           />
+          {topic.is_closed && (
+            <section className="rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-700 shadow-sm sm:px-5">
+              <p className="font-bold">마감된 토픽입니다.</p>
+              <p className="mt-1 leading-6">
+                {formattedExpiresAt
+                  ? `${formattedExpiresAt}에 마감되어 더 이상 투표할 수 없습니다.`
+                  : '더 이상 투표할 수 없습니다.'}
+              </p>
+            </section>
+          )}
 
           <div className="lg:hidden">{votePanel}</div>
 
