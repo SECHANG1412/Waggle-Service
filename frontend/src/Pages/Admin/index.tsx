@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
 import type { AdminActionLogRead, CommentAdminRead, InquiryRead, InquiryStatus, TopicAdminRead } from '../../types';
+import { formatDateTime } from '../../utils/date';
 
 const ACTION_LABELS = {
   UPDATE_INQUIRY_STATUS: '문의 상태 변경',
@@ -22,10 +23,11 @@ type Message = { type: 'success' | 'error'; text: string };
 
 const formatDate = (value?: string | null) => {
   if (!value) return '-';
-  return new Intl.DateTimeFormat('ko-KR', {
+  return formatDateTime(value, 'ko-KR', {
     dateStyle: 'medium',
     timeStyle: 'short',
-  }).format(new Date(value));
+    timeZone: 'Asia/Seoul',
+  });
 };
 
 type StatCardProps = {

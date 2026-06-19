@@ -9,6 +9,7 @@ import type {
   InquiryStatus,
   InquiryStatusUpdateRequest,
 } from '../../types';
+import { formatDateTime } from '../../utils/date';
 
 const STATUS_OPTIONS = [
   { value: '', label: '전체' },
@@ -42,10 +43,11 @@ type Message = { type: 'success' | 'error'; text: string };
 
 const formatDate = (value?: string | null) => {
   if (!value) return '-';
-  return new Intl.DateTimeFormat('ko-KR', {
+  return formatDateTime(value, 'ko-KR', {
     dateStyle: 'medium',
     timeStyle: 'short',
-  }).format(new Date(value));
+    timeZone: 'Asia/Seoul',
+  });
 };
 
 const getDateParams = (dateFilter: DateFilter): AdminInquiryListParams => {
