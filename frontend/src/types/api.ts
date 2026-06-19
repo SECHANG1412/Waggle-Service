@@ -22,11 +22,14 @@ export type TopicBase = {
   description: string | null;
 };
 
-export type TopicCreateRequest = TopicBase;
+export type TopicCreateRequest = TopicBase & {
+  expires_at: ISODateTimeString;
+};
 
 export type TopicRead = TopicBase & {
   topic_id: Id;
   created_at: ISODateTimeString;
+  expires_at: ISODateTimeString | null;
   user_id: Id;
   author_name: string | null;
   has_voted: boolean;
@@ -37,15 +40,18 @@ export type TopicRead = TopicBase & {
   has_liked: boolean;
   is_pinned: boolean;
   comment_count: number;
+  is_closed: boolean;
 };
 
 export type TopicAdminRead = TopicBase & {
   topic_id: Id;
   created_at: ISODateTimeString;
+  expires_at: ISODateTimeString | null;
   user_id: Id;
   is_hidden: boolean;
   hidden_at: ISODateTimeString | null;
   hidden_by: Id | null;
+  is_closed: boolean;
 };
 
 export type TopicModerationRequest = {
@@ -227,6 +233,7 @@ export type AdminActionLogRead = {
 
 export type TopicListParams = {
   sort?: string;
+  status?: 'active' | 'closed' | 'all';
   limit?: number;
   offset?: number;
   category?: string;

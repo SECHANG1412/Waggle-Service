@@ -26,11 +26,21 @@ const TopicCard = ({ topic, onVote, onPinToggle, isAuthLoading }: TopicCardProps
       minute: '2-digit',
     });
   }, [topic.created_at]);
+  const formattedExpiresAt = useMemo(() => {
+    return formatDateTime(topic.expires_at, 'ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }, [topic.expires_at]);
 
   const commentCount = topic.comment_count ?? 0;
   const pinLabel = topic.is_pinned ? '북마크 해제' : '북마크';
   const detailPath = `/topic/${topic.topic_id}`;
   const visibleOptions = topic.vote_options.slice(0, 2);
+  const isClosed = topic.is_closed;
 
   const isInteractiveElement = (target: EventTarget | null) =>
     target instanceof Element &&
@@ -54,7 +64,11 @@ const TopicCard = ({ topic, onVote, onPinToggle, isAuthLoading }: TopicCardProps
 
   return (
     <article
-      className="relative flex h-full cursor-pointer flex-col rounded-xl border border-slate-200 bg-white/95 p-2.5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300 sm:p-3"
+      className={`relative flex h-full cursor-pointer flex-col rounded-xl border p-2.5 shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300 sm:p-3 ${
+        isClosed
+          ? 'border-slate-200 bg-slate-100 text-slate-500 hover:border-slate-200'
+          : 'border-slate-200 bg-white/95 hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-md'
+      }`}
       role="link"
       tabIndex={0}
       aria-label={`${topic.title} 상세 보기`}
@@ -66,6 +80,11 @@ const TopicCard = ({ topic, onVote, onPinToggle, isAuthLoading }: TopicCardProps
           {topic.is_pinned && (
             <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-700">
               Pinned
+            </span>
+          )}
+          {isClosed && (
+            <span className="rounded-full border border-slate-300 bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-700">
+              마감됨
             </span>
           )}
           <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[11px] font-semibold text-slate-700">
@@ -109,6 +128,12 @@ const TopicCard = ({ topic, onVote, onPinToggle, isAuthLoading }: TopicCardProps
       )}
 
       <div className="mt-3 border-t border-slate-200 pt-3">
+        {isClosed && (
+          <p className="mb-2 rounded-lg border border-slate-200 bg-white/70 px-3 py-2 text-xs font-semibold text-slate-600">
+            마감된 토픽입니다
+            {formattedExpiresAt && <span className="ml-1 font-medium">· {formattedExpiresAt} 마감</span>}
+          </p>
+        )}
         <div className="space-y-2">
           {visibleOptions.map((opt, idx) => (
             <OptionButton

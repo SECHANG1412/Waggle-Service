@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+
 import pytest
 from sqlalchemy.exc import IntegrityError
 
@@ -44,6 +46,25 @@ async def test_vote_create_business_errors_returns_400(authenticated_client, db_
         json={"topic_id": topic.topic_id, "vote_index": 1},
     )
     assert duplicate.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_vote_create_rejects_closed_topic(authenticated_client, db_session, auth_user):
+    topic = await create_topic(
+        db_session,
+        user_id=auth_user.user_id,
+        vote_options=["A", "B"],
+        expires_at=datetime.now(timezone.utc) - timedelta(minutes=1),
+    )
+    await db_session.commit()
+
+    response = await authenticated_client.post(
+        "/votes",
+        json={"topic_id": topic.topic_id, "vote_index": 0},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "마감된 토픽입니다."
 
 
 @pytest.mark.asyncio

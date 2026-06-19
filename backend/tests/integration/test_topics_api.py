@@ -9,6 +9,10 @@ from app.db.models import PinnedTopic
 from tests.factories import create_topic
 
 
+def future_expiration() -> str:
+    return (datetime.now(timezone.utc) + timedelta(days=7)).isoformat()
+
+
 @pytest.mark.asyncio
 async def test_create_topic_includes_author_name(authenticated_client, auth_user):
     response = await authenticated_client.post(
@@ -18,6 +22,7 @@ async def test_create_topic_includes_author_name(authenticated_client, auth_user
             "description": "desc",
             "category": "general",
             "vote_options": ["A", "B"],
+            "expires_at": future_expiration(),
         },
     )
 
@@ -34,6 +39,7 @@ async def test_create_topic_requires_exactly_two_vote_options(authenticated_clie
             "description": "desc",
             "category": "general",
             "vote_options": ["A", "B", "C"],
+            "expires_at": future_expiration(),
         },
     )
 
@@ -49,10 +55,37 @@ async def test_create_topic_rejects_too_long_title(authenticated_client):
             "description": "desc",
             "category": "general",
             "vote_options": ["A", "B"],
+            "expires_at": future_expiration(),
         },
     )
 
     assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_create_topic_requires_future_expiration(authenticated_client):
+    missing = await authenticated_client.post(
+        "/topics",
+        json={
+            "title": "missing-expiration",
+            "description": "desc",
+            "category": "general",
+            "vote_options": ["A", "B"],
+        },
+    )
+    past = await authenticated_client.post(
+        "/topics",
+        json={
+            "title": "past-expiration",
+            "description": "desc",
+            "category": "general",
+            "vote_options": ["A", "B"],
+            "expires_at": (datetime.now(timezone.utc) - timedelta(minutes=1)).isoformat(),
+        },
+    )
+
+    assert missing.status_code == 422
+    assert past.status_code == 422
 
 
 @pytest.mark.asyncio
@@ -141,6 +174,88 @@ async def test_topics_list_excludes_hidden_topics(
     topic_ids = [item["topic_id"] for item in response.json()]
     assert public_topic.topic_id in topic_ids
     assert hidden_topic.topic_id not in topic_ids
+
+
+@pytest.mark.asyncio
+async def test_topics_status_filter_contract(authenticated_client, db_session, auth_user):
+    now = datetime.now(timezone.utc)
+    legacy_topic = await create_topic(
+        db_session,
+        user_id=auth_user.user_id,
+        title="legacy-active-topic",
+        created_at=now - timedelta(minutes=3),
+    )
+    active_topic = await create_topic(
+        db_session,
+        user_id=auth_user.user_id,
+        title="future-active-topic",
+        expires_at=now + timedelta(days=1),
+        created_at=now - timedelta(minutes=2),
+    )
+    closed_topic = await create_topic(
+        db_session,
+        user_id=auth_user.user_id,
+        title="closed-topic",
+        expires_at=now - timedelta(minutes=1),
+        created_at=now,
+    )
+    await db_session.commit()
+
+    default_response = await authenticated_client.get(
+        "/topics",
+        params={"limit": 10, "offset": 0},
+    )
+    closed_response = await authenticated_client.get(
+        "/topics",
+        params={"status": "closed", "limit": 10, "offset": 0},
+    )
+    all_response = await authenticated_client.get(
+        "/topics",
+        params={"status": "all", "limit": 10, "offset": 0},
+    )
+
+    assert default_response.status_code == 200
+    default_payload = default_response.json()
+    default_ids = [item["topic_id"] for item in default_payload]
+    assert legacy_topic.topic_id in default_ids
+    assert active_topic.topic_id in default_ids
+    assert closed_topic.topic_id not in default_ids
+    assert all(item["is_closed"] is False for item in default_payload)
+
+    assert closed_response.status_code == 200
+    closed_payload = closed_response.json()
+    assert [item["topic_id"] for item in closed_payload] == [closed_topic.topic_id]
+    assert closed_payload[0]["is_closed"] is True
+
+    assert all_response.status_code == 200
+    all_payload = all_response.json()
+    all_ids = [item["topic_id"] for item in all_payload]
+    assert all_ids.index(closed_topic.topic_id) > all_ids.index(active_topic.topic_id)
+    assert all_ids.index(closed_topic.topic_id) > all_ids.index(legacy_topic.topic_id)
+
+
+@pytest.mark.asyncio
+async def test_topics_count_uses_status_filter(authenticated_client, db_session, auth_user):
+    now = datetime.now(timezone.utc)
+    await create_topic(db_session, user_id=auth_user.user_id, title="legacy-active")
+    await create_topic(
+        db_session,
+        user_id=auth_user.user_id,
+        title="closed-count",
+        expires_at=now - timedelta(minutes=1),
+    )
+    await db_session.commit()
+
+    active = await authenticated_client.get("/topics/count")
+    closed = await authenticated_client.get("/topics/count", params={"status": "closed"})
+    all_topics = await authenticated_client.get("/topics/count", params={"status": "all"})
+
+    assert active.status_code == 200
+    assert closed.status_code == 200
+    assert all_topics.status_code == 200
+    assert active.json() == 1
+    assert closed.json() == 1
+    assert all_topics.json() == 2
 
 
 @pytest.mark.asyncio

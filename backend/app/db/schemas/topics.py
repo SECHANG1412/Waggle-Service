@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 TOPIC_TITLE_MAX_LENGTH = 80
@@ -28,13 +28,27 @@ class TopicBase(BaseModel):
 
 
 class TopicCreate(TopicBase):
-    pass
+    expires_at: datetime
+
+    @field_validator("expires_at")
+    @classmethod
+    def expires_at_must_be_in_future(cls, value: datetime) -> datetime:
+        expires_at = value
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        else:
+            expires_at = expires_at.astimezone(timezone.utc)
+
+        if expires_at <= datetime.now(timezone.utc):
+            raise ValueError("expires_at must be in the future.")
+        return expires_at
 
 
 class TopicInDB(TopicBase):
     topic_id: int
     created_at: datetime
     user_id: int
+    expires_at: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -49,12 +63,14 @@ class TopicRead(TopicInDB):
     has_liked: bool = False
     is_pinned: bool = False
     comment_count: int = 0
+    is_closed: bool = False
 
 
 class TopicAdminRead(TopicInDB):
     is_hidden: bool = False
     hidden_at: datetime | None = None
     hidden_by: int | None = None
+    is_closed: bool = False
 
 
 class TopicModerationUpdate(BaseModel):

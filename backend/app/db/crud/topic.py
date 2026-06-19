@@ -1,12 +1,23 @@
 from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import desc, func, or_, select
+from sqlalchemy import case, desc, func, or_, select
 from sqlalchemy.orm import selectinload
 from app.db.models import Topic, TopicLike
 from app.db.schemas.topics import TopicCreate
 
 class TopicCrud:
+    @staticmethod
+    def _active_topic_filter(now: datetime):
+        return or_(Topic.expires_at.is_(None), Topic.expires_at > now)
+
+    @staticmethod
+    def _closed_topic_filter(now: datetime):
+        return Topic.expires_at <= now
+
+    @staticmethod
+    def _active_rank_expression(now: datetime):
+        return case((TopicCrud._active_topic_filter(now), 1), else_=0)
 
     @staticmethod
     async def create(db: AsyncSession, topic_data: TopicCreate, user_id:int) -> Topic:
@@ -69,9 +80,11 @@ class TopicCrud:
         search: str | None = None,
         category: str | None = None,
         sort: str = "created_at",
+        status: str = "active",
         limit: int = 10,
         offset: int = 0
     ):
+        now = datetime.now(timezone.utc)
         like_count_subq = (
             select(func.count(TopicLike.like_id))
             .where(TopicLike.topic_id == Topic.topic_id)
@@ -95,6 +108,16 @@ class TopicCrud:
         if category:
             base_query = base_query.where(Topic.category == category)
 
+        if status == "active":
+            base_query = base_query.where(TopicCrud._active_topic_filter(now))
+        elif status == "closed":
+            base_query = base_query.where(TopicCrud._closed_topic_filter(now))
+
+        if status == "all":
+            base_query = base_query.order_by(
+                desc(TopicCrud._active_rank_expression(now))
+            )
+
         if sort == "like_count":
             base_query = base_query.order_by(desc(like_count_subq), desc(Topic.created_at))
         else:
@@ -106,8 +129,12 @@ class TopicCrud:
     
     @staticmethod
     async def count_all_with_filters(
-        db: AsyncSession, category: str | None = None, search: str | None = None
+        db: AsyncSession,
+        category: str | None = None,
+        search: str | None = None,
+        status: str = "active",
     ) -> int:
+        now = datetime.now(timezone.utc)
         base_query = (
             select(func.count()).select_from(Topic).where(Topic.is_hidden.is_(False))
         )
@@ -121,6 +148,11 @@ class TopicCrud:
                 | (Topic.description.ilike(f"%{search}%"))
             )
 
+        if status == "active":
+            base_query = base_query.where(TopicCrud._active_topic_filter(now))
+        elif status == "closed":
+            base_query = base_query.where(TopicCrud._closed_topic_filter(now))
+
         result = await db.execute(base_query)
         return result.scalar() or 0
 
@@ -132,11 +164,18 @@ class TopicCrud:
         start_at: datetime | None = None,
         end_at: datetime | None = None,
     ) -> list[Topic]:
+        now = datetime.now(timezone.utc)
         query = select(Topic)
+        if status == "active":
+            query = query.where(TopicCrud._active_topic_filter(now))
+        elif status == "closed":
+            query = query.where(TopicCrud._closed_topic_filter(now))
         if start_at:
             query = query.where(Topic.created_at >= start_at)
         if end_at:
             query = query.where(Topic.created_at < end_at)
+        if status == "all":
+            query = query.order_by(desc(TopicCrud._active_rank_expression(now)))
         query = query.order_by(desc(Topic.created_at), desc(Topic.topic_id))
         result = await db.execute(query)
         return list(result.scalars().all())

@@ -10,11 +10,12 @@ type TopicId = number | string;
 export const useTopic = () => {
   const [loading, setLoading] = useState(false);
 
-  const fetchTopics = useCallback(async ({ sort, limit, offset, category, search }: TopicListParams) => {
+  const fetchTopics = useCallback(async ({ sort, status, limit, offset, category, search }: TopicListParams) => {
     setLoading(true);
     try {
       const params = {
         sort,
+        status,
         limit,
         offset,
         category,
@@ -58,11 +59,12 @@ export const useTopic = () => {
     }
   }, []);
 
-  const countAllTopics = useCallback(async (category?: string, search?: string) => {
+  const countAllTopics = useCallback(async (category?: string, search?: string, status?: TopicListParams['status']) => {
     setLoading(true);
     try {
       const params = {
         category,
+        status,
         ...(search && { search }),
       };
       const response = await api.get<number>('/topics/count', {

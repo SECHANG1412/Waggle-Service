@@ -9,6 +9,7 @@ type VoteButtonsProps = {
   onVote: (index: number) => void;
   colors: string[];
   isAuthLoading: boolean;
+  isClosed?: boolean;
 };
 
 const VoteButtons = ({
@@ -20,12 +21,14 @@ const VoteButtons = ({
   onVote,
   colors,
   isAuthLoading,
+  isClosed = false,
 }: VoteButtonsProps) => {
   return (
     <div className="space-y-2.5 sm:space-y-3">
       {voteOptions.map((option, idx) => {
         const selected = useVoteIndex === idx;
         const baseColor = colors?.[idx] || '#64748b';
+        const displayColor = isClosed ? '#64748b' : baseColor;
         const voteCount = voteResults[idx] ?? 0;
         const percent = totalVotes > 0 ? Math.round((voteCount / totalVotes) * 100) : 0;
         const softBg = idx === 0 ? '#f0fdf4' : '#fff1f2';
@@ -35,15 +38,15 @@ const VoteButtons = ({
             key={`${option}-${idx}`}
             className="rounded-xl border border-l-4 bg-white p-3 transition sm:p-4"
             style={{
-              backgroundColor: hasVoted ? '#ffffff' : softBg,
-              borderColor: hasVoted ? '#e2e8f0' : `${baseColor}55`,
-              borderLeftColor: baseColor,
+              backgroundColor: isClosed || hasVoted ? '#ffffff' : softBg,
+              borderColor: isClosed || hasVoted ? '#e2e8f0' : `${baseColor}55`,
+              borderLeftColor: displayColor,
             }}
           >
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex min-w-0 items-center gap-2">
-                  <h3 className="truncate text-sm font-bold sm:text-base" style={{ color: baseColor }}>
+                  <h3 className="truncate text-sm font-bold sm:text-base" style={{ color: displayColor }}>
                     {option}
                   </h3>
                   {hasVoted && selected && (
@@ -57,14 +60,14 @@ const VoteButtons = ({
                   )}
                 </div>
                 <div className="mt-1 flex items-baseline gap-2">
-                  <span className="text-2xl font-extrabold leading-none sm:text-3xl" style={{ color: baseColor }}>
+                  <span className="text-2xl font-extrabold leading-none sm:text-3xl" style={{ color: displayColor }}>
                     {percent}%
                   </span>
                   <span className="text-xs font-semibold text-slate-500 sm:text-sm">{voteCount}표</span>
                 </div>
               </div>
 
-              {!hasVoted && (
+              {!hasVoted && !isClosed && (
                 <button
                   disabled={isAuthLoading}
                   onClick={() => onVote(idx)}
