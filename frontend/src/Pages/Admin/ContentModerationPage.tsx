@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
-import type { CommentModerationRequest, TopicModerationRequest } from '../../types';
+import type { AdminContentListParams, CommentModerationRequest, TopicModerationRequest } from '../../types';
 
 const DATE_OPTIONS = [
   { value: 'all', label: '전체 기간' },
@@ -15,7 +15,6 @@ const DELETE_REASONS = ['스팸', '욕설/비방', '개인정보', '광고', '�
 
 type DateFilter = 'all' | 'today' | '7d' | '30d';
 type Id = number | string;
-type DateParams = Partial<Record<'start_at' | 'end_at', string>>;
 type Message = { type: 'success' | 'error'; text: string };
 type ModerationMeta = { label: string; value: ReactNode };
 
@@ -42,7 +41,7 @@ const formatDate = (value?: string | null) => {
   }).format(new Date(value));
 };
 
-const getDateParams = (dateFilter: DateFilter): DateParams => {
+const getDateParams = (dateFilter: DateFilter): AdminContentListParams => {
   if (dateFilter === 'all') return {};
   const now = new Date();
   const start = new Date(now);

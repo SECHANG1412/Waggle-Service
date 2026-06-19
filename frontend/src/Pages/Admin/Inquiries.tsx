@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import api from '../../utils/api';
 import type {
   InquiryDeleteRequest,
+  AdminInquiryListParams,
   InquiryRead,
   InquiryStatus,
   InquiryStatusUpdateRequest,
@@ -38,7 +39,6 @@ const STATUS_STYLES = {
 type DateFilter = 'all' | 'today' | '7d' | '30d';
 type StatusFilter = '' | InquiryStatus;
 type Message = { type: 'success' | 'error'; text: string };
-type InquiryParams = Partial<Record<'start_at' | 'end_at' | 'status', string>>;
 
 const formatDate = (value?: string | null) => {
   if (!value) return '-';
@@ -48,7 +48,7 @@ const formatDate = (value?: string | null) => {
   }).format(new Date(value));
 };
 
-const getDateParams = (dateFilter: DateFilter): InquiryParams => {
+const getDateParams = (dateFilter: DateFilter): AdminInquiryListParams => {
   if (dateFilter === 'all') return {};
   const now = new Date();
   const start = new Date(now);
