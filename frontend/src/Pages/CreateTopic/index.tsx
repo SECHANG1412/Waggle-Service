@@ -6,18 +6,37 @@ import { CREATE_TOPIC_MESSAGES } from '../../constants/messages';
 import { useTopic } from '../../hooks/useTopic';
 import { showErrorAlert, showWarningAlert } from '../../utils/alertUtils';
 import CategorySelect from './layout/CategorySelect';
+import ExpirationSelect, { type ExpirationPreset } from './layout/ExpirationSelect';
 import FormField from './layout/FormField';
 import SubmitButton from './layout/SubmitButton';
 import VoteOptionInputs from './layout/VoteOptionInputs';
 
 const TITLE_MAX_LENGTH = 80;
 const OPTION_COUNT = 2;
+const EXPIRATION_PRESET_DAYS: Record<Exclude<ExpirationPreset, 'custom'>, number> = {
+  '1d': 1,
+  '3d': 3,
+  '7d': 7,
+  '14d': 14,
+};
+
+const toDatetimeLocalValue = (date: Date) => {
+  const offsetMs = date.getTimezoneOffset() * 60 * 1000;
+  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
+};
+
+const getPresetExpiration = (preset: Exclude<ExpirationPreset, 'custom'>) => {
+  const date = new Date();
+  date.setDate(date.getDate() + EXPIRATION_PRESET_DAYS[preset]);
+  return toDatetimeLocalValue(date);
+};
 
 export type CreateTopicFormData = {
   title: string;
   description: string;
   vote_options: string[];
   category: string;
+  expires_at: string;
 };
 
 const CreateTopic = () => {
@@ -29,11 +48,26 @@ const CreateTopic = () => {
     description: '',
     vote_options: ['', ''],
     category: '',
+    expires_at: getPresetExpiration('7d'),
   });
+  const [expirationPreset, setExpirationPreset] = useState<ExpirationPreset>('7d');
 
   const onChange = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  }, []);
+
+  const minExpirationValue = toDatetimeLocalValue(new Date());
+
+  const onExpirationPresetChange = useCallback((preset: ExpirationPreset) => {
+    setExpirationPreset(preset);
+    if (preset === 'custom') return;
+    setFormData((prev) => ({ ...prev, expires_at: getPresetExpiration(preset) }));
+  }, []);
+
+  const onCustomExpirationChange = useCallback((value: string) => {
+    setExpirationPreset('custom');
+    setFormData((prev) => ({ ...prev, expires_at: value }));
   }, []);
 
   const onSubmit = useCallback(
@@ -60,11 +94,18 @@ const CreateTopic = () => {
         return;
       }
 
+      const expiresAt = new Date(formData.expires_at);
+      if (!formData.expires_at || Number.isNaN(expiresAt.getTime()) || expiresAt <= new Date()) {
+        showWarningAlert('마감 시간을 확인해 주세요', '마감 시간은 현재 시각 이후로 설정해야 합니다.');
+        return;
+      }
+
       try {
         const result = await addTopic({
           ...formData,
           title,
           vote_options: validVoteOptions,
+          expires_at: expiresAt.toISOString(),
         });
         if (!result) return;
         navigate(`/topic/${result.topic_id}`);
@@ -106,6 +147,13 @@ const CreateTopic = () => {
           />
           <VoteOptionInputs formData={formData} onOptionChange={onOptionChange} />
           <CategorySelect categories={CATEGORIES} value={formData.category} onChange={onChange} />
+          <ExpirationSelect
+            value={formData.expires_at}
+            preset={expirationPreset}
+            minValue={minExpirationValue}
+            onPresetChange={onExpirationPresetChange}
+            onCustomChange={onCustomExpirationChange}
+          />
           <SubmitButton label="토픽 만들기" />
         </form>
       </div>
