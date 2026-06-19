@@ -21,6 +21,7 @@ async def test_auth_required_endpoints_return_401_without_cookie(client: AsyncCl
             "category": "general",
             "description": "desc",
             "vote_options": ["A", "B"],
+            "expires_at": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
         },
     )
     post_vote = await client.post("/votes", json={"topic_id": topic.topic_id, "vote_index": 0})

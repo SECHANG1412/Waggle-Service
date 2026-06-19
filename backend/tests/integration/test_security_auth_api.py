@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
 import pytest
@@ -23,6 +23,7 @@ async def test_csrf_blocks_unsafe_request_when_header_missing(client, auth_user,
             "category": "general",
             "description": "desc",
             "vote_options": ["A", "B"],
+            "expires_at": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
         },
     )
 
@@ -42,6 +43,7 @@ async def test_csrf_blocks_unsafe_request_when_token_mismatch(client, auth_user,
             "category": "general",
             "description": "desc",
             "vote_options": ["A", "B"],
+            "expires_at": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
         },
     )
 
@@ -58,6 +60,7 @@ async def test_csrf_allows_unsafe_request_with_matching_token(authenticated_clie
             "category": "general",
             "description": "desc",
             "vote_options": ["A", "B"],
+            "expires_at": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
         },
     )
 

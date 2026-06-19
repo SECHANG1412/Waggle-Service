@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 TOPIC_TITLE_MAX_LENGTH = 80
@@ -10,7 +10,6 @@ class TopicBase(BaseModel):
     category: str = "자유"
     vote_options: list[str] = Field(..., min_length=TOPIC_OPTION_COUNT, max_length=TOPIC_OPTION_COUNT)
     description: str | None = None
-    expires_at: datetime | None = None
 
     @field_validator("title")
     @classmethod
@@ -29,13 +28,27 @@ class TopicBase(BaseModel):
 
 
 class TopicCreate(TopicBase):
-    pass
+    expires_at: datetime
+
+    @field_validator("expires_at")
+    @classmethod
+    def expires_at_must_be_in_future(cls, value: datetime) -> datetime:
+        expires_at = value
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        else:
+            expires_at = expires_at.astimezone(timezone.utc)
+
+        if expires_at <= datetime.now(timezone.utc):
+            raise ValueError("expires_at must be in the future.")
+        return expires_at
 
 
 class TopicInDB(TopicBase):
     topic_id: int
     created_at: datetime
     user_id: int
+    expires_at: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

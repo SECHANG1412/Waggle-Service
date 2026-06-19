@@ -44,6 +44,7 @@ async def create_topic(
     category: str = "general",
     vote_options: Iterable[str] | None = None,
     created_at: datetime | None = None,
+    expires_at: datetime | None = None,
     is_hidden: bool = False,
     hidden_at: datetime | None = None,
     hidden_by: int | None = None,
@@ -58,6 +59,7 @@ async def create_topic(
         is_hidden=is_hidden,
         hidden_at=hidden_at,
         hidden_by=hidden_by,
+        expires_at=expires_at.astimezone(timezone.utc) if expires_at else None,
     )
     if created_at:
         topic.created_at = created_at.astimezone(timezone.utc)
