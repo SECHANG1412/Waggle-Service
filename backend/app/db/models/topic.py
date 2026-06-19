@@ -26,6 +26,7 @@ class Topic(Base):
     hidden_by: Mapped[Optional[int]] = mapped_column(
         ForeignKey("users.user_id"), nullable=True
     )
+    expires_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMP, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, server_default=func.now(), nullable=False
     )

@@ -10,6 +10,7 @@ class TopicBase(BaseModel):
     category: str = "자유"
     vote_options: list[str] = Field(..., min_length=TOPIC_OPTION_COUNT, max_length=TOPIC_OPTION_COUNT)
     description: str | None = None
+    expires_at: datetime | None = None
 
     @field_validator("title")
     @classmethod
@@ -49,12 +50,14 @@ class TopicRead(TopicInDB):
     has_liked: bool = False
     is_pinned: bool = False
     comment_count: int = 0
+    is_closed: bool = False
 
 
 class TopicAdminRead(TopicInDB):
     is_hidden: bool = False
     hidden_at: datetime | None = None
     hidden_by: int | None = None
+    is_closed: bool = False
 
 
 class TopicModerationUpdate(BaseModel):

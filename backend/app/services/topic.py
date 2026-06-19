@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,11 +13,30 @@ from app.db.crud import (
     VoteCrud,
 )
 from app.db.models import Topic
-from app.db.schemas.topics import TopicCreate, TopicModerationUpdate, TopicRead
+from app.db.schemas.topics import (
+    TopicAdminRead,
+    TopicCreate,
+    TopicModerationUpdate,
+    TopicRead,
+)
 from app.services.admin_action_log import AdminActionLogService
 
 
 class TopicService:
+    @staticmethod
+    def is_closed(topic: Topic, now: datetime | None = None) -> bool:
+        if topic.expires_at is None:
+            return False
+
+        current_time = now or datetime.now(timezone.utc)
+        expires_at = topic.expires_at
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        else:
+            expires_at = expires_at.astimezone(timezone.utc)
+
+        return expires_at <= current_time
+
     @staticmethod
     async def create(db: AsyncSession, user_id: int, topic_data: TopicCreate) -> TopicRead:
         try:
@@ -94,13 +115,22 @@ class TopicService:
         status: str | None = None,
         start_at=None,
         end_at=None,
-    ) -> list[Topic]:
-        return await TopicCrud.get_all_for_admin(
+    ) -> list[TopicAdminRead]:
+        topics = await TopicCrud.get_all_for_admin(
             db,
             status=status,
             start_at=start_at,
             end_at=end_at,
         )
+        return [
+            TopicAdminRead.model_validate(
+                {
+                    **topic.__dict__,
+                    "is_closed": TopicService.is_closed(topic),
+                }
+            )
+            for topic in topics
+        ]
 
     @staticmethod
     async def delete_for_admin(
@@ -190,6 +220,7 @@ class TopicService:
             total_vote=sum(vote_counts.values()),
             like_count=like_count,
             comment_count=comment_count + reply_count,
+            is_closed=TopicService.is_closed(topic),
         )
 
         if user_id is not None:
