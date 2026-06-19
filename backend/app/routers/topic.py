@@ -9,6 +9,8 @@ from app.db.crud import PinnedTopicCrud, TopicCrud
 
 router = APIRouter(prefix="/topics", tags=["Topic"])
 
+TopicStatus = Literal["active", "closed", "all"]
+
 @router.post("", response_model=TopicRead)
 async def create_topic(
     topic_data: TopicCreate,
@@ -25,6 +27,7 @@ async def list_topics(
     search: str | None = Query(None, min_length=1),
     category: str | None = Query(None),
     sort: Literal["created_at", "like_count"] = Query("created_at"),
+    status: TopicStatus = Query("active"),
     limit: int = Query(10, ge=1, le=50),
     offset: int = Query(0, ge=0)
 ):
@@ -33,6 +36,7 @@ async def list_topics(
         search=search,
         category=category,
         sort=sort,
+        status=status,
         limit=limit,
         offset=offset,
         user_id=user_id
@@ -43,8 +47,10 @@ async def list_topics(
 async def count_topics(
     db: AsyncSession = Depends(get_db),
     search: str | None = Query(None, min_length=1),
-    category: str | None = Query(None)):
-    return await TopicService.count_total(db, category, search)
+    category: str | None = Query(None),
+    status: TopicStatus = Query("active"),
+):
+    return await TopicService.count_total(db, category, search, status)
 
 
 @router.get("/{topic_id}", response_model=TopicRead)

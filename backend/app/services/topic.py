@@ -64,12 +64,13 @@ class TopicService:
         search: str | None = None,
         category: str | None = None,
         sort: str = "created_at",
+        status: str = "active",
         limit: int = 10,
         offset: int = 0,
         user_id: int | None = None,
     ) -> list[TopicRead]:
         db_topics = await TopicCrud.get_all_with_filters(
-            db, search, category, sort, limit, offset
+            db, search, category, sort, status, limit, offset
         )
         topic_ids = [topic.topic_id for topic in db_topics]
         pinned_map: dict[int, int] = {}
@@ -104,9 +105,9 @@ class TopicService:
 
     @staticmethod
     async def count_total(
-        db: AsyncSession, category: str | None, search: str | None
+        db: AsyncSession, category: str | None, search: str | None, status: str
     ) -> int:
-        return await TopicCrud.count_all_with_filters(db, category, search)
+        return await TopicCrud.count_all_with_filters(db, category, search, status)
 
     @staticmethod
     async def get_all_for_admin(
