@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.crud import VoteCrud, TopicCrud
 from app.db.models import Topic
 from app.db.schemas.votes import VoteCreate, VoteRead
+from app.services.topic import TopicService
 
 
 class VoteService:
@@ -16,6 +17,9 @@ class VoteService:
         topic = await TopicCrud.get_by_id(db, vote_data.topic_id)
         if not topic:
             raise HTTPException(status_code=404, detail="토픽을 찾을 수 없습니다.")
+
+        if TopicService.is_closed(topic):
+            raise HTTPException(status_code=400, detail="마감된 토픽입니다.")
 
         if vote_data.vote_index < 0 or vote_data.vote_index >= len(topic.vote_options):
             raise HTTPException(status_code=400, detail="유효하지 않은 투표 항목입니다.")
