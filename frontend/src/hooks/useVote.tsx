@@ -1,7 +1,7 @@
 import { isAxiosError } from 'axios';
 import { useCallback } from 'react';
 import { VOTE_MESSAGES } from '../constants/messages';
-import type { VoteChartPoint, VoteRead, VoteStatsResponse } from '../types';
+import type { VoteChartPoint, VoteCreateRequest, VoteRead, VoteStatsResponse } from '../types';
 import api from '../utils/api';
 import { parseApiDate } from '../utils/date';
 import { useAuth } from './auth-context';
@@ -67,10 +67,11 @@ export const useVote = () => {
       }
 
       try {
-        const response = await api.post<VoteRead>('/votes', {
-          topic_id: topicId,
+        const payload: VoteCreateRequest = {
+          topic_id: Number(topicId),
           vote_index: voteIndex,
-        });
+        };
+        const response = await api.post<VoteRead>('/votes', payload);
 
         if (response.status === 200) {
           showSuccessAlert(VOTE_MESSAGES.submitSuccess);
