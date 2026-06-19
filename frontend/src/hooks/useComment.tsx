@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { COMMENT_MESSAGES, COMMON_MESSAGES } from '../constants/messages';
-import type { CommentRead } from '../types';
+import type { CommentCreateRequest, CommentRead, CommentUpdateRequest } from '../types';
 import api from '../utils/api';
 import { handleAuthError, showErrorAlert, showSuccessAlert } from '../utils/alertUtils';
 
@@ -9,10 +9,11 @@ export const useComment = () => {
 
   const createComment = useCallback(async (topicId: number | string, content: string) => {
     try {
-      const response = await api.post<CommentRead>('/comments', {
-        topic_id: topicId,
+      const payload: CommentCreateRequest = {
+        topic_id: Number(topicId),
         content,
-      });
+      };
+      const response = await api.post<CommentRead>('/comments', payload);
 
       if (isSuccess(response.status)) {
         showSuccessAlert(COMMENT_MESSAGES.createSuccess);
@@ -61,7 +62,8 @@ export const useComment = () => {
 
   const updateComment = useCallback(async (commentId: number | string, content: string) => {
     try {
-      const response = await api.put<CommentRead>(`/comments/${commentId}`, { content });
+      const payload: CommentUpdateRequest = { content };
+      const response = await api.put<CommentRead>(`/comments/${commentId}`, payload);
 
       if (isSuccess(response.status)) {
         showSuccessAlert(COMMENT_MESSAGES.updateSuccess);

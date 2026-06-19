@@ -1,5 +1,5 @@
 import { COMMON_MESSAGES, REPLY_MESSAGES } from '../constants/messages';
-import type { ReplyRead } from '../types';
+import type { ReplyCreateRequest, ReplyRead, ReplyUpdateRequest } from '../types';
 import { useConfirm } from './confirm-context';
 import api from '../utils/api';
 import {
@@ -17,11 +17,12 @@ export const useReply = () => {
     parentReplyId: number | string | null = null
   ) => {
     try {
-      const response = await api.post<ReplyRead>('/replies', {
-        comment_id: commentId,
+      const payload: ReplyCreateRequest = {
+        comment_id: Number(commentId),
         content,
-        parent_reply_id: parentReplyId,
-      });
+        parent_reply_id: parentReplyId === null ? null : Number(parentReplyId),
+      };
+      const response = await api.post<ReplyRead>('/replies', payload);
 
       if (isSuccess(response.status)) return response.data;
       return null;
@@ -58,7 +59,8 @@ export const useReply = () => {
 
   const updateReply = async (replyId: number | string, content: string) => {
     try {
-      const response = await api.put<ReplyRead>(`/replies/${replyId}`, { content });
+      const payload: ReplyUpdateRequest = { content };
+      const response = await api.put<ReplyRead>(`/replies/${replyId}`, payload);
 
       if (isSuccess(response.status)) return response.data;
       return null;
