@@ -15,9 +15,16 @@ const SORT_MAP = {
 } as const;
 
 type SortParam = keyof typeof SORT_MAP;
+type StatusParam = 'active' | 'closed' | 'all';
 export type MainTopic = TopicRead & { originalIndex?: number };
 export type MainVoteHandler = (topicId: number, voteIndex: number) => Promise<void>;
 export type MainPinToggleHandler = (topicId: number, isPinned: boolean) => Promise<void>;
+
+const STATUS_OPTIONS: { label: string; value: StatusParam }[] = [
+  { label: '진행 중', value: 'active' },
+  { label: '마감됨', value: 'closed' },
+  { label: '전체', value: 'all' },
+];
 
 const Main = () => {
   const { loading, fetchTopics, countAllTopics, pinTopic, unpinTopic } = useTopic();
@@ -39,6 +46,10 @@ const Main = () => {
         : rawSort || 'recent';
   const sort: SortParam = sortParam in SORT_MAP ? (sortParam as SortParam) : 'recent';
   const search = searchParams.get('search') || '';
+  const rawStatus = searchParams.get('status') || 'active';
+  const status: StatusParam = ['active', 'closed', 'all'].includes(rawStatus)
+    ? (rawStatus as StatusParam)
+    : 'active';
   const page = parseInt(searchParams.get('page') || '1', 10);
   const topicsPerPage = 16;
 
@@ -49,6 +60,7 @@ const Main = () => {
       offset: (page - 1) * topicsPerPage,
       limit: topicsPerPage,
       sort: apiSort,
+      status,
       category,
       search,
     });
@@ -59,18 +71,29 @@ const Main = () => {
       }));
       setTopics(withIndex);
     }
-  }, [fetchTopics, page, apiSort, category, search]);
+  }, [fetchTopics, page, apiSort, status, category, search]);
 
   useEffect(() => {
-    countAllTopics(category, search).then((count) => {
+    countAllTopics(category, search, status).then((count) => {
       setTotalTopics(count || 0);
     });
     loadTopics();
-  }, [category, search, countAllTopics, loadTopics]);
+  }, [category, search, status, countAllTopics, loadTopics]);
 
   const onPageChange = (p: number) => {
     const updated = new URLSearchParams(searchParams);
     updated.set('page', String(p));
+    setSearchParams(updated);
+  };
+
+  const onStatusChange = (nextStatus: StatusParam) => {
+    const updated = new URLSearchParams(searchParams);
+    if (nextStatus === 'active') {
+      updated.delete('status');
+    } else {
+      updated.set('status', nextStatus);
+    }
+    updated.set('page', '1');
     setSearchParams(updated);
   };
 
@@ -144,6 +167,25 @@ const Main = () => {
   return (
     <div className="w-full px-0 pt-4 pb-10">
       <div className="container mx-auto px-0">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          {STATUS_OPTIONS.map((option) => {
+            const isSelected = status === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => onStatusChange(option.value)}
+                className={`min-h-9 rounded-full border px-3 py-1.5 text-sm font-semibold transition ${
+                  isSelected
+                    ? 'border-slate-900 bg-slate-900 text-white'
+                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-950'
+                }`}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
         <Grid
           topics={topics}
           loading={loading}
