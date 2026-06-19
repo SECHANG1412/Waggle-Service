@@ -233,8 +233,20 @@ export type TopicListParams = {
   search?: string;
 };
 
-export type AdminListParams = {
-  status?: string;
-  date?: string;
+export type AdminDateRangeParams = {
+  start_at?: ISODateTimeString;
+  end_at?: ISODateTimeString;
+};
+
+export type AdminInquiryListParams = AdminDateRangeParams & {
+  status?: InquiryStatus;
+};
+
+export type AdminContentListParams = AdminDateRangeParams;
+
+export type AdminActionLogListParams = AdminDateRangeParams & {
   limit?: number;
+  action?: AdminAction;
+  target_type?: AdminTargetType;
+  admin_user_id?: string;
 };

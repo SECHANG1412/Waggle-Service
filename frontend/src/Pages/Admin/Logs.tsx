@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
-import type { AdminActionLogRead } from '../../types';
+import type { AdminActionLogListParams, AdminActionLogRead } from '../../types';
 
 const ACTION_OPTIONS = [
   { value: '', label: '전체' },
@@ -49,14 +49,6 @@ type LogFilters = {
   adminUserId: string;
   date: DateFilter;
 };
-type LogParams = {
-  limit: number;
-  start_at?: string;
-  end_at?: string;
-  action?: string;
-  target_type?: string;
-  admin_user_id?: string;
-};
 type Snapshot = Record<string, string | number | null | undefined>;
 
 const getString = (value: unknown) => (typeof value === 'string' ? value : '');
@@ -75,7 +67,7 @@ const formatDate = (value?: string | null) => {
   }).format(new Date(value));
 };
 
-const getDateParams = (dateFilter: DateFilter): Partial<Pick<LogParams, 'start_at' | 'end_at'>> => {
+const getDateParams = (dateFilter: DateFilter): AdminActionLogListParams => {
   if (dateFilter === 'all') return {};
   const now = new Date();
   const start = new Date(now);
@@ -197,7 +189,7 @@ const AdminLogs = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const params = useMemo(() => {
-    const nextParams: LogParams = { limit: 100, ...getDateParams(filters.date) };
+    const nextParams: AdminActionLogListParams = { limit: 100, ...getDateParams(filters.date) };
     if (filters.action) nextParams.action = filters.action;
     if (filters.targetType) nextParams.target_type = filters.targetType;
     if (filters.adminUserId.trim()) {
