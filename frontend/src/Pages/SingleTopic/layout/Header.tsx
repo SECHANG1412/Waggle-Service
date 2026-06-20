@@ -8,8 +8,6 @@ type HeaderProps = {
   category: string;
   authorName: string | null;
   createdAt: string;
-  expiresAt: string | null;
-  isClosed: boolean;
   commentCount: number;
   liked: boolean;
   likes: number;
@@ -24,8 +22,6 @@ const Header = ({
   category,
   authorName,
   createdAt,
-  expiresAt,
-  isClosed,
   commentCount,
   liked,
   likes,
@@ -34,13 +30,6 @@ const Header = ({
   actions,
 }: HeaderProps) => {
   const formattedDate = formatDateTime(createdAt, 'ko-KR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-  const formattedExpiresAt = formatDateTime(expiresAt, 'ko-KR', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -96,16 +85,6 @@ const Header = ({
         <span className="inline-flex items-center gap-1.5">
           <FaRegCalendarAlt className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           <span>작성 {formattedDate}</span>
-        </span>
-        <span
-          className={`inline-flex items-center gap-1.5 font-semibold ${
-            isClosed ? 'text-slate-600' : 'text-blue-700'
-          }`}
-        >
-          <FaRegCalendarAlt className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          <span>
-            마감 {formattedExpiresAt || '마감 시간 없음'}
-          </span>
         </span>
         <span className="inline-flex items-center gap-1.5">
           <FaRegCommentDots className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
