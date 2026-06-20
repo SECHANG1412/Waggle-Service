@@ -197,6 +197,8 @@ const SingleTopic = () => {
             category={topic.category}
             authorName={topic.author_name}
             createdAt={topic.created_at}
+            expiresAt={topic.expires_at}
+            isClosed={topic.is_closed}
             commentCount={commentCount}
             liked={topic.has_liked}
             likes={topic.like_count}
