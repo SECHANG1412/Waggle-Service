@@ -82,11 +82,6 @@ const TopicCard = ({ topic, onVote, onPinToggle, isAuthLoading }: TopicCardProps
               Pinned
             </span>
           )}
-          {isClosed && (
-            <span className="rounded-full border border-slate-300 bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-700">
-              마감됨
-            </span>
-          )}
           <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[11px] font-semibold text-slate-700">
             {topic.category || '카테고리 없음'}
           </span>
@@ -128,12 +123,18 @@ const TopicCard = ({ topic, onVote, onPinToggle, isAuthLoading }: TopicCardProps
       )}
 
       <div className="mt-3 border-t border-slate-200 pt-3">
-        {isClosed && (
-          <p className="mb-2 rounded-lg border border-slate-200 bg-white/70 px-3 py-2 text-xs font-semibold text-slate-600">
-            마감된 토픽입니다
-            {formattedExpiresAt && <span className="ml-1 font-medium">· {formattedExpiresAt} 마감</span>}
-          </p>
-        )}
+        <p
+          className={`mb-2 rounded-lg border px-3 py-2 text-xs font-semibold ${
+            isClosed
+              ? 'border-slate-200 bg-white/70 text-slate-600'
+              : 'border-blue-100 bg-blue-50 text-blue-700'
+          }`}
+        >
+          {isClosed ? '마감된 토픽입니다' : '마감'}
+          <span className="ml-1 font-medium">
+            {formattedExpiresAt ? `· ${formattedExpiresAt}${isClosed ? ' 마감' : ''}` : '· 마감 시간 없음'}
+          </span>
+        </p>
         <div className="space-y-2">
           {visibleOptions.map((opt, idx) => (
             <OptionButton
