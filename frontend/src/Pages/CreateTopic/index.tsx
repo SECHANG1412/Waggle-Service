@@ -20,15 +20,19 @@ const EXPIRATION_PRESET_DAYS: Record<Exclude<ExpirationPreset, 'custom'>, number
   '14d': 14,
 };
 
-const toDatetimeLocalValue = (date: Date) => {
+const DEFAULT_EXPIRATION_TIME = '23:59';
+
+const toDateInputValue = (date: Date) => {
   const offsetMs = date.getTimezoneOffset() * 60 * 1000;
-  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
+  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 10);
 };
 
-const getPresetExpiration = (preset: Exclude<ExpirationPreset, 'custom'>) => {
+const combineDateTime = (dateValue: string, timeValue: string) => `${dateValue}T${timeValue}`;
+
+const getPresetDate = (preset: Exclude<ExpirationPreset, 'custom'>) => {
   const date = new Date();
   date.setDate(date.getDate() + EXPIRATION_PRESET_DAYS[preset]);
-  return toDatetimeLocalValue(date);
+  return toDateInputValue(date);
 };
 
 export type CreateTopicFormData = {
@@ -48,27 +52,36 @@ const CreateTopic = () => {
     description: '',
     vote_options: ['', ''],
     category: '',
-    expires_at: getPresetExpiration('7d'),
+    expires_at: combineDateTime(getPresetDate('7d'), DEFAULT_EXPIRATION_TIME),
   });
   const [expirationPreset, setExpirationPreset] = useState<ExpirationPreset>('7d');
+  const [expirationTime, setExpirationTime] = useState(DEFAULT_EXPIRATION_TIME);
 
   const onChange = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   }, []);
 
-  const minExpirationValue = toDatetimeLocalValue(new Date());
+  const minExpirationDate = toDateInputValue(new Date());
 
   const onExpirationPresetChange = useCallback((preset: ExpirationPreset) => {
     setExpirationPreset(preset);
     if (preset === 'custom') return;
-    setFormData((prev) => ({ ...prev, expires_at: getPresetExpiration(preset) }));
-  }, []);
+    setFormData((prev) => ({ ...prev, expires_at: combineDateTime(getPresetDate(preset), expirationTime) }));
+  }, [expirationTime]);
 
-  const onCustomExpirationChange = useCallback((value: string) => {
+  const onCustomExpirationDateChange = useCallback((value: string) => {
     setExpirationPreset('custom');
-    setFormData((prev) => ({ ...prev, expires_at: value }));
-  }, []);
+    setFormData((prev) => ({ ...prev, expires_at: combineDateTime(value, expirationTime) }));
+  }, [expirationTime]);
+
+  const onExpirationTimeChange = useCallback((value: string) => {
+    setExpirationTime(value);
+    setFormData((prev) => {
+      const [dateValue] = prev.expires_at.split('T');
+      return { ...prev, expires_at: combineDateTime(dateValue || minExpirationDate, value) };
+    });
+  }, [minExpirationDate]);
 
   const onSubmit = useCallback(
     async (e: FormEvent<HTMLFormElement>) => {
@@ -148,11 +161,13 @@ const CreateTopic = () => {
           <VoteOptionInputs formData={formData} onOptionChange={onOptionChange} />
           <CategorySelect categories={CATEGORIES} value={formData.category} onChange={onChange} />
           <ExpirationSelect
-            value={formData.expires_at}
+            dateValue={formData.expires_at.split('T')[0] || ''}
+            timeValue={expirationTime}
             preset={expirationPreset}
-            minValue={minExpirationValue}
+            minDate={minExpirationDate}
             onPresetChange={onExpirationPresetChange}
-            onCustomChange={onCustomExpirationChange}
+            onCustomDateChange={onCustomExpirationDateChange}
+            onTimeChange={onExpirationTimeChange}
           />
           <SubmitButton label="토픽 만들기" />
         </form>

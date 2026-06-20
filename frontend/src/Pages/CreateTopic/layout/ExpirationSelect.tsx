@@ -1,11 +1,13 @@
 type ExpirationPreset = '1d' | '3d' | '7d' | '14d' | 'custom';
 
 type ExpirationSelectProps = {
-  value: string;
+  dateValue: string;
+  timeValue: string;
   preset: ExpirationPreset;
-  minValue: string;
+  minDate: string;
   onPresetChange: (preset: ExpirationPreset) => void;
-  onCustomChange: (value: string) => void;
+  onCustomDateChange: (value: string) => void;
+  onTimeChange: (value: string) => void;
 };
 
 const PRESET_OPTIONS: { label: string; value: ExpirationPreset }[] = [
@@ -16,12 +18,16 @@ const PRESET_OPTIONS: { label: string; value: ExpirationPreset }[] = [
   { label: '직접 설정', value: 'custom' },
 ];
 
+const TIME_OPTIONS = ['00:00', '12:00', '18:00', '23:59'];
+
 const ExpirationSelect = ({
-  value,
+  dateValue,
+  timeValue,
   preset,
-  minValue,
+  minDate,
   onPresetChange,
-  onCustomChange,
+  onCustomDateChange,
+  onTimeChange,
 }: ExpirationSelectProps) => (
   <div>
     <label className="mb-2 block text-sm font-semibold text-slate-700">
@@ -49,18 +55,44 @@ const ExpirationSelect = ({
     </div>
 
     {preset === 'custom' && (
-      <input
-        type="datetime-local"
-        value={value}
-        min={minValue}
-        onChange={(event) => onCustomChange(event.target.value)}
-        required
-        className="mt-3 w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300"
-      />
+      <div className="mt-3">
+        <label className="mb-1.5 block text-xs font-semibold text-slate-600">마감 날짜</label>
+        <input
+          type="date"
+          value={dateValue}
+          min={minDate}
+          onChange={(event) => onCustomDateChange(event.target.value)}
+          required
+          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300"
+        />
+      </div>
     )}
 
+    <div className="mt-3">
+      <p className="mb-1.5 text-xs font-semibold text-slate-600">마감 시각</p>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {TIME_OPTIONS.map((time) => {
+          const isSelected = timeValue === time;
+          return (
+            <button
+              key={time}
+              type="button"
+              onClick={() => onTimeChange(time)}
+              className={`min-h-10 rounded-lg border px-3 py-2 text-sm font-semibold transition ${
+                isSelected
+                  ? 'border-blue-600 bg-blue-600 text-white'
+                  : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+              }`}
+            >
+              {time}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+
     <p className="mt-1.5 text-xs text-slate-500">
-      마감 시간이 지나면 투표가 자동으로 종료되고 결과만 볼 수 있습니다.
+      기본값은 7일 뒤 23:59입니다. 마감 시간이 지나면 투표가 자동으로 종료되고 결과만 볼 수 있습니다.
     </p>
   </div>
 );
