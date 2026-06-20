@@ -8,7 +8,7 @@ import { useTopic } from '../../hooks/useTopic';
 import { useVote } from '../../hooks/useVote';
 import { useConfirm } from '../../hooks/confirm-context';
 import { showLoginRequiredAlert } from '../../utils/alertUtils';
-import { formatDateTime } from '../../utils/date';
+import { formatDateTime, parseApiDate } from '../../utils/date';
 import Comments from './Comments';
 import Header from './layout/Header';
 import InfoBar from './layout/InfoBar';
@@ -20,11 +20,36 @@ const Chart = lazy(() => import('./Chart'));
 type FetchState = 'idle' | 'loading' | 'not-found' | 'error' | 'ready';
 type VoteColorKey = keyof typeof voteColors;
 
+const SECOND_MS = 1000;
+const MINUTE_MS = 60 * SECOND_MS;
+const HOUR_MS = 60 * MINUTE_MS;
+const DAY_MS = 24 * HOUR_MS;
+
 const ChartFallback = () => (
   <section className="h-[260px] rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:h-[420px] sm:p-5">
     <div className="h-full animate-pulse rounded-md bg-slate-100" aria-hidden="true" />
   </section>
 );
+
+const getRemainingMs = (expiresAt: string | null, now: number) => {
+  const expiresAtDate = parseApiDate(expiresAt);
+  if (!expiresAtDate || Number.isNaN(expiresAtDate.getTime())) return null;
+  return expiresAtDate.getTime() - now;
+};
+
+const formatCountdown = (remainingMs: number | null) => {
+  if (remainingMs === null) return '';
+  const safeMs = Math.max(0, remainingMs);
+  const days = Math.floor(safeMs / DAY_MS);
+  const hours = Math.floor((safeMs % DAY_MS) / HOUR_MS);
+  const minutes = Math.floor((safeMs % HOUR_MS) / MINUTE_MS);
+  const seconds = Math.floor((safeMs % MINUTE_MS) / SECOND_MS);
+
+  if (days >= 1) return `${days}일 ${hours}시간`;
+  if (hours >= 1) return `${hours}시간 ${minutes}분 ${seconds}초`;
+  if (minutes >= 1) return `${minutes}분 ${seconds}초`;
+  return `${seconds}초`;
+};
 
 const SingleTopic = () => {
   const { id } = useParams();
@@ -38,6 +63,7 @@ const SingleTopic = () => {
   const [topic, setTopic] = useState<TopicRead | null>(null);
   const [loading, setLoading] = useState(false);
   const [fetchState, setFetchState] = useState<FetchState>('idle');
+  const [now, setNow] = useState(() => Date.now());
 
   const fetchTopic = useCallback(async () => {
     if (!id) {
@@ -74,6 +100,14 @@ const SingleTopic = () => {
     fetchTopic();
   }, [fetchTopic]);
 
+  useEffect(() => {
+    if (!topic?.expires_at || topic.is_closed) return;
+    const timerId = window.setInterval(() => {
+      setNow(Date.now());
+    }, SECOND_MS);
+    return () => window.clearInterval(timerId);
+  }, [topic?.expires_at, topic?.is_closed]);
+
   const onLikeClick = async () => {
     if (!id) return;
     if (isAuthLoading) return;
@@ -95,6 +129,8 @@ const SingleTopic = () => {
   const onVote = async (index: number) => {
     if (topic?.has_voted) return;
     if (topic?.is_closed) return;
+    const currentRemainingMs = topic ? getRemainingMs(topic.expires_at, Date.now()) : null;
+    if (currentRemainingMs !== null && currentRemainingMs <= 0) return;
     if (!id) return;
     if (isAuthLoading) return;
     if (!isAuthenticated) {
@@ -158,6 +194,10 @@ const SingleTopic = () => {
 
   const commentCount = topic.comment_count ?? 0;
   const colors = voteColors[topic.vote_options.length as VoteColorKey] || [];
+  const remainingMs = getRemainingMs(topic.expires_at, now);
+  const isLocallyClosed = remainingMs !== null && remainingMs <= 0;
+  const isClosed = topic.is_closed || isLocallyClosed;
+  const countdownText = formatCountdown(remainingMs);
   const formattedExpiresAt = formatDateTime(topic.expires_at, 'ko-KR', {
     year: 'numeric',
     month: 'long',
@@ -168,8 +208,27 @@ const SingleTopic = () => {
   const votePanel = (
     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
       <h2 className="mb-3 text-lg font-bold text-slate-950 sm:mb-4 sm:text-xl">
-        {topic.is_closed || topic.has_voted ? '투표 결과' : '지금 투표하기'}
+        {isClosed || topic.has_voted ? '투표 결과' : '지금 투표하기'}
       </h2>
+      <div
+        className={`mb-4 rounded-2xl border px-4 py-3 text-center ${
+          isClosed
+            ? 'border-slate-200 bg-slate-100 text-slate-700'
+            : 'border-blue-100 bg-blue-50 text-blue-800'
+        }`}
+      >
+        <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+          {isClosed ? '마감 상태' : '마감까지'}
+        </p>
+        <p className="mt-1 text-2xl font-extrabold leading-tight tracking-normal sm:text-3xl">
+          {isClosed ? '마감된 토픽입니다' : countdownText || '마감 시간 없음'}
+        </p>
+        {formattedExpiresAt && (
+          <p className="mt-1 text-xs font-semibold text-slate-500 sm:text-sm">
+            {formattedExpiresAt} 마감
+          </p>
+        )}
+      </div>
       <VoteButtons
         voteOptions={topic.vote_options}
         voteResults={topic.vote_results}
@@ -179,10 +238,10 @@ const SingleTopic = () => {
         onVote={onVote}
         colors={colors}
         isAuthLoading={isAuthLoading}
-        isClosed={topic.is_closed}
+        isClosed={isClosed}
       />
       <p className="mt-3 text-center text-xs font-medium text-slate-500 sm:mt-4 sm:text-sm">
-        {topic.is_closed ? '마감된 토픽은 더 이상 투표할 수 없습니다.' : '한 번 투표하면 변경할 수 없습니다.'}
+        {isClosed ? '마감된 토픽은 더 이상 투표할 수 없습니다.' : '한 번 투표하면 변경할 수 없습니다.'}
       </p>
     </section>
   );
@@ -197,8 +256,6 @@ const SingleTopic = () => {
             category={topic.category}
             authorName={topic.author_name}
             createdAt={topic.created_at}
-            expiresAt={topic.expires_at}
-            isClosed={topic.is_closed}
             commentCount={commentCount}
             liked={topic.has_liked}
             likes={topic.like_count}
@@ -215,16 +272,6 @@ const SingleTopic = () => {
               ) : null
             }
           />
-          {topic.is_closed && (
-            <section className="rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-700 shadow-sm sm:px-5">
-              <p className="font-bold">마감된 토픽입니다.</p>
-              <p className="mt-1 leading-6">
-                {formattedExpiresAt
-                  ? `${formattedExpiresAt}에 마감되어 더 이상 투표할 수 없습니다.`
-                  : '더 이상 투표할 수 없습니다.'}
-              </p>
-            </section>
-          )}
 
           <div className="lg:hidden">{votePanel}</div>
 
