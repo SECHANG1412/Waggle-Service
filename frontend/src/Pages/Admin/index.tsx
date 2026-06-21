@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
 import type { AdminActionLogRead, CommentAdminRead, InquiryRead, InquiryStatus, TopicAdminRead } from '../../types';
-import { formatDateTime } from '../../utils/date';
+import { formatKoreanDateTime, parseApiDate } from '../../utils/date';
 
 const ACTION_LABELS = {
   UPDATE_INQUIRY_STATUS: '문의 상태 변경',
@@ -20,15 +20,6 @@ const STATUS_LABELS = {
 };
 
 type Message = { type: 'success' | 'error'; text: string };
-
-const formatDate = (value?: string | null) => {
-  if (!value) return '-';
-  return formatDateTime(value, 'ko-KR', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'Asia/Seoul',
-  });
-};
 
 type StatCardProps = {
   label: string;
@@ -106,7 +97,11 @@ const Admin = () => {
 
   const recentInquiries = useMemo(() => {
     return [...inquiries]
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .sort(
+        (a, b) =>
+          (parseApiDate(b.created_at)?.getTime() ?? 0) -
+          (parseApiDate(a.created_at)?.getTime() ?? 0)
+      )
       .slice(0, 5);
   }, [inquiries]);
 
@@ -160,7 +155,7 @@ const Admin = () => {
                     <div className="min-w-0">
                       <p className="break-words text-sm font-semibold text-slate-900">{inquiry.title}</p>
                       <p className="mt-1 text-xs text-slate-500">
-                        {inquiry.name} · {formatDate(inquiry.created_at)}
+                        {inquiry.name} · {formatKoreanDateTime(inquiry.created_at)}
                       </p>
                     </div>
                     <span className="shrink-0 rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
@@ -199,7 +194,7 @@ const Admin = () => {
                   </div>
                   <p className="mt-2 break-words text-sm leading-6 text-slate-700">{log.reason}</p>
                   <p className="mt-1 text-xs text-slate-500">
-                    관리자 번호 {log.admin_user_id} · {formatDate(log.created_at)}
+                    관리자 번호 {log.admin_user_id} · {formatKoreanDateTime(log.created_at)}
                   </p>
                 </li>
               ))}

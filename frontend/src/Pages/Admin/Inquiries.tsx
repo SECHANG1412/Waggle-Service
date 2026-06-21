@@ -9,7 +9,7 @@ import type {
   InquiryStatus,
   InquiryStatusUpdateRequest,
 } from '../../types';
-import { formatDateTime } from '../../utils/date';
+import { formatKoreanDateTime } from '../../utils/date';
 
 const STATUS_OPTIONS = [
   { value: '', label: '전체' },
@@ -40,15 +40,6 @@ const STATUS_STYLES = {
 type DateFilter = 'all' | 'today' | '7d' | '30d';
 type StatusFilter = '' | InquiryStatus;
 type Message = { type: 'success' | 'error'; text: string };
-
-const formatDate = (value?: string | null) => {
-  if (!value) return '-';
-  return formatDateTime(value, 'ko-KR', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'Asia/Seoul',
-  });
-};
 
 const getDateParams = (dateFilter: DateFilter): AdminInquiryListParams => {
   if (dateFilter === 'all') return {};
@@ -304,7 +295,7 @@ const AdminInquiries = () => {
                         <StatusBadge status={inquiry.status} />
                       </div>
                       <p className="mt-2 text-xs text-slate-500">
-                        작성일 {formatDate(inquiry.created_at)}
+                        작성일 {formatKoreanDateTime(inquiry.created_at)}
                       </p>
                     </button>
                   </li>
@@ -341,11 +332,11 @@ const AdminInquiries = () => {
                   </div>
                   <div>
                     <dt className="font-semibold text-slate-800">작성일</dt>
-                    <dd>{formatDate(selectedInquiry.created_at)}</dd>
+                    <dd>{formatKoreanDateTime(selectedInquiry.created_at)}</dd>
                   </div>
                   <div>
                     <dt className="font-semibold text-slate-800">수정일</dt>
-                    <dd>{formatDate(selectedInquiry.updated_at)}</dd>
+                    <dd>{formatKoreanDateTime(selectedInquiry.updated_at)}</dd>
                   </div>
                 </dl>
               </div>
