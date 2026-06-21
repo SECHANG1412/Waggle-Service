@@ -32,3 +32,13 @@ export const formatDateOnly = (
 
   return date.toLocaleDateString(locale, options);
 };
+
+export const formatKoreanDateTime = (value: DateInput, fallback = "-") => {
+  const formatted = formatDateTime(value, "ko-KR", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Seoul",
+  });
+
+  return formatted || fallback;
+};

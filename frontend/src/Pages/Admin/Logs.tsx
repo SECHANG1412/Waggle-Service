@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
 import type { AdminActionLogListParams, AdminActionLogRead } from '../../types';
-import { formatDateTime } from '../../utils/date';
+import { formatKoreanDateTime } from '../../utils/date';
 
 const ACTION_OPTIONS = [
   { value: '', label: '전체' },
@@ -57,15 +57,6 @@ const getDisplayValue = (value: unknown) => {
   if (typeof value === 'string' || typeof value === 'number') return value;
   if (value === null || value === undefined) return '-';
   return String(value);
-};
-
-const formatDate = (value?: string | null) => {
-  if (!value) return '-';
-  return formatDateTime(value, 'ko-KR', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'Asia/Seoul',
-  });
 };
 
 const getDateParams = (dateFilter: DateFilter): AdminActionLogListParams => {
@@ -330,7 +321,7 @@ const AdminLogs = () => {
                     <p className="mt-2 break-words text-sm font-semibold text-slate-900">
                       {buildLogSentence(log)}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">{formatDate(log.created_at)}</p>
+                    <p className="mt-1 text-xs text-slate-500">{formatKoreanDateTime(log.created_at)}</p>
                   </div>
                   <p className="text-xs text-slate-500">로그 번호 {log.log_id}</p>
                 </div>

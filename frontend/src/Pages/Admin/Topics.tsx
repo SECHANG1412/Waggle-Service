@@ -1,14 +1,10 @@
 import ContentModerationPage from './ContentModerationPage';
 import type { TopicAdminRead } from '../../types';
-import { formatDateTime } from '../../utils/date';
+import { formatKoreanDateTime } from '../../utils/date';
 
 const formatExpiration = (value: string | null) => {
   if (!value) return '마감 없음';
-  return formatDateTime(value, 'ko-KR', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'Asia/Seoul',
-  });
+  return formatKoreanDateTime(value);
 };
 
 const AdminTopics = () => (

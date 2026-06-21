@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
 import type { AdminContentListParams, CommentModerationRequest, TopicModerationRequest } from '../../types';
-import { formatDateTime } from '../../utils/date';
+import { formatKoreanDateTime } from '../../utils/date';
 
 const DATE_OPTIONS = [
   { value: 'all', label: '전체 기간' },
@@ -32,15 +32,6 @@ export type ContentModerationPageProps<TItem extends ContentModerationItem> = {
   getItemDescription: (item: TItem) => ReactNode;
   getItemMeta: (item: TItem) => ModerationMeta[];
   deleteEndpoint: (itemId: Id) => string;
-};
-
-const formatDate = (value?: string | null) => {
-  if (!value) return '-';
-  return formatDateTime(value, 'ko-KR', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'Asia/Seoul',
-  });
 };
 
 const getDateParams = (dateFilter: DateFilter): AdminContentListParams => {
@@ -194,7 +185,7 @@ const ContentModerationPage = <TItem extends ContentModerationItem>({
                         ))}
                         <div>
                           <dt className="font-semibold text-slate-700">작성일</dt>
-                          <dd>{formatDate(item.created_at)}</dd>
+                          <dd>{formatKoreanDateTime(item.created_at)}</dd>
                         </div>
                       </dl>
                     </div>

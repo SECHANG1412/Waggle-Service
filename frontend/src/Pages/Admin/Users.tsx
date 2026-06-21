@@ -2,18 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { UserRead } from '../../types';
 import api from '../../utils/api';
-import { formatDateTime } from '../../utils/date';
+import { formatKoreanDateTime } from '../../utils/date';
 
 type Message = { type: 'error'; text: string };
-
-const formatDate = (value?: string | null) => {
-  if (!value) return '-';
-  return formatDateTime(value, 'ko-KR', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'Asia/Seoul',
-  });
-};
 
 const AdminUsers = () => {
   const [users, setUsers] = useState<UserRead[]>([]);
@@ -115,7 +106,7 @@ const AdminUsers = () => {
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-slate-500">
-                      {formatDate(user.created_at)}
+                      {formatKoreanDateTime(user.created_at)}
                     </td>
                   </tr>
                 ))}
