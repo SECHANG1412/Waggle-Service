@@ -97,7 +97,7 @@ const Profile = () => {
         const mapped = {
           name: data.username,
           email: data.email,
-          joinedAt: data.created_at?.slice(0, 10) || '',
+          joinedAt: data.created_at || '',
         };
         setUser(mapped);
         setForm({ name: mapped.name, email: mapped.email });
@@ -229,7 +229,7 @@ const Profile = () => {
       setUser({
         name: res.data.username,
         email: res.data.email,
-        joinedAt: res.data.created_at?.slice(0, 10) || user?.joinedAt || '',
+        joinedAt: res.data.created_at || user?.joinedAt || '',
       });
       setEditMode(false);
       showSuccessAlert(PROFILE_MESSAGES.updateSuccess);
