@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from app.db.models import Reply
 from app.db.crud import UserCrud, ReplyCrud, LikeCrud, CommentCrud
 from app.db.schemas.replys import ReplyRead, ReplyCreate, ReplyUpdate
+from app.services.notification import NotificationService
 
 
 class ReplyService:
@@ -15,6 +16,7 @@ class ReplyService:
             raise HTTPException(status_code=404, detail="Comment not found")
         if getattr(comment, "is_deleted", False):
             raise HTTPException(status_code=400, detail="Cannot reply to a deleted comment")
+        parent_reply = None
         if reply_data.parent_reply_id is not None:
             parent_reply = await ReplyCrud.get_by_id(db, reply_data.parent_reply_id)
             if not parent_reply:
@@ -26,6 +28,39 @@ class ReplyService:
                 )
         try:
             reply = await ReplyCrud.create(db, reply_data, user_id)
+            actor = await UserCrud.get_by_id(db, user_id)
+            notified_user_ids: set[int] = set()
+
+            if comment.user_id != user_id:
+                await NotificationService.create_if_not_self(
+                    db,
+                    user_id=comment.user_id,
+                    type="comment_reply",
+                    actor_user_id=user_id,
+                    target_type="Reply",
+                    target_id=reply.reply_id,
+                    topic_id=comment.topic_id,
+                    message=f"{actor.username if actor else '누군가'}님이 내 댓글에 답글을 남겼습니다.",
+                    link=f"/topic/{comment.topic_id}",
+                )
+                notified_user_ids.add(comment.user_id)
+
+            if (
+                parent_reply
+                and parent_reply.user_id != user_id
+                and parent_reply.user_id not in notified_user_ids
+            ):
+                await NotificationService.create_if_not_self(
+                    db,
+                    user_id=parent_reply.user_id,
+                    type="reply_reply",
+                    actor_user_id=user_id,
+                    target_type="Reply",
+                    target_id=reply.reply_id,
+                    topic_id=comment.topic_id,
+                    message=f"{actor.username if actor else '누군가'}님이 내 답글에 답글을 남겼습니다.",
+                    link=f"/topic/{comment.topic_id}",
+                )
             await db.commit()
             await db.refresh(reply)
             return await ReplyService._build_reply_read(db, reply, user_id)

@@ -11,6 +11,7 @@ from app.db.schemas.comments import (
 )
 from app.db.schemas.replys import ReplyRead
 from app.services.admin_action_log import AdminActionLogService
+from app.services.notification import NotificationService
 from app.services.reply import ReplyService
 
 
@@ -24,6 +25,18 @@ class CommentService:
             raise HTTPException(status_code=404, detail="Topic not found")
         try:
             comment = await CommentCrud.create(db, comment_data, user_id)
+            actor = await UserCrud.get_by_id(db, user_id)
+            await NotificationService.create_if_not_self(
+                db,
+                user_id=topic.user_id,
+                type="topic_comment",
+                actor_user_id=user_id,
+                target_type="Comment",
+                target_id=comment.comment_id,
+                topic_id=topic.topic_id,
+                message=f"{actor.username if actor else '누군가'}님이 내 토픽에 댓글을 남겼습니다.",
+                link=f"/topic/{topic.topic_id}",
+            )
             await db.commit()
             await db.refresh(comment)
             return await CommentService._build_comment_read(db, comment, user_id)
@@ -156,6 +169,17 @@ class CommentService:
                 before_value=snapshot,
                 after_value={"deleted": True},
                 reason=update.reason,
+            )
+            await NotificationService.create_if_not_self(
+                db,
+                user_id=comment.user_id,
+                type="content_moderation",
+                actor_user_id=admin_user_id,
+                target_type="Comment",
+                target_id=comment_id,
+                topic_id=comment.topic_id,
+                message="작성한 댓글이 관리자에 의해 삭제되었습니다.",
+                link="/profile",
             )
             await CommentCrud.delete_by_id(db, comment_id)
             await db.commit()

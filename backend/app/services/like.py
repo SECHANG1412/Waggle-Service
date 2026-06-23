@@ -1,7 +1,8 @@
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.db.crud import LikeCrud, TopicCrud, CommentCrud, ReplyCrud
+from app.db.crud import LikeCrud, TopicCrud, CommentCrud, ReplyCrud, UserCrud
+from app.services.notification import NotificationService
 
 
 class LikeService:
@@ -49,7 +50,19 @@ class LikeService:
                 await LikeCrud.delete_topic_like(db, like.like_id)
                 result = False
             else:
-                await LikeCrud.create_topic_like(db, user_id, topic_id)
+                created_like = await LikeCrud.create_topic_like(db, user_id, topic_id)
+                actor = await UserCrud.get_by_id(db, user_id)
+                await NotificationService.create_if_not_self(
+                    db,
+                    user_id=topic.user_id,
+                    type="topic_like",
+                    actor_user_id=user_id,
+                    target_type="TopicLike",
+                    target_id=created_like.like_id,
+                    topic_id=topic.topic_id,
+                    message=f"{actor.username if actor else '누군가'}님이 내 토픽을 좋아합니다.",
+                    link=f"/topic/{topic.topic_id}",
+                )
                 result = True
             await db.commit()
             return result
@@ -75,7 +88,19 @@ class LikeService:
                 await LikeCrud.delete_comment_like(db, like.like_id)
                 result = False
             else:
-                await LikeCrud.create_comment_like(db, user_id, comment_id)
+                created_like = await LikeCrud.create_comment_like(db, user_id, comment_id)
+                actor = await UserCrud.get_by_id(db, user_id)
+                await NotificationService.create_if_not_self(
+                    db,
+                    user_id=comment.user_id,
+                    type="comment_like",
+                    actor_user_id=user_id,
+                    target_type="CommentLike",
+                    target_id=created_like.like_id,
+                    topic_id=comment.topic_id,
+                    message=f"{actor.username if actor else '누군가'}님이 내 댓글을 좋아합니다.",
+                    link=f"/topic/{comment.topic_id}",
+                )
                 result = True
             await db.commit()
             return result
@@ -99,7 +124,20 @@ class LikeService:
                 await LikeCrud.delete_reply_like(db, like.like_id)
                 result = False
             else:
-                await LikeCrud.create_reply_like(db, user_id, reply_id)
+                created_like = await LikeCrud.create_reply_like(db, user_id, reply_id)
+                comment = await CommentCrud.get_by_id(db, reply.comment_id)
+                actor = await UserCrud.get_by_id(db, user_id)
+                await NotificationService.create_if_not_self(
+                    db,
+                    user_id=reply.user_id,
+                    type="reply_like",
+                    actor_user_id=user_id,
+                    target_type="ReplyLike",
+                    target_id=created_like.like_id,
+                    topic_id=comment.topic_id if comment else None,
+                    message=f"{actor.username if actor else '누군가'}님이 내 답글을 좋아합니다.",
+                    link=f"/topic/{comment.topic_id}" if comment else "/profile",
+                )
                 result = True
             await db.commit()
             return result
