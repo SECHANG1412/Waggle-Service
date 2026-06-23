@@ -231,6 +231,35 @@ export type AdminActionLogRead = {
   created_at: ISODateTimeString;
 };
 
+export type NotificationType =
+  | 'topic_comment'
+  | 'comment_reply'
+  | 'reply_reply'
+  | 'topic_like'
+  | 'comment_like'
+  | 'reply_like'
+  | 'inquiry_status'
+  | 'content_moderation'
+  | string;
+
+export type NotificationRead = {
+  notification_id: Id;
+  user_id: Id;
+  type: NotificationType;
+  actor_user_id: Id | null;
+  target_type: string;
+  target_id: Id;
+  topic_id: Id | null;
+  message: string;
+  link: string;
+  is_read: boolean;
+  created_at: ISODateTimeString;
+};
+
+export type NotificationUnreadCount = {
+  count: number;
+};
+
 export type TopicListParams = {
   sort?: string;
   status?: 'active' | 'closed' | 'all';
