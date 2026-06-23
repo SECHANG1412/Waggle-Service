@@ -7,3 +7,4 @@ from .like import TopicLike, CommentLike, ReplyLike
 from .pinned_topic import PinnedTopic
 from .inquiry import Inquiry
 from .admin_action_log import AdminActionLog
+from .notification import Notification

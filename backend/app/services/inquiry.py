@@ -10,6 +10,7 @@ from app.db.schemas.inquiries import (
     MyInquiryRead,
 )
 from app.services.admin_action_log import AdminActionLogService
+from app.services.notification import NotificationService
 
 
 class InquiryService:
@@ -94,6 +95,18 @@ class InquiryService:
                 after_value={"status": update.status},
                 reason=update.reason,
             )
+            if inquiry.user_id:
+                await NotificationService.create_if_not_self(
+                    db,
+                    user_id=inquiry.user_id,
+                    type="inquiry_status",
+                    actor_user_id=admin_user_id,
+                    target_type="Inquiry",
+                    target_id=inquiry_id,
+                    topic_id=None,
+                    message=f"문의 상태가 {update.status}로 변경되었습니다.",
+                    link="/profile",
+                )
             await db.commit()
             await db.refresh(updated)
             return updated

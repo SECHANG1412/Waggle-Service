@@ -20,6 +20,7 @@ from app.db.schemas.topics import (
     TopicRead,
 )
 from app.services.admin_action_log import AdminActionLogService
+from app.services.notification import NotificationService
 
 
 class TopicService:
@@ -165,6 +166,17 @@ class TopicService:
                 before_value=snapshot,
                 after_value={"deleted": True},
                 reason=update.reason,
+            )
+            await NotificationService.create_if_not_self(
+                db,
+                user_id=topic.user_id,
+                type="content_moderation",
+                actor_user_id=admin_user_id,
+                target_type="Topic",
+                target_id=topic_id,
+                topic_id=topic_id,
+                message="작성한 토픽이 관리자에 의해 삭제되었습니다.",
+                link="/profile",
             )
             deleted = await TopicCrud.delete_by_id(db, topic_id)
             await db.commit()

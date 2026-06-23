@@ -8,7 +8,18 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import async_engine, get_db
 from app.db import models as models  # keep model registration side effects
-from app.routers import user, topic, vote, comment, reply, like, oauth, inquiry, admin
+from app.routers import (
+    admin,
+    comment,
+    inquiry,
+    like,
+    notification,
+    oauth,
+    reply,
+    topic,
+    user,
+    vote,
+)
 from app.middleware.admin_auth import AdminBasicAuthMiddleware
 from app.middleware.token_refresh import TokenRefreshMiddleware
 from app.middleware.csrf import CSRFMiddleware
@@ -71,6 +82,7 @@ app.include_router(reply.router)
 app.include_router(like.router)
 app.include_router(inquiry.router)
 app.include_router(admin.router)
+app.include_router(notification.router)
 
 
 @app.get("/metrics")
