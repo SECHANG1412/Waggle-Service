@@ -6,6 +6,7 @@ import MobileMenu from './layout/MobileMenu';
 import MobileToggleButton from './layout/MobileToggleButton';
 import Categories from './layout/Categories';
 import SearchMenu from './layout/SearchMenu';
+import NotificationBell from './notifications/NotificationBell';
 import { useAuth } from '../../hooks/auth-context';
 
 const Navbar = () => {
@@ -71,6 +72,7 @@ const Navbar = () => {
                 토픽 만들기
               </Link>
             )}
+            <NotificationBell enabled={canShowAuthenticatedNav} />
             <DesktopAuthButtons
               userName={user?.username || 'User'}
               isAuthenticated={isAuthenticated}
