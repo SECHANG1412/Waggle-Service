@@ -53,6 +53,12 @@ class User(Base):
     reply_likes: Mapped[List["ReplyLike"]] = relationship(
         "ReplyLike", back_populates="user", cascade="all, delete-orphan"
     )
+    notifications: Mapped[List["Notification"]] = relationship(
+        "Notification",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        foreign_keys="Notification.user_id",
+    )
 
 
 def normalize_username(username: str) -> str:
