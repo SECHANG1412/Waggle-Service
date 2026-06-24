@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useTopic } from '../../hooks/useTopic';
 import Pagination from './layout/Pagination';
 import Grid from './layout/Grid';
+import TopicListControls from './layout/TopicListControls';
 import { useVote } from "../../hooks/useVote";
 import { useAuth } from "../../hooks/auth-context";
 import { useConfirm } from '../../hooks/confirm-context';
@@ -14,7 +15,14 @@ const SORT_MAP = {
   likes: 'like_count',
 } as const;
 
+const STATUS_MAP = {
+  all: 'all',
+  active: 'active',
+  closed: 'closed',
+} as const;
+
 type SortParam = keyof typeof SORT_MAP;
+type StatusParam = keyof typeof STATUS_MAP;
 export type MainTopic = TopicRead & { originalIndex?: number };
 export type MainVoteHandler = (topicId: number, voteIndex: number) => Promise<void>;
 export type MainPinToggleHandler = (topicId: number, isPinned: boolean) => Promise<void>;
@@ -38,17 +46,21 @@ const Main = () => {
         ? 'likes'
         : rawSort || 'recent';
   const sort: SortParam = sortParam in SORT_MAP ? (sortParam as SortParam) : 'recent';
+  const rawStatus = searchParams.get('status') || 'all';
+  const status: StatusParam = rawStatus in STATUS_MAP ? (rawStatus as StatusParam) : 'all';
   const search = searchParams.get('search') || '';
   const page = parseInt(searchParams.get('page') || '1', 10);
   const topicsPerPage = 16;
 
   const apiSort = SORT_MAP[sort];
+  const apiStatus = STATUS_MAP[status];
 
   const loadTopics = useCallback(async () => {
     const data = await fetchTopics({
       offset: (page - 1) * topicsPerPage,
       limit: topicsPerPage,
       sort: apiSort,
+      status: apiStatus,
       category,
       search,
     });
@@ -59,19 +71,38 @@ const Main = () => {
       }));
       setTopics(withIndex);
     }
-  }, [fetchTopics, page, apiSort, category, search]);
+  }, [fetchTopics, page, apiSort, apiStatus, category, search]);
 
   useEffect(() => {
-    countAllTopics(category, search).then((count) => {
+    countAllTopics(category, search, apiStatus).then((count) => {
       setTotalTopics(count || 0);
     });
     loadTopics();
-  }, [category, search, countAllTopics, loadTopics]);
+  }, [category, search, apiStatus, countAllTopics, loadTopics]);
 
   const onPageChange = (p: number) => {
     const updated = new URLSearchParams(searchParams);
     updated.set('page', String(p));
     setSearchParams(updated);
+  };
+
+  const updateListParam = (key: 'sort' | 'status', value: SortParam | StatusParam, defaultValue: string) => {
+    const updated = new URLSearchParams(searchParams);
+    if (value === defaultValue) {
+      updated.delete(key);
+    } else {
+      updated.set(key, value);
+    }
+    updated.set('page', '1');
+    setSearchParams(updated);
+  };
+
+  const onStatusChange = (nextStatus: StatusParam) => {
+    updateListParam('status', nextStatus, 'all');
+  };
+
+  const onSortChange = (nextSort: SortParam) => {
+    updateListParam('sort', nextSort, 'recent');
   };
 
   const onVote: MainVoteHandler = async (topic_id, index) => {
@@ -146,6 +177,12 @@ const Main = () => {
   return (
     <div className="w-full px-0 pt-4 pb-10">
       <div className="container mx-auto px-0">
+        <TopicListControls
+          status={status}
+          sort={sort}
+          onStatusChange={onStatusChange}
+          onSortChange={onSortChange}
+        />
         <Grid
           topics={topics}
           loading={loading}
