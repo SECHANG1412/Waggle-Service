@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useTopic } from '../../hooks/useTopic';
 import Pagination from './layout/Pagination';
 import Grid from './layout/Grid';
+import TopicListControls from './layout/TopicListControls';
 import { useVote } from "../../hooks/useVote";
 import { useAuth } from "../../hooks/auth-context";
 import { useConfirm } from '../../hooks/confirm-context';
@@ -85,6 +86,25 @@ const Main = () => {
     setSearchParams(updated);
   };
 
+  const updateListParam = (key: 'sort' | 'status', value: SortParam | StatusParam, defaultValue: string) => {
+    const updated = new URLSearchParams(searchParams);
+    if (value === defaultValue) {
+      updated.delete(key);
+    } else {
+      updated.set(key, value);
+    }
+    updated.set('page', '1');
+    setSearchParams(updated);
+  };
+
+  const onStatusChange = (nextStatus: StatusParam) => {
+    updateListParam('status', nextStatus, 'all');
+  };
+
+  const onSortChange = (nextSort: SortParam) => {
+    updateListParam('sort', nextSort, 'recent');
+  };
+
   const onVote: MainVoteHandler = async (topic_id, index) => {
     if (isAuthLoading) return;
     const targetTopic = topics.find((topic) => topic.topic_id === topic_id);
@@ -157,6 +177,12 @@ const Main = () => {
   return (
     <div className="w-full px-0 pt-4 pb-10">
       <div className="container mx-auto px-0">
+        <TopicListControls
+          status={status}
+          sort={sort}
+          onStatusChange={onStatusChange}
+          onSortChange={onSortChange}
+        />
         <Grid
           topics={topics}
           loading={loading}
