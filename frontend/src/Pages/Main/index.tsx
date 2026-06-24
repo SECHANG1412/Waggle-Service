@@ -14,7 +14,14 @@ const SORT_MAP = {
   likes: 'like_count',
 } as const;
 
+const STATUS_MAP = {
+  all: 'all',
+  active: 'active',
+  closed: 'closed',
+} as const;
+
 type SortParam = keyof typeof SORT_MAP;
+type StatusParam = keyof typeof STATUS_MAP;
 export type MainTopic = TopicRead & { originalIndex?: number };
 export type MainVoteHandler = (topicId: number, voteIndex: number) => Promise<void>;
 export type MainPinToggleHandler = (topicId: number, isPinned: boolean) => Promise<void>;
@@ -38,17 +45,21 @@ const Main = () => {
         ? 'likes'
         : rawSort || 'recent';
   const sort: SortParam = sortParam in SORT_MAP ? (sortParam as SortParam) : 'recent';
+  const rawStatus = searchParams.get('status') || 'all';
+  const status: StatusParam = rawStatus in STATUS_MAP ? (rawStatus as StatusParam) : 'all';
   const search = searchParams.get('search') || '';
   const page = parseInt(searchParams.get('page') || '1', 10);
   const topicsPerPage = 16;
 
   const apiSort = SORT_MAP[sort];
+  const apiStatus = STATUS_MAP[status];
 
   const loadTopics = useCallback(async () => {
     const data = await fetchTopics({
       offset: (page - 1) * topicsPerPage,
       limit: topicsPerPage,
       sort: apiSort,
+      status: apiStatus,
       category,
       search,
     });
@@ -59,14 +70,14 @@ const Main = () => {
       }));
       setTopics(withIndex);
     }
-  }, [fetchTopics, page, apiSort, category, search]);
+  }, [fetchTopics, page, apiSort, apiStatus, category, search]);
 
   useEffect(() => {
-    countAllTopics(category, search).then((count) => {
+    countAllTopics(category, search, apiStatus).then((count) => {
       setTotalTopics(count || 0);
     });
     loadTopics();
-  }, [category, search, countAllTopics, loadTopics]);
+  }, [category, search, apiStatus, countAllTopics, loadTopics]);
 
   const onPageChange = (p: number) => {
     const updated = new URLSearchParams(searchParams);
