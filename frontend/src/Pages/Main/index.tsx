@@ -175,7 +175,7 @@ const Main = () => {
   };
 
   return (
-    <div className="w-full px-0 pt-4 pb-10">
+    <div className="w-full px-0 pt-3 pb-10">
       <div className="container mx-auto px-0">
         <TopicListControls
           status={status}
