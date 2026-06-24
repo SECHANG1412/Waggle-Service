@@ -30,7 +30,7 @@ const TopicListControls = ({
   onSortChange,
 }: TopicListControlsProps) => {
   return (
-    <div className="mb-4 flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <div
         className="inline-flex w-fit items-center gap-1 rounded-lg bg-slate-100 p-1"
         aria-label="토픽 참여 상태"
