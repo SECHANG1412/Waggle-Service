@@ -5,7 +5,7 @@ import { BsBookmark, BsBookmarkFill } from 'react-icons/bs';
 import { FaRegUserCircle } from 'react-icons/fa';
 import OptionButton from './OptionButton';
 import VoteInfo from './VoteInfo';
-import { formatDateTime } from '../../../utils/date';
+import { formatDateTime, parseApiDate } from '../../../utils/date';
 import type { MainPinToggleHandler, MainTopic, MainVoteHandler } from '..';
 
 type TopicCardProps = {
@@ -14,9 +14,74 @@ type TopicCardProps = {
   onPinToggle: MainPinToggleHandler;
   isAuthLoading: boolean;
 };
+type DeadlineStatus = {
+  label: string;
+  detail: string;
+  className: string;
+};
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+const getLocalDateKey = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const getLocalDayStart = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+
+const getDeadlineStatus = (expiresAt: string | null, isClosed: boolean): DeadlineStatus => {
+  const deadline = parseApiDate(expiresAt);
+
+  if (!deadline || Number.isNaN(deadline.getTime())) {
+    return {
+      label: '마감 시간 없음',
+      detail: '상시 참여 가능',
+      className: 'border-slate-200 bg-slate-50 text-slate-600',
+    };
+  }
+
+  const now = new Date();
+  const deadlineTime = formatDateTime(deadline, 'ko-KR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  const deadlineDate = formatDateTime(deadline, 'ko-KR', {
+    month: 'long',
+    day: 'numeric',
+  });
+
+  if (isClosed || deadline.getTime() <= now.getTime()) {
+    return {
+      label: '마감됨',
+      detail: deadlineDate ? `${deadlineDate} 종료` : '종료된 토픽입니다',
+      className: 'border-slate-200 bg-white/70 text-slate-600',
+    };
+  }
+
+  if (getLocalDateKey(deadline) === getLocalDateKey(now)) {
+    return {
+      label: '오늘 마감',
+      detail: deadlineTime ? `${deadlineTime}까지` : '오늘 종료',
+      className: 'border-amber-200 bg-amber-50 text-amber-700',
+    };
+  }
+
+  const daysLeft = Math.max(1, Math.ceil((getLocalDayStart(deadline) - getLocalDayStart(now)) / DAY_MS));
+
+  return {
+    label: daysLeft === 1 ? '1일 남음' : `${daysLeft}일 남음`,
+    detail: deadlineDate ? `${deadlineDate} 마감` : '마감 예정',
+    className: daysLeft === 1
+      ? 'border-blue-200 bg-blue-50 text-blue-700'
+      : 'border-slate-200 bg-slate-50 text-slate-700',
+  };
+};
 
 const TopicCard = ({ topic, onVote, onPinToggle, isAuthLoading }: TopicCardProps) => {
   const navigate = useNavigate();
+  const isClosed = topic.is_closed;
   const formattedDate = useMemo(() => {
     return formatDateTime(topic.created_at, 'ko-KR', {
       year: 'numeric',
@@ -26,21 +91,12 @@ const TopicCard = ({ topic, onVote, onPinToggle, isAuthLoading }: TopicCardProps
       minute: '2-digit',
     });
   }, [topic.created_at]);
-  const formattedExpiresAt = useMemo(() => {
-    return formatDateTime(topic.expires_at, 'ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }, [topic.expires_at]);
+  const deadlineStatus = useMemo(() => getDeadlineStatus(topic.expires_at, isClosed), [topic.expires_at, isClosed]);
 
   const commentCount = topic.comment_count ?? 0;
   const pinLabel = topic.is_pinned ? '북마크 해제' : '북마크';
   const detailPath = `/topic/${topic.topic_id}`;
   const visibleOptions = topic.vote_options.slice(0, 2);
-  const isClosed = topic.is_closed;
 
   const isInteractiveElement = (target: EventTarget | null) =>
     target instanceof Element &&
@@ -122,17 +178,9 @@ const TopicCard = ({ topic, onVote, onPinToggle, isAuthLoading }: TopicCardProps
       )}
 
       <div className="mt-3 border-t border-slate-200 pt-3">
-        <p
-          className={`mb-2 rounded-lg border px-3 py-2 text-xs font-semibold ${
-            isClosed
-              ? 'border-slate-200 bg-white/70 text-slate-600'
-              : 'border-blue-100 bg-blue-50 text-blue-700'
-          }`}
-        >
-          {isClosed ? '마감된 토픽입니다' : '마감'}
-          <span className="ml-1 font-medium">
-            {formattedExpiresAt ? `· ${formattedExpiresAt}${isClosed ? ' 마감' : ''}` : '· 마감 시간 없음'}
-          </span>
+        <p className={`mb-2 rounded-lg border px-3 py-2 text-xs font-semibold ${deadlineStatus.className}`}>
+          {deadlineStatus.label}
+          <span className="ml-1 font-medium">· {deadlineStatus.detail}</span>
         </p>
         <div className="space-y-2">
           {visibleOptions.map((opt, idx) => (
