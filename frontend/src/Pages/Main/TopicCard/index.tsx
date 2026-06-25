@@ -77,11 +77,6 @@ const TopicCard = ({ topic, onVote, onPinToggle, isAuthLoading }: TopicCardProps
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-          {topic.is_pinned && (
-            <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-700">
-              Pinned
-            </span>
-          )}
           <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[11px] font-semibold text-slate-700">
             {topic.category || '카테고리 없음'}
           </span>
@@ -96,7 +91,11 @@ const TopicCard = ({ topic, onVote, onPinToggle, isAuthLoading }: TopicCardProps
           onClick={() => {
             onPinToggle(topic.topic_id, topic.is_pinned);
           }}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-slate-400 hover:text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-300 disabled:cursor-not-allowed disabled:opacity-60"
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-300 disabled:cursor-not-allowed disabled:opacity-60 ${
+            topic.is_pinned
+              ? 'border-blue-200 bg-blue-50 text-blue-600 hover:border-blue-300 hover:bg-blue-100'
+              : 'border-slate-200 text-slate-500 hover:border-slate-400 hover:text-slate-800'
+          }`}
           aria-label={pinLabel}
           title={pinLabel}
         >
