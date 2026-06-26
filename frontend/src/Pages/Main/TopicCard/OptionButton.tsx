@@ -35,7 +35,7 @@ const OptionButton = ({ option, index, topic, onVote, isAuthLoading }: OptionBut
         if (!topic.has_voted && !topic.is_closed && !isAuthLoading) onVote(topic.topic_id, index);
       }}
       style={styles}
-      className="group relative flex min-h-[44px] w-full cursor-pointer items-center justify-between gap-2.5 rounded-lg border border-l-4 px-3 py-1.5 text-left transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-300 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
+      className="group relative flex min-h-[40px] w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-l-4 px-3 py-1.5 text-left transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-300 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
     >
       <span
         className="absolute inset-y-0 left-0 rounded-l-md transition-[width] duration-300"
@@ -47,28 +47,28 @@ const OptionButton = ({ option, index, topic, onVote, isAuthLoading }: OptionBut
         aria-hidden="true"
       />
       <span
-        className="relative z-10 min-w-0 flex-1 break-words text-sm font-bold leading-snug"
+        className="relative z-10 min-w-0 flex-1 break-words text-[13px] font-bold leading-snug sm:text-sm"
         style={{ color: displayColor }}
       >
         {option}
       </span>
       {isSelected && (
         <span
-          className="absolute -right-1.5 -top-1.5 z-20 flex h-4 w-4 items-center justify-center rounded-full"
+          className="absolute -right-1 -top-1 z-20 flex h-3.5 w-3.5 items-center justify-center rounded-full"
           style={{ backgroundColor: baseColor }}
         >
-          <FiCheck className="h-3 w-3 text-white" aria-label="selected option" />
+          <FiCheck className="h-2.5 w-2.5 text-white" aria-label="selected option" />
         </span>
       )}
       <span className="relative z-10 shrink-0 text-right">
         <span className="text-right text-slate-500">
           <span
-            className="block text-sm font-bold leading-tight"
+            className="block text-[13px] font-bold leading-tight sm:text-sm"
             style={{ color: displayColor }}
           >
             {percent}%
           </span>
-          <span className="block text-xs font-medium leading-tight">{voteCount}표</span>
+          <span className="block text-[11px] font-medium leading-tight">{voteCount}표</span>
         </span>
       </span>
     </button>
