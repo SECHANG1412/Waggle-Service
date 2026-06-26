@@ -162,7 +162,7 @@ const TopicCard = ({ topic, onVote, onPinToggle, isAuthLoading }: TopicCardProps
       </h3>
 
 
-      <div className="mt-4 pt-3">
+      <div className="mt-5 pt-3">
         <div className="space-y-2">
           {visibleOptions.map((opt, idx) => (
             <OptionButton
