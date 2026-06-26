@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import type { KeyboardEvent, MouseEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BsBookmark, BsBookmarkFill } from 'react-icons/bs';
-import { FaRegUserCircle } from 'react-icons/fa';
 import OptionButton from './OptionButton';
 import VoteInfo from './VoteInfo';
 import { formatDateTime, parseApiDate } from '../../../utils/date';
@@ -170,13 +169,6 @@ const TopicCard = ({ topic, onVote, onPinToggle, isAuthLoading }: TopicCardProps
           {topic.title}
         </Link>
       </h3>
-
-      {topic.author_name && (
-        <div className="mt-2 flex items-center gap-2 text-xs font-semibold text-slate-600">
-          <FaRegUserCircle className="h-6 w-6 shrink-0 rounded-full bg-slate-100 p-1.5 text-slate-500" aria-hidden="true" />
-          <span className="truncate">{topic.author_name}</span>
-        </div>
-      )}
 
       <div className="mt-2 flex items-center gap-2 text-xs">
         <span className={`shrink-0 rounded-full border px-2.5 py-1 font-bold ${deadlineStatus.className}`}>
