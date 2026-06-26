@@ -18,9 +18,9 @@ const VoteInfo = ({
   commentCount,
 }: VoteInfoProps) => {
   return (
-    <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-3 text-[11px] text-slate-500">
+    <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-4 text-[11px] text-slate-500">
       <div className="flex min-w-0 items-center gap-1.5">
-        <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold ${deadlineClassName}`}>
+        <span className={`shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${deadlineClassName}`}>
           {deadlineLabel}
         </span>
         <span className="min-w-0 truncate font-medium text-slate-500">{deadlineDetail}</span>
