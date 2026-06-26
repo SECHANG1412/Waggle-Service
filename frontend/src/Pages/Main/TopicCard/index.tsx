@@ -82,15 +82,6 @@ const getDeadlineStatus = (expiresAt: string | null, isClosed: boolean): Deadlin
 const TopicCard = ({ topic, onVote, onPinToggle, isAuthLoading }: TopicCardProps) => {
   const navigate = useNavigate();
   const isClosed = topic.is_closed;
-  const formattedDate = useMemo(() => {
-    return formatDateTime(topic.created_at, 'ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }, [topic.created_at]);
   const deadlineStatus = useMemo(() => getDeadlineStatus(topic.expires_at, isClosed), [topic.expires_at, isClosed]);
 
   const commentCount = topic.comment_count ?? 0;
@@ -170,14 +161,8 @@ const TopicCard = ({ topic, onVote, onPinToggle, isAuthLoading }: TopicCardProps
         </Link>
       </h3>
 
-      <div className="mt-2 flex items-center gap-2 text-xs">
-        <span className={`shrink-0 rounded-full border px-2.5 py-1 font-bold ${deadlineStatus.className}`}>
-          {deadlineStatus.label}
-        </span>
-        <span className="min-w-0 truncate font-medium text-slate-500">{deadlineStatus.detail}</span>
-      </div>
 
-      <div className="mt-3 border-t border-slate-200 pt-3">
+      <div className="mt-4 border-t border-slate-200 pt-3">
         <div className="space-y-2">
           {visibleOptions.map((opt, idx) => (
             <OptionButton
@@ -192,9 +177,17 @@ const TopicCard = ({ topic, onVote, onPinToggle, isAuthLoading }: TopicCardProps
         </div>
       </div>
 
-      <VoteInfo createdAt={formattedDate} likeCount={topic.like_count} totalVote={topic.total_vote} commentCount={commentCount} />
+      <VoteInfo
+        deadlineLabel={deadlineStatus.label}
+        deadlineDetail={deadlineStatus.detail}
+        deadlineClassName={deadlineStatus.className}
+        likeCount={topic.like_count}
+        totalVote={topic.total_vote}
+        commentCount={commentCount}
+      />
     </article>
   );
 };
 
 export default TopicCard;
+
