@@ -275,16 +275,16 @@ const Profile = () => {
 
   if (!isAuthenticated || error) {
     return (
-      <div className="mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+      <div className="mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
         <p className="text-slate-600">{error || PROFILE_MESSAGES.loginRequired}</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 px-3 py-5 sm:px-4 sm:py-8">
+    <div className="min-h-screen bg-white px-3 py-5 sm:px-4 sm:py-8">
       <div className="mx-auto max-w-6xl space-y-4 sm:space-y-5">
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
           <div className="flex flex-col gap-5 p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex min-w-0 items-center gap-4">
               <Avatar user={user} avatarUrl={avatarUrl} size="lg" />
@@ -392,7 +392,7 @@ type RecentActivityCardProps = {
 };
 
 const RecentActivityCard = ({ activities, loading, onView }: RecentActivityCardProps) => (
-  <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+  <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] sm:p-6">
     <div className="flex items-center justify-between gap-3">
       <div>
         <h2 className="text-lg font-bold text-slate-950">최근 활동</h2>
@@ -450,7 +450,7 @@ const AccountPanel = ({
   onAvatarChange,
   onAvatarReset,
 }: AccountPanelProps) => (
-  <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+  <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] sm:p-6">
     <div className="flex items-start justify-between gap-3">
       <div>
         <h2 className="text-lg font-bold text-slate-950">계정 정보</h2>
@@ -579,7 +579,7 @@ type InquiryHistorySectionProps = {
 };
 
 const InquiryHistorySection = ({ inquiries, loading }: InquiryHistorySectionProps) => (
-  <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+  <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] sm:p-6">
     <SectionHeader title="내 문의 내역" description="접수한 문의와 처리 상태를 확인할 수 있습니다." />
 
     {loading ? (
@@ -634,7 +634,7 @@ type ContentStatusSectionProps = {
 };
 
 const ContentStatusSection = ({ items, loading, onContact }: ContentStatusSectionProps) => (
-  <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+  <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] sm:p-6">
     <SectionHeader title="콘텐츠 조치 내역" description="관리자 조치가 적용된 토픽과 댓글을 확인할 수 있습니다." />
 
     {loading ? (
