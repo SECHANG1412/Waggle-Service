@@ -1,13 +1,14 @@
 type TopicListControlsProps = {
-  status: 'all' | 'active' | 'closed';
+  status: 'active' | 'all' | 'voted' | 'closed';
   sort: 'recent' | 'likes';
   onStatusChange: (status: TopicListControlsProps['status']) => void;
   onSortChange: (sort: TopicListControlsProps['sort']) => void;
 };
 
 const STATUS_OPTIONS: Array<{ label: string; value: TopicListControlsProps['status'] }> = [
-  { label: '전체', value: 'all' },
   { label: '참여 가능', value: 'active' },
+  { label: '전체', value: 'all' },
+  { label: '투표 완료', value: 'voted' },
   { label: '종료됨', value: 'closed' },
 ];
 

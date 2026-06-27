@@ -6,7 +6,7 @@ import pytest
 from sqlalchemy import select
 
 from app.db.models import PinnedTopic
-from tests.factories import create_topic
+from tests.factories import create_topic, create_vote
 
 
 def future_expiration() -> str:
@@ -199,6 +199,12 @@ async def test_topics_status_filter_contract(authenticated_client, db_session, a
         expires_at=now - timedelta(minutes=1),
         created_at=now,
     )
+    await create_vote(
+        db_session,
+        user_id=auth_user.user_id,
+        topic_id=active_topic.topic_id,
+        vote_index=0,
+    )
     await db_session.commit()
 
     default_response = await authenticated_client.get(
@@ -209,6 +215,10 @@ async def test_topics_status_filter_contract(authenticated_client, db_session, a
         "/topics",
         params={"status": "closed", "limit": 10, "offset": 0},
     )
+    voted_response = await authenticated_client.get(
+        "/topics",
+        params={"status": "voted", "limit": 10, "offset": 0},
+    )
     all_response = await authenticated_client.get(
         "/topics",
         params={"status": "all", "limit": 10, "offset": 0},
@@ -218,14 +228,20 @@ async def test_topics_status_filter_contract(authenticated_client, db_session, a
     default_payload = default_response.json()
     default_ids = [item["topic_id"] for item in default_payload]
     assert legacy_topic.topic_id in default_ids
-    assert active_topic.topic_id in default_ids
+    assert active_topic.topic_id not in default_ids
     assert closed_topic.topic_id not in default_ids
     assert all(item["is_closed"] is False for item in default_payload)
+    assert all(item["has_voted"] is False for item in default_payload)
 
     assert closed_response.status_code == 200
     closed_payload = closed_response.json()
     assert [item["topic_id"] for item in closed_payload] == [closed_topic.topic_id]
     assert closed_payload[0]["is_closed"] is True
+
+    assert voted_response.status_code == 200
+    voted_payload = voted_response.json()
+    assert [item["topic_id"] for item in voted_payload] == [active_topic.topic_id]
+    assert voted_payload[0]["has_voted"] is True
 
     assert all_response.status_code == 200
     all_payload = all_response.json()
@@ -237,24 +253,33 @@ async def test_topics_status_filter_contract(authenticated_client, db_session, a
 @pytest.mark.asyncio
 async def test_topics_count_uses_status_filter(authenticated_client, db_session, auth_user):
     now = datetime.now(timezone.utc)
-    await create_topic(db_session, user_id=auth_user.user_id, title="legacy-active")
+    active_topic = await create_topic(db_session, user_id=auth_user.user_id, title="legacy-active")
     await create_topic(
         db_session,
         user_id=auth_user.user_id,
         title="closed-count",
         expires_at=now - timedelta(minutes=1),
     )
+    await create_vote(
+        db_session,
+        user_id=auth_user.user_id,
+        topic_id=active_topic.topic_id,
+        vote_index=0,
+    )
     await db_session.commit()
 
     active = await authenticated_client.get("/topics/count")
     closed = await authenticated_client.get("/topics/count", params={"status": "closed"})
+    voted = await authenticated_client.get("/topics/count", params={"status": "voted"})
     all_topics = await authenticated_client.get("/topics/count", params={"status": "all"})
 
     assert active.status_code == 200
     assert closed.status_code == 200
+    assert voted.status_code == 200
     assert all_topics.status_code == 200
-    assert active.json() == 1
+    assert active.json() == 0
     assert closed.json() == 1
+    assert voted.json() == 1
     assert all_topics.json() == 2
 
 

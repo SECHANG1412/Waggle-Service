@@ -262,7 +262,7 @@ export type NotificationUnreadCount = {
 
 export type TopicListParams = {
   sort?: string;
-  status?: 'active' | 'closed' | 'all';
+  status?: 'active' | 'closed' | 'all' | 'voted';
   limit?: number;
   offset?: number;
   category?: string;
