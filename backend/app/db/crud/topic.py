@@ -1,9 +1,9 @@
 from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import case, desc, func, or_, select
+from sqlalchemy import case, desc, false, func, or_, select
 from sqlalchemy.orm import selectinload
-from app.db.models import Topic, TopicLike
+from app.db.models import Topic, TopicLike, Vote
 from app.db.schemas.topics import TopicCreate
 
 class TopicCrud:
@@ -18,6 +18,10 @@ class TopicCrud:
     @staticmethod
     def _active_rank_expression(now: datetime):
         return case((TopicCrud._active_topic_filter(now), 1), else_=0)
+
+    @staticmethod
+    def _user_voted_topic_filter(user_id: int):
+        return Topic.topic_id.in_(select(Vote.topic_id).where(Vote.user_id == user_id))
 
     @staticmethod
     async def create(db: AsyncSession, topic_data: TopicCreate, user_id:int) -> Topic:
@@ -82,7 +86,8 @@ class TopicCrud:
         sort: str = "created_at",
         status: str = "active",
         limit: int = 10,
-        offset: int = 0
+        offset: int = 0,
+        user_id: int | None = None,
     ):
         now = datetime.now(timezone.utc)
         like_count_subq = (
@@ -110,8 +115,14 @@ class TopicCrud:
 
         if status == "active":
             base_query = base_query.where(TopicCrud._active_topic_filter(now))
+            if user_id is not None:
+                base_query = base_query.where(~TopicCrud._user_voted_topic_filter(user_id))
         elif status == "closed":
             base_query = base_query.where(TopicCrud._closed_topic_filter(now))
+        elif status == "voted":
+            base_query = base_query.where(
+                TopicCrud._user_voted_topic_filter(user_id) if user_id is not None else false()
+            )
 
         if status == "all":
             base_query = base_query.order_by(
@@ -133,6 +144,7 @@ class TopicCrud:
         category: str | None = None,
         search: str | None = None,
         status: str = "active",
+        user_id: int | None = None,
     ) -> int:
         now = datetime.now(timezone.utc)
         base_query = (
@@ -150,8 +162,14 @@ class TopicCrud:
 
         if status == "active":
             base_query = base_query.where(TopicCrud._active_topic_filter(now))
+            if user_id is not None:
+                base_query = base_query.where(~TopicCrud._user_voted_topic_filter(user_id))
         elif status == "closed":
             base_query = base_query.where(TopicCrud._closed_topic_filter(now))
+        elif status == "voted":
+            base_query = base_query.where(
+                TopicCrud._user_voted_topic_filter(user_id) if user_id is not None else false()
+            )
 
         result = await db.execute(base_query)
         return result.scalar() or 0

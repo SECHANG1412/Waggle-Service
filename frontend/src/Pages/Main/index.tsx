@@ -16,8 +16,9 @@ const SORT_MAP = {
 } as const;
 
 const STATUS_MAP = {
-  all: 'all',
   active: 'active',
+  all: 'all',
+  voted: 'voted',
   closed: 'closed',
 } as const;
 
@@ -46,8 +47,8 @@ const Main = () => {
         ? 'likes'
         : rawSort || 'recent';
   const sort: SortParam = sortParam in SORT_MAP ? (sortParam as SortParam) : 'recent';
-  const rawStatus = searchParams.get('status') || 'all';
-  const status: StatusParam = rawStatus in STATUS_MAP ? (rawStatus as StatusParam) : 'all';
+  const rawStatus = searchParams.get('status') || 'active';
+  const status: StatusParam = rawStatus in STATUS_MAP ? (rawStatus as StatusParam) : 'active';
   const search = searchParams.get('search') || '';
   const page = parseInt(searchParams.get('page') || '1', 10);
   const topicsPerPage = 16;
@@ -98,7 +99,7 @@ const Main = () => {
   };
 
   const onStatusChange = (nextStatus: StatusParam) => {
-    updateListParam('status', nextStatus, 'all');
+    updateListParam('status', nextStatus, 'active');
   };
 
   const onSortChange = (nextSort: SortParam) => {
