@@ -104,10 +104,12 @@ export const useVote = () => {
 
       if (response.status === 200) {
         return Object.entries(response.data).map(([timeStamp, voteData]) => {
-          const date = parseApiDate(timeStamp) ?? new Date(timeStamp);
+          const date = parseApiDate(timeStamp);
+          const label = date && !Number.isNaN(date.getTime()) ? getFormattedTime(date, timeRange) : '';
+
           return {
             timestamp: timeStamp,
-            label: getFormattedTime(date, timeRange),
+            label,
             ...Object.entries(voteData).reduce(
               (acc, [key, value]) =>
                 typeof value === 'object' && value !== null
