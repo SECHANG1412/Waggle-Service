@@ -282,7 +282,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white px-3 py-5 sm:px-4 sm:py-8">
+    <div className="px-3 py-6 sm:px-4 sm:py-10">
       <div className="mx-auto max-w-6xl space-y-4 sm:space-y-5">
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
           <div className="flex flex-col gap-5 p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
