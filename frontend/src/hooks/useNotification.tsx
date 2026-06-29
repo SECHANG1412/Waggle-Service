@@ -61,7 +61,7 @@ export const useNotification = ({ enabled }: UseNotificationOptions) => {
 
   const markAllAsRead = useCallback(async () => {
     try {
-      await api.patch('/notifications/read-all');
+      await api.patch<void>('/notifications/read-all');
       setNotifications((prev) => prev.map((item) => ({ ...item, is_read: true })));
       setUnreadCount(0);
     } catch {
