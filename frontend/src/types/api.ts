@@ -66,6 +66,11 @@ export type UserRead = {
   created_at: ISODateTimeString;
 };
 
+export type AdminMeResponse = {
+  user_id: Id;
+  is_admin: boolean;
+};
+
 export type UserLoginRequest = {
   email: string;
   password: string;
