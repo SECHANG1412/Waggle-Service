@@ -3,7 +3,7 @@ import type { ChangeEvent, FormEvent } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/auth-context';
 import api from '../../utils/api';
-import type { InquiryCreateRequest } from '../../types';
+import type { InquiryCreateRequest, InquiryRead } from '../../types';
 
 const initialForm = {
   title: '',
@@ -38,7 +38,7 @@ const Contact = () => {
           title: formData.title.trim(),
           content: formData.content.trim(),
         };
-        await api.post('/inquiries', payload);
+        await api.post<InquiryRead>('/inquiries', payload);
         setFormData(initialForm);
         setMessage({ type: 'success', text: '문의가 접수되었습니다. 관리자 확인 후 처리 상태가 반영됩니다.' });
       } catch {
