@@ -21,6 +21,7 @@ import Main from './Pages/Main';
 import Profile from './Pages/Profile';
 import Signup from './Pages/Signup';
 import SingleTopic from './Pages/SingleTopic';
+import type { AdminMeResponse } from './types';
 import api from './utils/api';
 
 type AdminStatus = 'checking' | 'allowed' | 'login-required' | 'forbidden' | 'error';
@@ -96,7 +97,7 @@ const AdminRoute = () => {
       setStatus('checking');
 
       try {
-        await api.get('/manage-api/me');
+        await api.get<AdminMeResponse>('/manage-api/me');
         if (mounted) setStatus('allowed');
       } catch (error) {
         if (!mounted) return;
