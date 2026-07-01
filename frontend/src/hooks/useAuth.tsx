@@ -109,7 +109,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const logout = async () => {
     try {
-      const response = await api.post('/users/logout');
+      const response = await api.post<boolean>('/users/logout');
       setIsAuthenticated(false);
       setUser(null);
 
