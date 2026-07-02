@@ -1,5 +1,6 @@
 import axios, { AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 import { AUTH_MESSAGES } from '../constants/messages';
+import type { UserRead } from '../types';
 import { showLoginRequiredAlert } from './alertUtils';
 
 declare module 'axios' {
@@ -89,7 +90,7 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        await api.post('/users/refresh');
+        await api.post<UserRead>('/users/refresh');
         processQueue(null, true);
         return api(originalRequest);
       } catch (refreshError) {
