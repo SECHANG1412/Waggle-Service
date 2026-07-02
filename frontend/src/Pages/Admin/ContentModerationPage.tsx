@@ -2,7 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
-import type { AdminContentListParams, CommentModerationRequest, TopicModerationRequest } from '../../types';
+import type {
+  AdminContentListParams,
+  AdminDeleteResponse,
+  CommentModerationRequest,
+  TopicModerationRequest,
+} from '../../types';
 import { formatKoreanDateTime } from '../../utils/date';
 
 const DATE_OPTIONS = [
@@ -113,7 +118,7 @@ const ContentModerationPage = <TItem extends ContentModerationItem>({
     setMessage(null);
     try {
       const payload: TopicModerationRequest | CommentModerationRequest = { reason };
-      await api.patch(deleteEndpoint(itemId), payload);
+      await api.patch<AdminDeleteResponse>(deleteEndpoint(itemId), payload);
       removeItem(itemId);
       setReason(itemId, '');
       setMessage({ type: 'success', text: '영구 삭제되었습니다. 삭제 내역은 감사 로그에 기록됩니다.' });

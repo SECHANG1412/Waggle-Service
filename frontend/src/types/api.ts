@@ -71,6 +71,10 @@ export type AdminMeResponse = {
   is_admin: boolean;
 };
 
+export type AdminDeleteResponse = {
+  deleted: boolean;
+};
+
 export type UserLoginRequest = {
   email: string;
   password: string;

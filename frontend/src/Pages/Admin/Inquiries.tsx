@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
 import type {
+  AdminDeleteResponse,
   InquiryDeleteRequest,
   AdminInquiryListParams,
   InquiryRead,
@@ -198,7 +199,7 @@ const AdminInquiries = () => {
     setMessage(null);
     try {
       const payload: InquiryDeleteRequest = { reason: trimmedReason };
-      await api.patch(
+      await api.patch<AdminDeleteResponse>(
         `/manage-api/inquiries/${selectedInquiry.inquiry_id}/delete`,
         payload
       );
