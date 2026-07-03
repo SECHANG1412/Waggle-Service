@@ -1,7 +1,9 @@
+from datetime import datetime, timezone
+
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.crud import NotificationCrud
+from app.db.crud import NotificationCrud, PinnedTopicCrud, TopicCrud, VoteCrud
 from app.db.schemas.notifications import (
     NotificationCreate,
     NotificationRead,
@@ -43,6 +45,96 @@ class NotificationService:
                 link=link,
             ),
         )
+
+    @staticmethod
+    def _closed_topic_notification_targets(
+        *,
+        author_user_id: int,
+        voter_user_ids: set[int],
+        pinned_user_ids: set[int],
+    ) -> list[tuple[int, str, str]]:
+        targets: list[tuple[int, str, str]] = [
+            (
+                author_user_id,
+                "topic_closed_author",
+                "내가 만든 투표가 마감되었습니다. 결과를 확인해보세요.",
+            )
+        ]
+        notified_user_ids = {author_user_id}
+
+        for user_id in sorted(voter_user_ids - notified_user_ids):
+            targets.append(
+                (
+                    user_id,
+                    "topic_closed_voter",
+                    "참여한 투표가 마감되었습니다. 결과를 확인해보세요.",
+                )
+            )
+            notified_user_ids.add(user_id)
+
+        for user_id in sorted(pinned_user_ids - notified_user_ids):
+            targets.append(
+                (
+                    user_id,
+                    "topic_closed_pinned",
+                    "북마크한 투표가 마감되었습니다. 결과를 확인해보세요.",
+                )
+            )
+            notified_user_ids.add(user_id)
+
+        return targets
+
+    @staticmethod
+    async def dispatch_closed_topic_notifications(
+        db: AsyncSession,
+        *,
+        now: datetime | None = None,
+        limit: int = 100,
+    ) -> dict[str, int]:
+        current_time = now or datetime.now(timezone.utc)
+        topics = await TopicCrud.get_closed_without_notifications(
+            db, now=current_time, limit=limit
+        )
+        topic_ids = [topic.topic_id for topic in topics]
+        voter_user_ids_by_topic = await VoteCrud.get_user_ids_by_topic_ids(db, topic_ids)
+        pinned_user_ids_by_topic = await PinnedTopicCrud.get_user_ids_by_topic_ids(
+            db, topic_ids
+        )
+
+        created_count = 0
+        try:
+            for topic in topics:
+                targets = NotificationService._closed_topic_notification_targets(
+                    author_user_id=topic.user_id,
+                    voter_user_ids=voter_user_ids_by_topic.get(topic.topic_id, set()),
+                    pinned_user_ids=pinned_user_ids_by_topic.get(topic.topic_id, set()),
+                )
+                for user_id, notification_type, message in targets:
+                    await NotificationService.create(
+                        db,
+                        NotificationCreate(
+                            user_id=user_id,
+                            type=notification_type,
+                            actor_user_id=None,
+                            target_type="Topic",
+                            target_id=topic.topic_id,
+                            topic_id=topic.topic_id,
+                            message=message,
+                            link=f"/topic/{topic.topic_id}?focus=results",
+                        ),
+                    )
+                    created_count += 1
+                await TopicCrud.mark_closed_notified(
+                    db, topic, notified_at=current_time
+                )
+            await db.commit()
+            return {
+                "processed_topics": len(topics),
+                "created_notifications": created_count,
+            }
+        except Exception:
+            await db.rollback()
+            raise
 
     @staticmethod
     async def list_for_user(
