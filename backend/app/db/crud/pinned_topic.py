@@ -38,6 +38,24 @@ class PinnedTopicCrud:
         return result.scalars().all()
 
     @staticmethod
+    async def get_user_ids_by_topic_ids(
+        db: AsyncSession, topic_ids: list[int]
+    ) -> dict[int, set[int]]:
+        if not topic_ids:
+            return {}
+
+        result = await db.execute(
+            select(PinnedTopic.topic_id, PinnedTopic.user_id).where(
+                PinnedTopic.topic_id.in_(topic_ids)
+            )
+        )
+
+        user_ids_by_topic: dict[int, set[int]] = {}
+        for topic_id, user_id in result.all():
+            user_ids_by_topic.setdefault(topic_id, set()).add(user_id)
+        return user_ids_by_topic
+
+    @staticmethod
     async def is_pinned(db: AsyncSession, user_id: int, topic_id: int) -> bool:
         pinned = await db.get(PinnedTopic, {"user_id": user_id, "topic_id": topic_id})
         return pinned is not None

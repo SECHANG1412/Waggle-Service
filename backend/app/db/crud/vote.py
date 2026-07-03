@@ -84,6 +84,24 @@ class VoteCrud:
         return result.scalars().all()
 
     @staticmethod
+    async def get_user_ids_by_topic_ids(
+        db: AsyncSession, topic_ids: list[int]
+    ) -> dict[int, set[int]]:
+        if not topic_ids:
+            return {}
+
+        result = await db.execute(
+            select(Vote.topic_id, Vote.user_id)
+            .where(Vote.topic_id.in_(topic_ids))
+            .group_by(Vote.topic_id, Vote.user_id)
+        )
+
+        user_ids_by_topic: dict[int, set[int]] = {}
+        for topic_id, user_id in result.all():
+            user_ids_by_topic.setdefault(topic_id, set()).add(user_id)
+        return user_ids_by_topic
+
+    @staticmethod
     async def get_first_vote_created_at(
         db: AsyncSession, topic_id: int
     ) -> datetime | None:
