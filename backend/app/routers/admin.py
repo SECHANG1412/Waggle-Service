@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import require_admin_user_id
 from app.db.database import get_db
+from app.db.schemas.admin import AdminDeleteResponse
 from app.db.schemas.admin_action_logs import AdminActionLogRead
 from app.db.schemas.comments import CommentAdminRead, CommentModerationUpdate
 from app.db.schemas.inquiries import InquiryDeleteUpdate, InquiryRead, InquiryStatusUpdate
@@ -106,7 +107,7 @@ async def update_inquiry_status(
     )
 
 
-@router.patch("/inquiries/{inquiry_id}/delete")
+@router.patch("/inquiries/{inquiry_id}/delete", response_model=AdminDeleteResponse)
 async def delete_inquiry(
     inquiry_id: int,
     update: InquiryDeleteUpdate,
@@ -132,7 +133,7 @@ async def list_topics_for_admin(
     )
 
 
-@router.patch("/topics/{topic_id}/delete")
+@router.patch("/topics/{topic_id}/delete", response_model=AdminDeleteResponse)
 async def delete_topic_for_admin(
     topic_id: int,
     update: TopicModerationUpdate,
@@ -158,7 +159,7 @@ async def list_comments_for_admin(
     )
 
 
-@router.patch("/comments/{comment_id}/delete")
+@router.patch("/comments/{comment_id}/delete", response_model=AdminDeleteResponse)
 async def delete_comment_for_admin(
     comment_id: int,
     update: CommentModerationUpdate,
