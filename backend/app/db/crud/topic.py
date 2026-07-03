@@ -199,6 +199,38 @@ class TopicCrud:
         return list(result.scalars().all())
 
     @staticmethod
+    async def get_closed_without_notifications(
+        db: AsyncSession,
+        *,
+        now: datetime | None = None,
+        limit: int = 100,
+    ) -> list[Topic]:
+        current_time = now or datetime.now(timezone.utc)
+        result = await db.execute(
+            select(Topic)
+            .where(
+                Topic.is_hidden.is_(False),
+                Topic.expires_at.is_not(None),
+                Topic.expires_at <= current_time,
+                Topic.closed_notified_at.is_(None),
+            )
+            .order_by(Topic.expires_at, Topic.topic_id)
+            .limit(limit)
+        )
+        return list(result.scalars().all())
+
+    @staticmethod
+    async def mark_closed_notified(
+        db: AsyncSession,
+        topic: Topic,
+        *,
+        notified_at: datetime | None = None,
+    ) -> Topic:
+        topic.closed_notified_at = notified_at or datetime.now(timezone.utc)
+        await db.flush()
+        return topic
+
+    @staticmethod
     async def hide(
         db: AsyncSession,
         topic: Topic,

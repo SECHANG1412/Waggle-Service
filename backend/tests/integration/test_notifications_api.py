@@ -1,9 +1,17 @@
+from datetime import datetime, timedelta, timezone
+
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
 
-from app.db.models import Notification
-from tests.factories import create_comment, create_inquiry, create_topic, create_user
+from app.db.models import Notification, PinnedTopic
+from tests.factories import (
+    create_comment,
+    create_inquiry,
+    create_topic,
+    create_user,
+    create_vote,
+)
 
 
 @pytest.mark.asyncio
@@ -232,3 +240,98 @@ async def test_admin_inquiry_status_update_notifies_owner(
     assert notification.type == "inquiry_status"
     assert notification.target_type == "Inquiry"
     assert notification.target_id == inquiry.inquiry_id
+
+
+@pytest.mark.asyncio
+async def test_admin_dispatch_closed_topic_notifications_creates_targeted_notifications(
+    client: AsyncClient,
+    db_session,
+    set_auth_cookies,
+):
+    admin = await create_user(db_session, is_admin=True)
+    author = await create_user(db_session)
+    voter = await create_user(db_session)
+    pinned_user = await create_user(db_session)
+    closed_at = datetime.now(timezone.utc) - timedelta(hours=1)
+    topic = await create_topic(
+        db_session,
+        user_id=author.user_id,
+        expires_at=closed_at,
+    )
+    await create_vote(db_session, user_id=voter.user_id, topic_id=topic.topic_id)
+    db_session.add(PinnedTopic(user_id=pinned_user.user_id, topic_id=topic.topic_id))
+    await db_session.commit()
+    set_auth_cookies(client, admin.user_id)
+
+    response = await client.post("/manage-api/notifications/topic-close/dispatch")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "processed_topics": 1,
+        "created_notifications": 3,
+    }
+
+    result = await db_session.execute(
+        select(Notification).order_by(Notification.user_id)
+    )
+    notifications = result.scalars().all()
+    assert {item.user_id for item in notifications} == {
+        author.user_id,
+        voter.user_id,
+        pinned_user.user_id,
+    }
+    assert {item.type for item in notifications} == {
+        "topic_closed_author",
+        "topic_closed_voter",
+        "topic_closed_pinned",
+    }
+    assert all(item.target_type == "Topic" for item in notifications)
+    assert all(item.target_id == topic.topic_id for item in notifications)
+    assert all(item.topic_id == topic.topic_id for item in notifications)
+    assert all(
+        item.link == f"/topic/{topic.topic_id}?focus=results"
+        for item in notifications
+    )
+
+    await db_session.refresh(topic)
+    assert topic.closed_notified_at is not None
+
+
+@pytest.mark.asyncio
+async def test_admin_dispatch_closed_topic_notifications_deduplicates_users_and_topics(
+    client: AsyncClient,
+    db_session,
+    set_auth_cookies,
+):
+    admin = await create_user(db_session, is_admin=True)
+    author = await create_user(db_session)
+    closed_at = datetime.now(timezone.utc) - timedelta(hours=1)
+    topic = await create_topic(
+        db_session,
+        user_id=author.user_id,
+        expires_at=closed_at,
+    )
+    await create_vote(db_session, user_id=author.user_id, topic_id=topic.topic_id)
+    db_session.add(PinnedTopic(user_id=author.user_id, topic_id=topic.topic_id))
+    await db_session.commit()
+    set_auth_cookies(client, admin.user_id)
+
+    first_response = await client.post("/manage-api/notifications/topic-close/dispatch")
+    second_response = await client.post("/manage-api/notifications/topic-close/dispatch")
+
+    assert first_response.status_code == 200
+    assert first_response.json() == {
+        "processed_topics": 1,
+        "created_notifications": 1,
+    }
+    assert second_response.status_code == 200
+    assert second_response.json() == {
+        "processed_topics": 0,
+        "created_notifications": 0,
+    }
+
+    result = await db_session.execute(select(Notification))
+    notifications = result.scalars().all()
+    assert len(notifications) == 1
+    assert notifications[0].user_id == author.user_id
+    assert notifications[0].type == "topic_closed_author"

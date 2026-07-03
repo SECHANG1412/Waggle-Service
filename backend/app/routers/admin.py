@@ -14,6 +14,7 @@ from app.services import (
     AdminActionLogService,
     CommentService,
     InquiryService,
+    NotificationService,
     TopicService,
     UserService,
 )
@@ -54,6 +55,17 @@ async def list_admin_action_logs(
         start_at=start_at,
         end_at=end_at,
         limit=limit,
+    )
+
+
+@router.post("/notifications/topic-close/dispatch")
+async def dispatch_closed_topic_notifications(
+    _admin_user_id: int = Depends(require_admin_user_id),
+    db: AsyncSession = Depends(get_db),
+    limit: int = Query(default=100, ge=1, le=500),
+):
+    return await NotificationService.dispatch_closed_topic_notifications(
+        db, limit=limit
     )
 
 
