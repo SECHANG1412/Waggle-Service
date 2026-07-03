@@ -249,6 +249,9 @@ export type NotificationType =
   | 'reply_like'
   | 'inquiry_status'
   | 'content_moderation'
+  | 'topic_closed_author'
+  | 'topic_closed_voter'
+  | 'topic_closed_pinned'
   | string;
 
 export type NotificationRead = {
