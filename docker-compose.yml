@@ -15,6 +15,14 @@
       networks:                                                                                   
         - my_network                                                                              
                                                                                                   
+    redis:
+      image: redis:7-alpine
+      container_name: redis
+      restart: unless-stopped
+      ports:
+        - "6379:6379"
+      networks:
+        - my_network
     backend:                                                                                      
       build:                                                                                      
         context: ./backend                                                                        
@@ -24,8 +32,11 @@
         - "8000:8000"                                                                             
       env_file:                                                                                   
         - ./backend/.env.prod                                                                     
+      environment:
+        REDIS_URL: redis://redis:6379/0
       depends_on:                                                                                 
-        - db                                                                                      
+        - db
+        - redis
       networks:                                                                                   
         - my_network                                                                              
       command: uvicorn main:app --host 0.0.0.0 --port 8000 --log-level info --no-access-log
