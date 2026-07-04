@@ -10,6 +10,7 @@ This directory contains k6 scripts used to check read API behavior under a few f
 | `topic-detail-*` | `GET /topics/{topic_id}` | Topic detail read path |
 | `comments-*` | `GET /comments/by-topic/{topic_id}` | Comment list read path |
 | `vote-stats-*` | `GET /votes/topic/{topic_id}` | Vote trend/statistics read path |
+| `rate-limit` | `POST /users/login` | Redis Rate Limit 429 response check |
 
 ## Load Levels
 
@@ -32,6 +33,18 @@ Run a higher-load topic list check:
 
 ```bash
 k6 run k6/topics-list-upper-load.js
+```
+
+Run a Redis Rate Limit check:
+
+```bash
+k6 run k6/rate-limit.js
+```
+
+Run the same check with more traffic for Grafana capture:
+
+```bash
+k6 run -e VUS=10 -e ITERATIONS=80 k6/rate-limit.js
 ```
 
 Most scripts target `http://host.docker.internal:8000`, so run them while the backend is available from Docker or a local environment that resolves that host.

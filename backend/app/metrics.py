@@ -13,6 +13,12 @@ http_request_duration_seconds = Histogram(
     ["method", "path"],
 )
 
+rate_limit_blocked_total = Counter(
+    "waggle_rate_limit_blocked_total",
+    "Total requests blocked by rate limiting",
+    ["method", "path", "scope"],
+)
+
 
 def render_metrics() -> tuple[bytes, str]:
     return generate_latest(), CONTENT_TYPE_LATEST
