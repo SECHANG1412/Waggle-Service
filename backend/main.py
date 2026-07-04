@@ -25,8 +25,10 @@ from app.middleware.token_refresh import TokenRefreshMiddleware
 from app.middleware.csrf import CSRFMiddleware
 from app.middleware.performance import PerformanceMiddleware
 from app.middleware.prometheus import PrometheusMiddleware
+from app.middleware.rate_limit import RateLimitMiddleware
 from app.metrics import render_metrics
 from app.admin.setup import setup_admin
+from app.core.redis import close_redis_client, create_redis_client
 from app.core.settings import settings
 
 load_dotenv(dotenv_path=".env")
@@ -34,8 +36,12 @@ load_dotenv(dotenv_path=".env")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    yield
-    await async_engine.dispose()
+    app.state.redis_client = await create_redis_client()
+    try:
+        yield
+    finally:
+        await close_redis_client(getattr(app.state, "redis_client", None))
+        await async_engine.dispose()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -70,6 +76,7 @@ app.add_middleware(
 # CSRF should run before token refresh to ensure requests are validated early
 app.add_middleware(PrometheusMiddleware)
 app.add_middleware(PerformanceMiddleware)
+app.add_middleware(RateLimitMiddleware)
 app.add_middleware(CSRFMiddleware)
 app.add_middleware(TokenRefreshMiddleware)
 
