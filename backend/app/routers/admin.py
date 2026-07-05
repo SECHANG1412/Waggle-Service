@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import require_admin_user_id
 from app.db.database import get_db
-from app.db.schemas.admin import AdminDeleteResponse
+from app.db.schemas.admin import AdminDeleteResponse, AdminMeResponse
 from app.db.schemas.admin_action_logs import AdminActionLogRead
 from app.db.schemas.comments import CommentAdminRead, CommentModerationUpdate
 from app.db.schemas.inquiries import InquiryDeleteUpdate, InquiryRead, InquiryStatusUpdate
@@ -23,7 +23,7 @@ from app.services import (
 router = APIRouter(prefix="/manage-api", tags=["Admin"])
 
 
-@router.get("/me")
+@router.get("/me", response_model=AdminMeResponse)
 async def get_admin_me(admin_user_id: int = Depends(require_admin_user_id)):
     return {"user_id": admin_user_id, "is_admin": True}
 
