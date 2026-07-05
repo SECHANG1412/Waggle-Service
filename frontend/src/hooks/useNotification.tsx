@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { NotificationRead, NotificationUnreadCount } from '../types';
+import type { NotificationRead, NotificationReadAllResponse, NotificationUnreadCount } from '../types';
 import api from '../utils/api';
 
 type UseNotificationOptions = {
@@ -61,7 +61,7 @@ export const useNotification = ({ enabled }: UseNotificationOptions) => {
 
   const markAllAsRead = useCallback(async () => {
     try {
-      await api.patch<void>('/notifications/read-all');
+      await api.patch<NotificationReadAllResponse>('/notifications/read-all');
       setNotifications((prev) => prev.map((item) => ({ ...item, is_read: true })));
       setUnreadCount(0);
     } catch {
