@@ -3,7 +3,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_user_id
 from app.db.database import get_db
-from app.db.schemas.notifications import NotificationRead, NotificationUnreadCount
+from app.db.schemas.notifications import (
+    NotificationRead,
+    NotificationReadAllResponse,
+    NotificationUnreadCount,
+)
 from app.services import NotificationService
 
 router = APIRouter(prefix="/notifications", tags=["Notification"])
@@ -38,7 +42,7 @@ async def mark_notification_as_read(
     return await NotificationService.mark_as_read(db, user_id, notification_id)
 
 
-@router.patch("/read-all")
+@router.patch("/read-all", response_model=NotificationReadAllResponse)
 async def mark_all_notifications_as_read(
     user_id: int = Depends(get_user_id),
     db: AsyncSession = Depends(get_db),

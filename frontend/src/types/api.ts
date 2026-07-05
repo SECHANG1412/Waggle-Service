@@ -272,6 +272,10 @@ export type NotificationUnreadCount = {
   count: number;
 };
 
+export type NotificationReadAllResponse = {
+  updated_count: number;
+};
+
 export type TopicListParams = {
   sort?: string;
   status?: 'active' | 'closed' | 'all' | 'voted';
