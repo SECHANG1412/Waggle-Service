@@ -30,6 +30,7 @@ from app.metrics import render_metrics
 from app.admin.setup import setup_admin
 from app.core.redis import close_redis_client, create_redis_client
 from app.core.settings import settings
+from app.db.schemas.health import DatabaseHealthResponse, HealthResponse
 
 load_dotenv(dotenv_path=".env")
 
@@ -98,12 +99,12 @@ async def metrics():
     return Response(content=payload, media_type=content_type)
 
 
-@app.get("/health")
+@app.get("/health", response_model=HealthResponse)
 async def health():
     return {"status": "ok"}
 
 
-@app.get("/health/db")
+@app.get("/health/db", response_model=DatabaseHealthResponse)
 async def health_db(db: AsyncSession = Depends(get_db)):
     try:
         await db.execute(text("SELECT 1"))
