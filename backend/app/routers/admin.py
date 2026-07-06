@@ -9,6 +9,7 @@ from app.db.schemas.admin import AdminDeleteResponse, AdminMeResponse
 from app.db.schemas.admin_action_logs import AdminActionLogRead
 from app.db.schemas.comments import CommentAdminRead, CommentModerationUpdate
 from app.db.schemas.inquiries import InquiryDeleteUpdate, InquiryRead, InquiryStatusUpdate
+from app.db.schemas.notifications import ClosedTopicNotificationDispatchResponse
 from app.db.schemas.topics import TopicAdminRead, TopicModerationUpdate
 from app.db.schemas.users import UserRead
 from app.services import (
@@ -59,7 +60,10 @@ async def list_admin_action_logs(
     )
 
 
-@router.post("/notifications/topic-close/dispatch")
+@router.post(
+    "/notifications/topic-close/dispatch",
+    response_model=ClosedTopicNotificationDispatchResponse,
+)
 async def dispatch_closed_topic_notifications(
     _admin_user_id: int = Depends(require_admin_user_id),
     db: AsyncSession = Depends(get_db),
