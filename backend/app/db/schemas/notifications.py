@@ -36,3 +36,8 @@ class NotificationUnreadCount(BaseModel):
 
 class NotificationReadAllResponse(BaseModel):
     updated_count: int
+
+
+class ClosedTopicNotificationDispatchResponse(BaseModel):
+    processed_topics: int
+    created_notifications: int
