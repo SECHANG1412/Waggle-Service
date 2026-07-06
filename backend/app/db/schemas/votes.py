@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, RootModel
 
 class VoteBase(BaseModel):
     topic_id: int
@@ -16,4 +16,15 @@ class VoteInDB(VoteBase):
     model_config = ConfigDict(from_attributes=True)
 
 class VoteRead(VoteInDB):
+    pass
+
+
+class VoteStatsValue(BaseModel):
+    count: int
+    percent: float
+
+
+class VoteStatsResponse(
+    RootModel[dict[str, VoteStatsValue | dict[str, VoteStatsValue]]]
+):
     pass

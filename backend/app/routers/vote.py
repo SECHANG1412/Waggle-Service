@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 from app.core.auth import get_user_id
-from app.db.schemas.votes import VoteCreate, VoteRead
+from app.db.schemas.votes import VoteCreate, VoteRead, VoteStatsResponse
 from app.services import VoteService
 
 router = APIRouter(prefix="/votes", tags=["Vote"])
@@ -25,7 +25,7 @@ async def get_my_votes(
     return await VoteService.get_all_by_user_id(db, user_id)
 
 
-@router.get("/topic/{topic_id}")
+@router.get("/topic/{topic_id}", response_model=VoteStatsResponse)
 async def get_vote_stats(
     topic_id: int,
     time_range: str = Query("24h"),
