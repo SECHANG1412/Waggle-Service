@@ -5,8 +5,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.crud import NotificationCrud, PinnedTopicCrud, TopicCrud, VoteCrud
 from app.db.schemas.notifications import (
+    ClosedTopicNotificationDispatchResponse,
     NotificationCreate,
     NotificationRead,
+    NotificationReadAllResponse,
     NotificationUnreadCount,
 )
 
@@ -90,7 +92,7 @@ class NotificationService:
         *,
         now: datetime | None = None,
         limit: int = 100,
-    ) -> dict[str, int]:
+    ) -> ClosedTopicNotificationDispatchResponse:
         current_time = now or datetime.now(timezone.utc)
         topics = await TopicCrud.get_closed_without_notifications(
             db, now=current_time, limit=limit
@@ -128,10 +130,10 @@ class NotificationService:
                     db, topic, notified_at=current_time
                 )
             await db.commit()
-            return {
-                "processed_topics": len(topics),
-                "created_notifications": created_count,
-            }
+            return ClosedTopicNotificationDispatchResponse(
+                processed_topics=len(topics),
+                created_notifications=created_count,
+            )
         except Exception:
             await db.rollback()
             raise
@@ -168,11 +170,13 @@ class NotificationService:
             raise
 
     @staticmethod
-    async def mark_all_as_read(db: AsyncSession, user_id: int) -> dict[str, int]:
+    async def mark_all_as_read(
+        db: AsyncSession, user_id: int
+    ) -> NotificationReadAllResponse:
         try:
             updated_count = await NotificationCrud.mark_all_as_read(db, user_id)
             await db.commit()
-            return {"updated_count": updated_count}
+            return NotificationReadAllResponse(updated_count=updated_count)
         except Exception:
             await db.rollback()
             raise
