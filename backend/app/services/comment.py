@@ -2,6 +2,7 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.crud import CommentCrud, LikeCrud, ReplyCrud, TopicCrud, UserCrud
+from app.db.schemas.admin import AdminDeleteResponse
 from app.db.models import Comment
 from app.db.schemas.comments import (
     CommentCreate,
@@ -145,7 +146,7 @@ class CommentService:
         comment_id: int,
         update: CommentModerationUpdate,
         admin_user_id: int,
-    ) -> dict[str, bool]:
+    ) -> AdminDeleteResponse:
         comment = await CommentCrud.get_by_id(db, comment_id)
         if not comment:
             raise HTTPException(status_code=404, detail="Comment not found")
@@ -183,7 +184,7 @@ class CommentService:
             )
             await CommentCrud.delete_by_id(db, comment_id)
             await db.commit()
-            return {"deleted": True}
+            return AdminDeleteResponse(deleted=True)
         except Exception:
             await db.rollback()
             raise
