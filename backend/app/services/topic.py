@@ -12,6 +12,7 @@ from app.db.crud import (
     UserCrud,
     VoteCrud,
 )
+from app.db.schemas.admin import AdminDeleteResponse
 from app.db.models import Topic
 from app.db.schemas.topics import (
     TopicAdminRead,
@@ -144,7 +145,7 @@ class TopicService:
         topic_id: int,
         update: TopicModerationUpdate,
         admin_user_id: int,
-    ) -> dict[str, bool]:
+    ) -> AdminDeleteResponse:
         topic = await TopicCrud.get_by_id(db, topic_id)
         if not topic:
             raise HTTPException(status_code=404, detail="Topic not found")
@@ -184,7 +185,7 @@ class TopicService:
             )
             deleted = await TopicCrud.delete_by_id(db, topic_id)
             await db.commit()
-            return {"deleted": deleted}
+            return AdminDeleteResponse(deleted=deleted)
         except Exception:
             await db.rollback()
             raise

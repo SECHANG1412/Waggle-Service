@@ -2,6 +2,7 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.crud import AdminActionLogCrud, InquiryCrud, UserCrud
+from app.db.schemas.admin import AdminDeleteResponse
 from app.db.models import Inquiry
 from app.db.schemas.inquiries import (
     InquiryCreate,
@@ -120,7 +121,7 @@ class InquiryService:
         inquiry_id: int,
         update: InquiryDeleteUpdate,
         admin_user_id: int,
-    ) -> dict[str, bool]:
+    ) -> AdminDeleteResponse:
         inquiry = await InquiryService.get_by_id_for_admin(db, inquiry_id)
         reason = update.reason or "관리자 문의 삭제"
         snapshot = {
@@ -145,7 +146,7 @@ class InquiryService:
             )
             await InquiryCrud.delete(db, inquiry)
             await db.commit()
-            return {"deleted": True}
+            return AdminDeleteResponse(deleted=True)
         except Exception:
             await db.rollback()
             raise
