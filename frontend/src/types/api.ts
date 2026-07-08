@@ -88,6 +88,8 @@ export type UserLoginRequest = {
   password: string;
 };
 
+export type UserLogoutResponse = boolean;
+
 export type UserSignupRequest = {
   email: string;
   username: string;
