@@ -1,7 +1,7 @@
 import { isAxiosError } from 'axios';
 import { useCallback, useState } from 'react';
 import { TOPIC_MESSAGES } from '../constants/messages';
-import type { TopicCreateRequest, TopicListParams, TopicRead } from '../types';
+import type { TopicCountResponse, TopicCreateRequest, TopicDeleteResponse, TopicListParams, TopicPinResponse, TopicRead, TopicUnpinResponse } from '../types';
 import api from '../utils/api';
 import { handleAuthError, showErrorAlert, showSuccessAlert } from '../utils/alertUtils';
 
@@ -39,7 +39,7 @@ export const useTopic = () => {
 
   const pinTopic = useCallback(async (topicId: TopicId) => {
     try {
-      const response = await api.post<boolean>(`/topics/${topicId}/pin`);
+      const response = await api.post<TopicPinResponse>(`/topics/${topicId}/pin`);
       return response.status === 200;
     } catch (error) {
       if (await handleAuthError(error)) return false;
@@ -50,7 +50,7 @@ export const useTopic = () => {
 
   const unpinTopic = useCallback(async (topicId: TopicId) => {
     try {
-      const response = await api.delete<boolean>(`/topics/${topicId}/pin`);
+      const response = await api.delete<TopicUnpinResponse>(`/topics/${topicId}/pin`);
       return response.status === 200;
     } catch (error) {
       if (await handleAuthError(error)) return false;
@@ -67,7 +67,7 @@ export const useTopic = () => {
         status,
         ...(search && { search }),
       };
-      const response = await api.get<number>('/topics/count', {
+      const response = await api.get<TopicCountResponse>('/topics/count', {
         params,
       });
 
@@ -124,7 +124,7 @@ export const useTopic = () => {
   const deleteTopic = useCallback(async (topicId: TopicId) => {
     setLoading(true);
     try {
-      const response = await api.delete<boolean>(`/topics/${topicId}`);
+      const response = await api.delete<TopicDeleteResponse>(`/topics/${topicId}`);
       if (response.status === 200) {
         showSuccessAlert(TOPIC_MESSAGES.deleteSuccess);
         return true;

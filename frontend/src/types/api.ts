@@ -58,6 +58,14 @@ export type TopicModerationRequest = {
   reason: string;
 };
 
+export type TopicPinResponse = boolean;
+
+export type TopicUnpinResponse = boolean;
+
+export type TopicDeleteResponse = boolean;
+
+export type TopicCountResponse = number;
+
 export type UserRead = {
   user_id: Id;
   email: string;
