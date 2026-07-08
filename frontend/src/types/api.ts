@@ -185,6 +185,12 @@ export type CommentModerationRequest = {
   reason: string;
 };
 
+export type TopicLikeToggleResponse = boolean;
+
+export type CommentLikeToggleResponse = boolean;
+
+export type ReplyLikeToggleResponse = boolean;
+
 export type VoteCreateRequest = {
   topic_id: Id;
   vote_index: number;
