@@ -2,7 +2,13 @@ import { isAxiosError } from 'axios';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AUTH_MESSAGES } from '../constants/messages';
-import type { UserLoginRequest, UserRead, UserSignupPayload, UserSignupRequest } from '../types';
+import type {
+  UserLoginRequest,
+  UserLogoutResponse,
+  UserRead,
+  UserSignupPayload,
+  UserSignupRequest,
+} from '../types';
 import api from '../utils/api';
 import { AuthContext } from './auth-context';
 
@@ -109,7 +115,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const logout = async () => {
     try {
-      const response = await api.post<boolean>('/users/logout');
+      const response = await api.post<UserLogoutResponse>('/users/logout');
       setIsAuthenticated(false);
       setUser(null);
 
