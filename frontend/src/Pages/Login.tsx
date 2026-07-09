@@ -4,13 +4,19 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/auth-context';
 import SocialAuthButtons from '../Components/Auth/SocialAuthButtons';
 
+type LoginLocationState = {
+  signupSuccess?: boolean;
+  authRequired?: boolean;
+  from?: unknown;
+};
+
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const { error, login } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const baseUrl = useMemo(() => import.meta.env.VITE_API_URL || '', []);
-  const locationState = location.state as { signupSuccess?: boolean; authRequired?: boolean; from?: unknown } | null;
+  const locationState = location.state as LoginLocationState | null;
   const signupSuccess = Boolean(locationState?.signupSuccess);
   const authRequired = Boolean(locationState?.authRequired);
   const rawReturnTo = locationState?.from;
