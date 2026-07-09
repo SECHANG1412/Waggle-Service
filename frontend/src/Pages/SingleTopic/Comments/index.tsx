@@ -10,18 +10,24 @@ import { useReply } from '../../../hooks/useReply';
 import { showLoginRequiredAlert } from '../../../utils/alertUtils';
 import CommentItem from './CommentItem';
 import PaginationControls from './PaginationControls';
-import type { CommentRead } from '../../../types';
+import type { CommentRead, ReplyRead } from '../../../types';
 
 type TopicId = number | string;
 
+type CommentActionResult = CommentRead | ReplyRead | boolean | null | undefined | void;
+
 export type CommentItemActions = {
-  onEdit: (commentId: TopicId, content: string) => Promise<unknown>;
-  onDelete: (commentId: TopicId) => Promise<unknown>;
-  onLike: (commentId: TopicId) => Promise<unknown>;
-  onReply: (commentId: TopicId, content: string, parentReplyId?: TopicId | null) => Promise<unknown>;
-  onReplyEdit: (replyId: TopicId, content: string) => Promise<unknown>;
-  onReplyDelete: (replyId: TopicId) => Promise<unknown>;
-  onReplyLike: (replyId: TopicId) => Promise<unknown>;
+  onEdit: (commentId: TopicId, content: string) => Promise<CommentActionResult>;
+  onDelete: (commentId: TopicId) => Promise<CommentActionResult>;
+  onLike: (commentId: TopicId) => Promise<CommentActionResult>;
+  onReply: (
+    commentId: TopicId,
+    content: string,
+    parentReplyId?: TopicId | null
+  ) => Promise<CommentActionResult>;
+  onReplyEdit: (replyId: TopicId, content: string) => Promise<CommentActionResult>;
+  onReplyDelete: (replyId: TopicId) => Promise<CommentActionResult>;
+  onReplyLike: (replyId: TopicId) => Promise<CommentActionResult>;
 };
 
 type CommentsProps = {
