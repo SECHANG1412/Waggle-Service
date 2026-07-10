@@ -5,13 +5,17 @@ import api from '../../utils/api';
 import type { AdminActionLogRead, CommentAdminRead, InquiryRead, InquiryStatus, TopicAdminRead } from '../../types';
 import { formatKoreanDateTime, parseApiDate } from '../../utils/date';
 
-const ACTION_LABELS = {
+type KnownAdminAction = 'UPDATE_INQUIRY_STATUS' | 'DELETE_INQUIRY' | 'DELETE_TOPIC' | 'DELETE_COMMENT';
+
+const ACTION_LABELS: Record<KnownAdminAction, string> = {
   UPDATE_INQUIRY_STATUS: '문의 상태 변경',
   DELETE_INQUIRY: '문의 삭제',
   DELETE_TOPIC: '토픽 삭제',
   DELETE_COMMENT: '댓글 삭제',
 };
-const ADMIN_ACTION_LABELS: Record<string, string> = ACTION_LABELS;
+
+const getActionLabel = (action: string) =>
+  action in ACTION_LABELS ? ACTION_LABELS[action as KnownAdminAction] : action;
 
 const STATUS_LABELS: Record<InquiryStatus, string> = {
   pending: '미처리',
@@ -186,7 +190,7 @@ const Admin = () => {
                 <li key={log.log_id} className="px-4 py-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-md bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">
-                      {ADMIN_ACTION_LABELS[log.action] || log.action}
+                      {getActionLabel(log.action)}
                     </span>
                     <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
                       {log.target_type} #{log.target_id}
