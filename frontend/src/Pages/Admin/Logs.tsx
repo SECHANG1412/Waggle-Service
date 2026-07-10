@@ -4,7 +4,14 @@ import api from '../../utils/api';
 import type { AdminActionLogListParams, AdminActionLogRead, InquiryStatus } from '../../types';
 import { formatKoreanDateTime } from '../../utils/date';
 
-const ACTION_OPTIONS = [
+type KnownAdminAction = 'UPDATE_INQUIRY_STATUS' | 'DELETE_INQUIRY' | 'DELETE_TOPIC' | 'DELETE_COMMENT';
+
+type ActionOption = {
+  value: KnownAdminAction | '';
+  label: string;
+};
+
+const ACTION_OPTIONS: ActionOption[] = [
   { value: '', label: '전체' },
   { value: 'UPDATE_INQUIRY_STATUS', label: '문의 상태 변경' },
   { value: 'DELETE_INQUIRY', label: '문의 삭제' },
@@ -28,7 +35,10 @@ const DATE_OPTIONS = [
 
 const ACTION_LABELS = Object.fromEntries(
   ACTION_OPTIONS.filter((option) => option.value).map((option) => [option.value, option.label])
-);
+) as Record<KnownAdminAction, string>;
+
+const getActionLabel = (action: string) =>
+  action in ACTION_LABELS ? ACTION_LABELS[action as KnownAdminAction] : action;
 
 const TARGET_TYPE_LABELS = Object.fromEntries(
   TARGET_TYPE_OPTIONS.filter((option) => option.value).map((option) => [option.value, option.label])
@@ -150,7 +160,7 @@ const buildSummaryRows = (log: AdminActionLogRead) => {
     ];
   }
 
-  return [{ label: '처리 내용', value: ACTION_LABELS[log.action] || log.action }];
+  return [{ label: '처리 내용', value: getActionLabel(log.action) }];
 };
 
 type RawJsonPreviewProps = {
@@ -314,7 +324,7 @@ const AdminLogs = () => {
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="rounded-md bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">
-                        {ACTION_LABELS[log.action] || log.action}
+                        {getActionLabel(log.action)}
                       </span>
                       <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
                         {TARGET_TYPE_LABELS[log.target_type] || log.target_type} #{log.target_id}
