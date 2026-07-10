@@ -13,7 +13,7 @@ const ACTION_LABELS = {
 };
 const ADMIN_ACTION_LABELS: Record<string, string> = ACTION_LABELS;
 
-const STATUS_LABELS = {
+const STATUS_LABELS: Record<InquiryStatus, string> = {
   pending: '미처리',
   in_progress: '처리중',
   resolved: '완료',
