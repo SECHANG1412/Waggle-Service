@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
-import type { AdminActionLogListParams, AdminActionLogRead } from '../../types';
+import type { AdminActionLogListParams, AdminActionLogRead, InquiryStatus } from '../../types';
 import { formatKoreanDateTime } from '../../utils/date';
 
 const ACTION_OPTIONS = [
@@ -34,13 +34,12 @@ const TARGET_TYPE_LABELS = Object.fromEntries(
   TARGET_TYPE_OPTIONS.filter((option) => option.value).map((option) => [option.value, option.label])
 );
 
-const STATUS_LABELS = {
+const STATUS_LABELS: Record<InquiryStatus, string> = {
   pending: '미처리',
   in_progress: '처리중',
   resolved: '완료',
 };
 
-const LOG_STATUS_LABELS: Record<string, string> = STATUS_LABELS;
 
 type DateFilter = 'all' | 'today' | '7d' | '30d';
 type Message = { type: 'success' | 'error'; text: string };
@@ -57,6 +56,11 @@ const getDisplayValue = (value: unknown) => {
   if (typeof value === 'string' || typeof value === 'number') return value;
   if (value === null || value === undefined) return '-';
   return String(value);
+};
+
+const getStatusLabel = (value: unknown) => {
+  const key = getString(value);
+  return key in STATUS_LABELS ? STATUS_LABELS[key as InquiryStatus] : getDisplayValue(value);
 };
 
 const getDateParams = (dateFilter: DateFilter): AdminActionLogListParams => {
@@ -114,9 +118,7 @@ const buildSummaryRows = (log: AdminActionLogRead) => {
     return [
       {
         label: '상태 변경',
-        value: `${LOG_STATUS_LABELS[getString(snapshot.status)] || getDisplayValue(snapshot.status)} -> ${
-          LOG_STATUS_LABELS[getString(log.after_value?.status)] || getDisplayValue(log.after_value?.status)
-        }`,
+        value: `${getStatusLabel(snapshot.status)} -> ${getStatusLabel(log.after_value?.status)}`,
       },
     ];
   }
