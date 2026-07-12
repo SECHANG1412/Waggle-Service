@@ -72,6 +72,7 @@ const Login = () => {
               <input
                 type="email"
                 name="email"
+                autoComplete="email"
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="you@example.com"
@@ -83,6 +84,7 @@ const Login = () => {
               <input
                 type="password"
                 name="password"
+                autoComplete="current-password"
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="비밀번호를 입력하세요"
