@@ -56,6 +56,7 @@ const Signup = () => {
               <input
                 type="text"
                 name="username"
+                autoComplete="username"
                 value={formData.username}
                 onChange={handleChange}
                 placeholder="닉네임을 입력하세요"
@@ -67,6 +68,7 @@ const Signup = () => {
               <input
                 type="email"
                 name="email"
+                autoComplete="email"
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="you@example.com"
@@ -78,6 +80,7 @@ const Signup = () => {
               <input
                 type="password"
                 name="password"
+                autoComplete="new-password"
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="6자리 이상 입력하세요"
@@ -89,6 +92,7 @@ const Signup = () => {
               <input
                 type="password"
                 name="confirmPassword"
+                autoComplete="new-password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="비밀번호를 다시 입력하세요"
