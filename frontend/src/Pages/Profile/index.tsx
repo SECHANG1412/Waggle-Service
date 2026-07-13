@@ -350,13 +350,14 @@ type AvatarProps = {
 
 const Avatar = ({ user, avatarUrl, size = 'md' }: AvatarProps) => {
   const sizeClass = size === 'lg' ? 'h-16 w-16 text-2xl sm:h-20 sm:w-20 sm:text-3xl' : 'h-12 w-12 text-lg';
+  const avatarAlt = `${user?.name || '사용자'} 프로필 이미지`;
 
   return (
     <div
       className={`flex ${sizeClass} shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-gradient-to-br from-blue-100 to-slate-100 font-bold text-blue-700 shadow-sm`}
     >
       {avatarUrl ? (
-        <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
+        <img src={avatarUrl} alt={avatarAlt} className="h-full w-full object-cover" />
       ) : (
         user?.name?.[0]?.toUpperCase() || 'U'
       )}
