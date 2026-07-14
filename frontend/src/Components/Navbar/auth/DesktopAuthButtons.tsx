@@ -63,6 +63,9 @@ const DesktopAuthButtons = ({
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="flex items-center focus:outline-none border border-gray-200 rounded-full p-1 hover:border-blue-300 transition"
+            aria-label="사용자 메뉴 열기"
+            aria-haspopup="menu"
+            aria-expanded={isOpen}
           >
             <AvatarPlaceholder name={userName} />
           </button>
