@@ -8,6 +8,7 @@ const PaginationControls = ({ currentPage, totalPages, onPageChange }: Paginatio
   return (
     <div className="mt-6 flex items-center justify-center gap-2">
       <button
+        type="button"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
         className="min-h-11 rounded-lg bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:bg-gray-100/50 disabled:text-gray-300"
@@ -18,6 +19,7 @@ const PaginationControls = ({ currentPage, totalPages, onPageChange }: Paginatio
         {currentPage} / {totalPages}
       </span>
       <button
+        type="button"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
         className="min-h-11 rounded-lg bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:bg-gray-100/50 disabled:text-gray-300"
