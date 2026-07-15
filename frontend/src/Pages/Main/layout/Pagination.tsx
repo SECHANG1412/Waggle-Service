@@ -36,6 +36,7 @@ const Pagination = ({ currentPage, total, perPage, onPageChange }: PaginationPro
   return (
     <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
       <button
+        type="button"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
         className="min-h-11 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-300"
@@ -50,6 +51,7 @@ const Pagination = ({ currentPage, total, perPage, onPageChange }: PaginationPro
         ) : (
           <button
             key={index}
+            type="button"
             onClick={() => onPageChange(page)}
             className={`min-h-11 min-w-11 cursor-pointer rounded-lg border px-3 py-2 text-sm font-semibold transition ${
               page === currentPage
@@ -62,6 +64,7 @@ const Pagination = ({ currentPage, total, perPage, onPageChange }: PaginationPro
         )
       )}
       <button
+        type="button"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
         className="min-h-11 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-300"
