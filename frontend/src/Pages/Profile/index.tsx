@@ -512,7 +512,7 @@ const AccountPanel = ({
         <div className="flex flex-wrap items-center gap-2">
           <label className="inline-flex min-h-10 cursor-pointer items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-950">
             이미지 선택
-            <input type="file" accept="image/*" className="hidden" onChange={onAvatarChange} />
+            <input type="file" accept="image/*" className="hidden" aria-label="프로필 이미지 선택" onChange={onAvatarChange} />
           </label>
           {avatarUrl && (
             <button type="button" onClick={onAvatarReset} className="text-sm font-semibold text-red-500 hover:underline">
