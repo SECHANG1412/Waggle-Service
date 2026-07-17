@@ -10,7 +10,7 @@ const SearchTag = ({ search, onClear }: SearchTagProps) => {
       <span className="text-gray-600 mr-2">검색어:</span>
       <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full flex items-center border border-blue-100">
         {search}
-        <button onClick={onClear} className="ml-2 text-blue-700 hover:text-blue-900 font-semibold">
+        <button type="button" onClick={onClear} className="ml-2 text-blue-700 hover:text-blue-900 font-semibold" aria-label="검색어 초기화">
           ×
         </button>
       </div>
