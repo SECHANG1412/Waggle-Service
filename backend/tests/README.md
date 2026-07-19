@@ -10,6 +10,7 @@ The integration tests currently cover:
 - vote creation and vote stats contracts
 - auth-required and forbidden access behavior
 - CSRF and OAuth login/callback security flows
+- Redis-backed rate limit behavior
 - comments and nested replies behavior
 - topic/comment/reply likes behavior
 - regression guards for pagination, sorting, and full-period vote aggregation
@@ -41,6 +42,8 @@ The integration tests currently cover:
   - topic/comment/reply like toggles
   - auth-required and not-found behavior
   - duplicate-like race fallback behavior
+- `tests/integration/test_rate_limit_api.py`
+  - login request limit, authenticated topic creation limit, health endpoint exclusion
 - `tests/integration/test_regressions.py`
   - pagination offset contract
   - allowed topic sort contract
