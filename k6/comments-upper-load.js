@@ -1,5 +1,7 @@
   import http from "k6/http";                                                                                                                    
   import { check, sleep } from "k6";                                                                                                             
+
+const BASE_URL = __ENV.BASE_URL || "http://host.docker.internal:8000";
                                                                                                                                                  
   export const options = {                                                                                                                       
     vus: 20,                                                                                                                                     
@@ -7,7 +9,7 @@
   };                                                                                                                                             
                                                                                                                                                  
   export default function () {                                                                                                                   
-    const res = http.get("http://host.docker.internal:8000/comments/by-topic/28");                                                               
+    const res = http.get(`${BASE_URL}/comments/by-topic/28`);                                                               
     check(res, {                                                                                                                                 
       "status is 200": (r) => r.status === 200,                                                                                                  
     });                                                                                                                                          
