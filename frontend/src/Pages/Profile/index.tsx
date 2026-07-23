@@ -515,7 +515,7 @@ const AccountPanel = ({
             <input type="file" accept="image/*" className="hidden" aria-label="프로필 이미지 선택" onChange={onAvatarChange} />
           </label>
           {avatarUrl && (
-            <button type="button" onClick={onAvatarReset} className="text-sm font-semibold text-red-500 hover:underline">
+            <button type="button" onClick={onAvatarReset} aria-label="프로필 이미지 삭제" className="text-sm font-semibold text-red-500 hover:underline">
               삭제
             </button>
           )}
