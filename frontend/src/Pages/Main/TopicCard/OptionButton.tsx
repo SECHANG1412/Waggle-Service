@@ -57,7 +57,7 @@ const OptionButton = ({ option, index, topic, onVote, isAuthLoading }: OptionBut
           className="absolute -right-1.5 -top-1.5 z-20 flex h-4 w-4 items-center justify-center rounded-full"
           style={{ backgroundColor: baseColor }}
         >
-          <FiCheck className="h-3 w-3 text-white" aria-label="selected option" />
+          <FiCheck className="h-3 w-3 text-white" aria-hidden="true" />
         </span>
       )}
       <span className="relative z-10 shrink-0 text-right">
